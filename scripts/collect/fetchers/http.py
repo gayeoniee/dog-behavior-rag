@@ -15,6 +15,13 @@ USER_AGENT = "gy-rag-collector/0.1 (personal research project)"
 REQUEST_DELAY_SECONDS = 1.0
 
 
+def parse_robots(text: str) -> RobotFileParser:
+    """robots.txt 본문 → 파서. 빈 문자열이면 전체 허용 (RFC 9309)."""
+    parser = RobotFileParser()
+    parser.parse(text.splitlines())
+    return parser
+
+
 class PoliteClient:
     """robots.txt를 준수하고 요청 간 지연을 두는 HTTP 클라이언트."""
 
@@ -47,21 +54,21 @@ class PoliteClient:
         response.raise_for_status()
         return response
 
-    async def _check_robots(self, url: str) -> None:
+    async def robots_allows(self, url: str) -> bool:
+        """robots.txt 기준으로 url 수집이 허용되는지. 페이지 자체는 요청하지 않는다.
+
+        robots.txt를 가져오지 못하면 RobotsDisallowedError (보수적 차단).
+        """
         parts = urlsplit(url)
         origin = f"{parts.scheme}://{parts.netloc}"
 
         parser = self._robots_cache.get(origin)
         if parser is None:
-            parser = RobotFileParser()
             robots_url = f"{origin}/robots.txt"
             try:
                 resp = await self._client.get(robots_url)
-                if resp.status_code >= 400:
-                    # robots.txt가 없으면 전체 허용으로 간주 (RFC 9309)
-                    parser.parse([])
-                else:
-                    parser.parse(resp.text.splitlines())
+                # robots.txt가 없으면(4xx) 전체 허용으로 간주 (RFC 9309)
+                parser = parse_robots("" if resp.status_code >= 400 else resp.text)
             except httpx.HTTPError as exc:
                 # robots.txt 자체를 못 가져오면 보수적으로 막는다
                 raise RobotsDisallowedError(
@@ -69,7 +76,10 @@ class PoliteClient:
                 ) from exc
             self._robots_cache[origin] = parser
 
-        if not parser.can_fetch(USER_AGENT, url):
+        return parser.can_fetch(USER_AGENT, url)
+
+    async def _check_robots(self, url: str) -> None:
+        if not await self.robots_allows(url):
             raise RobotsDisallowedError(
                 f"robots.txt가 수집을 거부합니다: {url}\n"
                 "이 소스는 sources.yaml에서 제외하거나 local fetcher(수동 다운로드)로 전환하세요."

@@ -84,9 +84,27 @@ uv run python -m scripts.collect.normalize
 uv run python -m scripts.collect.report
 ```
 
+### 라이선스 확인 방법 (`pending-check` 해소)
+
+`license: pending-check` 소스는 fetch가 거부한다. 확인 작업의 기계적인 부분은
+스크립트가 대신한다 — **로컬에서** 실행:
+
+```bash
+uv run python -m scripts.collect.check_license
+```
+
+소스별로 ① robots.txt 판정(자동)과 ② ToS 확인 안내(수동, 소스당 2분)가 나온다.
+출력이 시키는 대로 약관 페이지에서 아래 문구를 찾고, 제안된 값을 `sources.yaml`에 붙여넣으면 끝.
+
+| ToS에서 발견한 것 | 판단 | `license`에 쓸 값 |
+|---|---|---|
+| "automated means/scraping/crawling" 금지 | 자동 수집 불가 → `fetcher: local`로 전환 (브라우저 저장 파일 사용) | — |
+| "personal, non-commercial use" 한정 | 개인 테스트 가능. 앱 배포 시 재검토 | `personal-use-only` |
+| 관련 조항 없음 + robots 허용 | 정중한 수집(1req/s, UA 명시)은 통상 수용 범위 | `robots-allowed-no-tos-clause` |
+
 규칙:
 
-- **`license: pending-check`인 소스는 fetch가 거부한다.** robots.txt/ToS를 확인하고
+- **`license: pending-check`인 소스는 fetch가 거부한다.** 위 절차로 확인하고
   `sources.yaml`의 `license`를 갱신해야 수집된다. `--skip-pending`으로 건너뛸 수는 있다.
 - HTML 수집은 robots.txt를 준수하고(거부 시 스킵이 아니라 **에러**), 요청 간 1초 지연을 둔다.
 - 로그인이 필요한 사이트(동물사랑배움터 등)는 파일을 직접 받아

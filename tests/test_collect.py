@@ -9,6 +9,7 @@ from scripts.collect.fetchers.base import (
     ensure_license_checked,
 )
 from scripts.collect.fetchers.html import extract_main_text
+from scripts.collect.fetchers.http import USER_AGENT, parse_robots
 from scripts.collect.models import RawDoc, Source
 from scripts.collect.normalize import clean_text, content_hash
 from scripts.collect.registry import get_fetcher, load_sources
@@ -61,6 +62,31 @@ def test_pending_license_blocks_fetch() -> None:
 
 def test_checked_license_passes() -> None:
     ensure_license_checked(_source(license="public-guideline-pdf"))
+
+
+# ── robots.txt 판정 (check_license가 쓰는 로직) ─────────────────
+
+
+def test_robots_disallow_path_blocks_matching_url() -> None:
+    parser = parse_robots("User-agent: *\nDisallow: /private/\n")
+    assert not parser.can_fetch(USER_AGENT, "https://example.com/private/page")
+    assert parser.can_fetch(USER_AGENT, "https://example.com/pet-care/barking")
+
+
+def test_robots_empty_allows_everything() -> None:
+    parser = parse_robots("")
+    assert parser.can_fetch(USER_AGENT, "https://example.com/anything")
+
+
+def test_robots_specific_agent_rule_does_not_hit_us() -> None:
+    """다른 봇만 막는 규칙은 우리 UA에 적용되지 않아야 한다."""
+    parser = parse_robots("User-agent: BadBot\nDisallow: /\n\nUser-agent: *\nAllow: /\n")
+    assert parser.can_fetch(USER_AGENT, "https://example.com/page")
+
+
+def test_robots_blanket_disallow_blocks_us() -> None:
+    parser = parse_robots("User-agent: *\nDisallow: /\n")
+    assert not parser.can_fetch(USER_AGENT, "https://example.com/page")
 
 
 # ── HTML 본문 추출 ─────────────────────────────────────────────
