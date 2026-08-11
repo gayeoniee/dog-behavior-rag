@@ -7,9 +7,24 @@
 #               volatile(약물·인지장애 등 — 최신 우선, 5년 넘으면 리포트가 경고)
 #   license:    수집 전 robots.txt/ToS 확인 결과. "pending-check"면 아직 수집하지 말 것.
 #   superseded_checked_at: 더 새 판이 있는지 확인한 날짜 (같은 조사를 반복하지 않기 위한 기록)
+#   license_checked_at:    ToS를 실제로 읽어본 날짜
 #
 # ⚠️ license: pending-check 인 소스는 fetch가 거부한다.
 #    robots.txt/ToS를 확인하고 값을 갱신한 뒤 수집할 것.
+#
+# license 값의 의미 (2026-08-12 기준 실제 사용되는 값):
+#
+#   public-position-statement   기관이 배포 목적으로 낸 공개 성명서
+#   public-guideline-pdf        기관이 공개한 진료 가이드라인 PDF
+#   korea-gov-publication       공공저작물 — 개별 파일의 공공누리 유형 확인
+#   personal-use-only           ToS가 개인·비상업 이용으로 한정한 소스.
+#                               ★ 앱 배포 시 코퍼스에서 제외하거나 허가를 받아야 한다.
+#   personal-use-only-manual-copy
+#                               위와 같되 자동 수집까지 금지된 소스. 사람이 브라우저로
+#                               저장한 파일만 쓸 수 있어 fetcher: local 이다.
+#
+# 배포 전 재검토 대상은 corpus.jsonl의 license 필드로 걸러낼 수 있다
+# (normalize.py가 문서마다 이 값을 실어 보낸다).
 
 # ── ③ 훈련법·교정 / 방법론 기준점 ─────────────────────────────
 
@@ -29,17 +44,22 @@
   license: public-position-statement
   license_checked_at: 2026-08-12
 
-- id: avsab-punishment
-  name: AVSAB Position Statement on the Use of Punishment
+# 2026-08-12: 기존 avsab-punishment(Use of Punishment, 2007)를 여기서 교체했다.
+# 해당 PDF는 404이고 AVSAB 성명서 목록에서도 내려갔다 — 내용이 위 Humane Dog
+# Training 성명서(2021)에 흡수된 것으로 보인다. 같은 training 축을 덮으면서 아직
+# 게시 중인 Dominance 성명서로 대체한다. 지배이론은 README가 코퍼스에서 배제하려는
+# 대표적인 폐기 이론이라, 그걸 반박하는 1차 자료를 갖고 있는 편이 낫다.
+- id: avsab-dominance
+  name: AVSAB Position Statement on the Use of Dominance Theory in Behavior Modification
   urls:
-    - https://avsab.org/wp-content/uploads/2018/03/Punishment_Position_Statement-download_-_10-6-14.pdf
+    - https://avsab.org/wp-content/uploads/2024/12/Dominance_Position_Statement-download.pdf
   fetcher: pdf
   language: en
   species: dog
-  axis: [training]
+  axis: [training, cause]
   authority_tier: 1
   methodology: reward_based
-  published_at: 2007
+  published_at: 2008
   volatility: stable
   superseded_checked_at: 2026-08-12
   license: public-position-statement
@@ -95,7 +115,17 @@
     - https://www.aspca.org/pet-care/dog-care/common-dog-behavior-issues/mouthing-nipping-and-play-biting-adult-dogs
     - https://www.aspca.org/pet-care/dog-care/common-dog-behavior-issues/whining
     - https://www.aspca.org/pet-care/dog-care/common-dog-behavior-issues/digging
-  fetcher: html
+  # ToS 확인 2026-08-12 (https://www.aspca.org/about-us/legal-information):
+  #   robots.txt는 위 8개 URL 전부 허용이지만 ToS가 자동 접근을 금지한다 —
+  #   "Use any robot, spider or other automatic device, process or means to access
+  #    the Website for any purpose, including monitoring or copying any of the
+  #    material on the Website"
+  #   다만 수동 복사는 명시적으로 허용한다 —
+  #   "You may also make a single copy of the content displayed on any page of the
+  #    Website to be used for your personal and non-commercial use"
+  #   → fetcher: local. 위 URL을 브라우저로 열어 저장한 파일을
+  #     data/raw/local/aspca-behavior-issues/ 에 넣으면 수집된다 (urls는 그 목록이다).
+  fetcher: local
   language: en
   species: dog
   axis: [problem, training]
@@ -104,8 +134,8 @@
   published_at: 2024        # 웹 문서 — 갱신형이라 근사값
   volatility: stable
   superseded_checked_at: 2026-08-12
-  license: pending-check    # robots.txt/ToS 확인 후 갱신할 것
-  license_checked_at: null
+  license: personal-use-only-manual-copy
+  license_checked_at: 2026-08-12
 
 # ── ①② RSPCA — 문제행동 + 바디랭귀지 ─────────────────────────
 
@@ -114,6 +144,16 @@
   urls:
     - https://www.rspca.org.uk/adviceandwelfare/pets/dogs/behaviour/understanding
     - https://www.rspca.org.uk/adviceandwelfare/pets/dogs/behaviour/separationrelatedbehaviour
+  # ToS 확인 2026-08-12 (utilities/termsandconditions + .../copyrightandtrademarks):
+  #   robots.txt 허용. 자동 수집을 금지하는 조항이 없다 (4개 소스 중 유일).
+  #   개인 학습 목적의 로컬 저장은 명시적으로 허용한다 —
+  #   "You are also permitted to print one copy of reasonable extracts from the site
+  #    for your personal use or private study, and to save one copy of such reasonable
+  #    extracts to your local hard disk"
+  #   단 그 외 재사용은 서면 허가가 필요하다 —
+  #   "No part of this site, or of any material on it, may be reproduced in any form
+  #    whatsoever without first obtaining the written permission of the RSPCA"
+  #   → 개인 이용 범위에서 수집 가능. 배포하려면 허가를 받아야 한다.
   fetcher: html
   language: en
   species: dog
@@ -123,8 +163,8 @@
   published_at: 2024
   volatility: stable
   superseded_checked_at: 2026-08-12
-  license: pending-check
-  license_checked_at: null
+  license: personal-use-only
+  license_checked_at: 2026-08-12
 
 # ── ①③④ VCA — 수의행동학 전문의(DACVB) 집필 ─────────────────
 
@@ -136,6 +176,19 @@
     - https://vcahospitals.com/know-your-pet/introduction-to-desensitization-and-counterconditioning
     - https://vcahospitals.com/know-your-pet/overcoming-fears-with-desensitization-and-counterconditioning
     - https://vcahospitals.com/know-your-pet/behavior-counseling---behavior-consultations---seeing-a-behaviorist
+  # ToS 확인 2026-08-12 (https://vcahospitals.com/terms-and-conditions):
+  #   robots.txt 허용. 자동 접근을 전면 금지하지는 않고 부하만 제한한다 —
+  #   "using an automated process to cause greater demand on any Site than a single
+  #    person could produce"
+  #   PoliteClient의 1req/s 지연이 이 조건 안에 들어간다.
+  #   다운로드는 개인·비상업 이용으로 한정된다 —
+  #   "You may only download Content displayed on a Site for non-commercial, personal
+  #    use, provided you also retain all copyright, trademark and other proprietary
+  #    notices contained in the Content"
+  #   공개·상업적 재사용은 금지 —
+  #   "VCA strictly prohibits modifying, transmitting, distributing, reusing,
+  #    reposting, 'framing' or using the Content...for public or commercial purposes"
+  #   → 개인 이용 범위에서 수집 가능. 앱 배포 시 제외 대상.
   fetcher: html
   language: en
   species: dog
@@ -145,29 +198,31 @@
   published_at: 2024
   volatility: stable
   superseded_checked_at: 2026-08-12
-  license: pending-check    # 상업 사이트 — ToS 확인 특히 중요
-  license_checked_at: null
+  license: personal-use-only
+  license_checked_at: 2026-08-12
 
-# ── ②④ MSD Vet Manual — 지속 갱신, 보호자용/수의사용 ─────────
-
-- id: msd-dog-behavior
-  name: MSD Veterinary Manual — Behavior of Dogs
-  urls:
-    - https://www.msdvetmanual.com/dog-owners/behavior-of-dogs/introduction-to-behavior-of-dogs
-    - https://www.msdvetmanual.com/dog-owners/behavior-of-dogs/normal-social-behavior-in-dogs
-    - https://www.msdvetmanual.com/dog-owners/behavior-of-dogs/behavior-problems-in-dogs
-    - https://www.msdvetmanual.com/behavior/behavior-of-dogs/behavior-problems-of-dogs
-  fetcher: html
-  language: en
-  species: dog
-  axis: [cause, medical, problem]
-  authority_tier: 1
-  methodology: reward_based
-  published_at: 2025        # 지속 갱신형 매뉴얼
-  volatility: volatile      # 의학 내용 포함 — 최신성 경고 대상
-  superseded_checked_at: 2026-08-12
-  license: pending-check    # 상업 사이트 — ToS 확인 특히 중요
-  license_checked_at: null
+# ── ②④ MSD Vet Manual — 제외됨 (2026-08-12) ──────────────────
+#
+# msd-dog-behavior (cause/medical/problem 축, 4개 URL)를 여기서 제거했다.
+# 다시 추가하기 전에 아래를 읽을 것.
+#
+# ToS 확인 2026-08-12 (msd.com/terms-of-use/terms-of-use-for-the-united-states):
+#   robots.txt는 4개 URL 전부 허용이지만 ToS가 수집 자체를 막는다 —
+#   "use any manual or automated software, devices or other processes (including but
+#    not limited to spiders, robots, bots, scrapers, crawlers, avatars, data mining
+#    tools or the like) to 'scrape', 'data mine', extract, view, access or download
+#    any data, content or materials from the Services"
+#   ASPCA와 달리 "manual"이 포함돼 있어서 브라우저 수동 저장(fetcher: local)으로도
+#   우회되지 않는다. 재사용은 별도 서면 허가가 필요하다 —
+#   "You may not distribute, modify, transmit, reuse, repost, or use the content of
+#    the Services for public or commercial purposes...without the written permission"
+#
+# 대체 방향: 이 소스가 덮던 cause/medical 축은 CC-BY 오픈액세스 문헌으로 채운다.
+#   - PMC OA 서브셋은 라이선스가 메타데이터 필드로 오므로 ToS를 읽을 필요가 없다
+#   - 인지장애: pmc.ncbi.nlm.nih.gov/articles/PMC12390195 (Diagnosis of CCDS)
+#               mdpi.com/2076-2615/16/7/1114 (Evidence-Based Clinical Management)
+#   - 분리불안: frontiersin.org/articles/10.3389/fvets.2019.00499/full
+# 정 필요하면 msdvetmanual.com/content/permissions 로 허가를 신청하는 경로도 있다.
 
 # ── 한국어 자료 — 수동 다운로드 (local fetcher) ────────────────
 # 동물사랑배움터(apms.epis.or.kr)와 animal.go.kr 자료실은 로그인/동적 페이지라

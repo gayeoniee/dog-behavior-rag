@@ -84,9 +84,28 @@ uv run python -m scripts.collect.normalize
 uv run python -m scripts.collect.report
 ```
 
-### 라이선스 확인 방법 (`pending-check` 해소)
+### 라이선스 현황 (2026-08-12 확인 완료)
 
-`license: pending-check` 소스는 fetch가 거부한다. 확인 작업의 기계적인 부분은
+`pending-check`는 남아 있지 않다. 네 소스의 ToS를 실제로 읽고 판정한 결과:
+
+| 소스 | 판정 | 결과 |
+|---|---|---|
+| RSPCA, VCA | 자동 수집 허용 범위 | `personal-use-only` — 그대로 수집 |
+| ASPCA | ToS가 로봇 접근 금지, 수동 복사는 허용 | `fetcher: local`로 전환 |
+| MSD Vet Manual | ToS가 **수동 저장까지** 금지 | 소스에서 제거 |
+
+판정 근거는 각 소스의 ToS 원문을 `data/sources.yaml`에 주석으로 인용해뒀다.
+같은 조사를 반복하지 말 것.
+
+> **배포 전 재검토 필요.** `personal-use-only` / `personal-use-only-manual-copy`
+> 소스는 개인·비상업 이용으로 한정된다. 앱으로 배포하려면 코퍼스에서 제외하거나
+> 허가를 받아야 한다. `corpus.jsonl`의 `license` 필드로 걸러낼 수 있고, 빠지는 축은
+> CC-BY 오픈액세스 문헌(PMC OA 서브셋 등)으로 채우면 된다 — 후보는 `sources.yaml`의
+> MSD 제거 주석에 적어뒀다.
+
+#### 새 소스를 추가할 때
+
+`license: pending-check`로 넣으면 fetch가 거부한다. 확인 작업의 기계적인 부분은
 스크립트가 대신한다 — **로컬에서** 실행:
 
 ```bash
@@ -107,8 +126,12 @@ uv run python -m scripts.collect.check_license
 - **`license: pending-check`인 소스는 fetch가 거부한다.** 위 절차로 확인하고
   `sources.yaml`의 `license`를 갱신해야 수집된다. `--skip-pending`으로 건너뛸 수는 있다.
 - HTML 수집은 robots.txt를 준수하고(거부 시 스킵이 아니라 **에러**), 요청 간 1초 지연을 둔다.
-- 로그인이 필요한 사이트(동물사랑배움터 등)는 파일을 직접 받아
-  `data/raw/local/<source_id>/`에 넣으면 `local` fetcher가 처리한다.
+  단 **robots.txt 허용이 곧 ToS 허용은 아니다** — ASPCA·MSD는 robots.txt가 전부 허용인데
+  ToS가 자동 수집을 금지한 사례다. 둘 다 확인해야 한다.
+- 자동 수집이 막힌 사이트(ToS 금지)나 로그인이 필요한 사이트(동물사랑배움터 등)는 파일을
+  직접 받아 `data/raw/local/<source_id>/`에 넣으면 `local` fetcher가 처리한다(.pdf/.txt/.md).
+  현재 수동 저장 대기: `aspca-behavior-issues`(8페이지), `korea-gov-materials`.
+  저장할 URL 목록은 `sources.yaml`의 해당 항목 `urls:`에 있다.
 - 유튜브·블로그는 수집하지 않는다 — ToS/저작권 문제에 더해, 지배이론 등
   폐기된 훈련법이 섞여 답변 품질을 떨어뜨린다. 기관·학술 자료만 쓴다.
 - 커버리지 질문(`data/coverage_questions.yaml`)은 나중에 검색이 붙으면
@@ -159,7 +182,9 @@ LLM/임베딩 구현체는 Protocol 뒤에 숨어 있고, 선택 지점은 각 `
 
 코드에 `TODO(내일)` 주석으로 표시돼 있다.
 
-- [ ] **로컬에서 실제 수집 실행** — pending-check 소스의 robots/ToS 확인 → fetch → report 통과
+- [x] **로컬에서 실제 수집 실행** — ToS 확인 완료, fetch → normalize → report 통과
+      (문서 11건 / 네 축 전부 / 커버리지 질문 8개 전부 PASS)
+- [ ] ASPCA 8페이지 수동 저장 → `data/raw/local/aspca-behavior-issues/` (개인 이용 한정)
 - [ ] 임베딩 모델 확정 → 차원 확정 → `chunks.embedding Vector(N)` 컬럼 정의
 - [ ] `db/models.py` 실제 테이블 (`documents`, `chunks`) + HNSW 인덱스
 - [ ] Alembic 마이그레이션 도입
