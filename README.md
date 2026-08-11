@@ -64,10 +64,45 @@ uv run uvicorn app.main:app --reload         # 터미널 1
 uv run streamlit run demo/streamlit_app.py   # 터미널 2
 ```
 
+## 데이터 수집
+
+수집 대상은 `data/sources.yaml`에 선언한다 (코드 수정 없이 소스 추가 가능).
+소스는 네 답변 축 — **problem**(문제행동) / **cause**(행동의 이유) /
+**training**(훈련·교정) / **medical**(의학적 감별) — 을 모두 덮도록 선정한다.
+
+```bash
+uv sync --extra collect
+
+# 1) 수집 → data/raw/
+uv run python -m scripts.collect.fetch --source avsab-humane-training   # 단일
+uv run python -m scripts.collect.fetch --all --skip-pending             # 전체
+
+# 2) 정규화 → data/processed/corpus.jsonl
+uv run python -m scripts.collect.normalize
+
+# 3) 품질·커버리지 리포트 (합격 기준 게이트 — 실패 시 exit 1)
+uv run python -m scripts.collect.report
+```
+
+규칙:
+
+- **`license: pending-check`인 소스는 fetch가 거부한다.** robots.txt/ToS를 확인하고
+  `sources.yaml`의 `license`를 갱신해야 수집된다. `--skip-pending`으로 건너뛸 수는 있다.
+- HTML 수집은 robots.txt를 준수하고(거부 시 스킵이 아니라 **에러**), 요청 간 1초 지연을 둔다.
+- 로그인이 필요한 사이트(동물사랑배움터 등)는 파일을 직접 받아
+  `data/raw/local/<source_id>/`에 넣으면 `local` fetcher가 처리한다.
+- 유튜브·블로그는 수집하지 않는다 — ToS/저작권 문제에 더해, 지배이론 등
+  폐기된 훈련법이 섞여 답변 품질을 떨어뜨린다. 기관·학술 자료만 쓴다.
+- 커버리지 질문(`data/coverage_questions.yaml`)은 나중에 검색이 붙으면
+  그대로 검색 품질 회귀 테스트가 된다.
+
+> ⚠️ 개발 컨테이너에서는 이그레스 프록시가 대상 도메인을 막을 수 있다.
+> 실제 네트워크 수집은 로컬 머신에서 실행할 것.
+
 ## 개발
 
 ```bash
-uv run pytest          # 테스트 (DB 없이 동작)
+uv run pytest          # 테스트 (DB·네트워크 없이 동작)
 uv run ruff check .    # 린트
 uv run ruff format .   # 포맷
 uv run mypy app        # 타입 체크
@@ -106,10 +141,11 @@ LLM/임베딩 구현체는 Protocol 뒤에 숨어 있고, 선택 지점은 각 `
 
 코드에 `TODO(내일)` 주석으로 표시돼 있다.
 
+- [ ] **로컬에서 실제 수집 실행** — pending-check 소스의 robots/ToS 확인 → fetch → report 통과
 - [ ] 임베딩 모델 확정 → 차원 확정 → `chunks.embedding Vector(N)` 컬럼 정의
 - [ ] `db/models.py` 실제 테이블 (`documents`, `chunks`) + HNSW 인덱스
 - [ ] Alembic 마이그레이션 도입
-- [ ] 문서 청킹 전략 + 적재 파이프라인 (`POST /documents`)
-- [ ] pgvector 코사인 유사도 검색 구현
+- [ ] 문서 청킹 전략 + 적재 파이프라인 (`POST /documents` — corpus.jsonl 입력)
+- [ ] pgvector 코사인 검색 + `methodology` 필터 / `authority_tier` 부스팅
 - [ ] LLM 연결 (로컬 추론 vs Inference API) + 프롬프트 튜닝
 - [ ] 임베딩 모델을 lifespan에서 1회 로딩하도록 변경 (요청마다 로딩 금지)

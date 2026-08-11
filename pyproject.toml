@@ -29,6 +29,12 @@ demo = [
 claude = [
     "anthropic>=0.40",
 ]
+# 데이터 수집 파이프라인 (scripts/collect/)
+collect = [
+    "pypdf>=5.1",
+    "selectolax>=0.3.27",
+    "pyyaml>=6.0",
+]
 
 [dependency-groups]
 dev = [

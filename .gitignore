@@ -20,8 +20,10 @@ venv/
 .coverage
 htmlcov/
 
-# 데이터/모델 캐시 (내일 사용)
-data/
+# 수집 데이터 (저작물 원본·산출물은 커밋하지 않는다.
+#  sources.yaml / coverage_questions.yaml 은 커밋 대상)
+data/raw/
+data/processed/
 models/
 .cache/
 

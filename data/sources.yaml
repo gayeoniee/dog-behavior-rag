@@ -1,0 +1,190 @@
+# 수집 대상 소스 레지스트리
+#
+# 필드 설명:
+#   fetcher:    pdf | html | local
+#   axis:       problem(문제행동) / cause(행동의 이유) / training(훈련·교정) / medical(의학적 감별)
+#   volatility: stable(학습이론·바디랭귀지 등 — 연도로 안 거름)
+#               volatile(약물·인지장애 등 — 최신 우선, 5년 넘으면 리포트가 경고)
+#   license:    수집 전 robots.txt/ToS 확인 결과. "pending-check"면 아직 수집하지 말 것.
+#   superseded_checked_at: 더 새 판이 있는지 확인한 날짜 (같은 조사를 반복하지 않기 위한 기록)
+#
+# ⚠️ license: pending-check 인 소스는 fetch가 거부한다.
+#    robots.txt/ToS를 확인하고 값을 갱신한 뒤 수집할 것.
+
+# ── ③ 훈련법·교정 / 방법론 기준점 ─────────────────────────────
+
+- id: avsab-humane-training
+  name: AVSAB Humane Dog Training Position Statement
+  urls:
+    - https://avsab.org/wp-content/uploads/2021/08/AVSAB-Humane-Dog-Training-Position-Statement-2021.pdf
+  fetcher: pdf
+  language: en
+  species: dog
+  axis: [training]
+  authority_tier: 1
+  methodology: reward_based
+  published_at: 2021
+  volatility: stable
+  superseded_checked_at: 2026-08-12
+  license: public-position-statement
+  license_checked_at: 2026-08-12
+
+- id: avsab-punishment
+  name: AVSAB Position Statement on the Use of Punishment
+  urls:
+    - https://avsab.org/wp-content/uploads/2018/03/Punishment_Position_Statement-download_-_10-6-14.pdf
+  fetcher: pdf
+  language: en
+  species: dog
+  axis: [training]
+  authority_tier: 1
+  methodology: reward_based
+  published_at: 2007
+  volatility: stable
+  superseded_checked_at: 2026-08-12
+  license: public-position-statement
+  license_checked_at: 2026-08-12
+
+# ── ② 행동의 이유 (발달·사회화) ────────────────────────────────
+
+- id: avsab-socialization
+  name: AVSAB Position Statement on Puppy Socialization
+  urls:
+    - https://avsab.org/wp-content/uploads/2018/03/Puppy_Socialization_Position_Statement_Download_-_10-3-14.pdf
+  fetcher: pdf
+  language: en
+  species: dog
+  axis: [cause]
+  authority_tier: 1
+  methodology: reward_based
+  published_at: 2008
+  volatility: stable
+  superseded_checked_at: 2026-08-12
+  license: public-position-statement
+  license_checked_at: 2026-08-12
+
+# ── ④ 의학적 감별 ─────────────────────────────────────────────
+
+- id: aaha-behavior-2015
+  name: AAHA Canine and Feline Behavior Management Guidelines (2015)
+  urls:
+    - https://www.aaha.org/wp-content/uploads/globalassets/02-guidelines/behavior-management/2015_aaha_canine_and_feline_behavior_management_guidelines_final.pdf
+  fetcher: pdf
+  language: en
+  species: both
+  axis: [medical, problem, training]
+  authority_tier: 1
+  methodology: reward_based
+  published_at: 2015
+  volatility: stable
+  # 2026-08 확인: 대체판 없음. 현행판이다. 2019 Life Stage 가이드가 보완재.
+  superseded_checked_at: 2026-08-12
+  license: public-guideline-pdf
+  license_checked_at: 2026-08-12
+
+# ── ①②③ ASPCA — 가정 반려견 문제행동 ─────────────────────────
+
+- id: aspca-behavior-issues
+  name: ASPCA Common Dog Behavior Issues
+  urls:
+    - https://www.aspca.org/pet-care/dog-care/common-dog-behavior-issues/barking
+    - https://www.aspca.org/pet-care/dog-care/common-dog-behavior-issues/separation-anxiety
+    - https://www.aspca.org/pet-care/dog-care/common-dog-behavior-issues/destructive-chewing
+    - https://www.aspca.org/pet-care/dog-care/common-dog-behavior-issues/aggression
+    - https://www.aspca.org/pet-care/dog-care/common-dog-behavior-issues/fear-of-noises
+    - https://www.aspca.org/pet-care/dog-care/common-dog-behavior-issues/mouthing-nipping-and-play-biting-adult-dogs
+    - https://www.aspca.org/pet-care/dog-care/common-dog-behavior-issues/whining
+    - https://www.aspca.org/pet-care/dog-care/common-dog-behavior-issues/digging
+  fetcher: html
+  language: en
+  species: dog
+  axis: [problem, training]
+  authority_tier: 1
+  methodology: reward_based
+  published_at: 2024        # 웹 문서 — 갱신형이라 근사값
+  volatility: stable
+  superseded_checked_at: 2026-08-12
+  license: pending-check    # robots.txt/ToS 확인 후 갱신할 것
+  license_checked_at: null
+
+# ── ①② RSPCA — 문제행동 + 바디랭귀지 ─────────────────────────
+
+- id: rspca-dog-behaviour
+  name: RSPCA Dog Behaviour Advice
+  urls:
+    - https://www.rspca.org.uk/adviceandwelfare/pets/dogs/behaviour/understanding
+    - https://www.rspca.org.uk/adviceandwelfare/pets/dogs/behaviour/separationrelatedbehaviour
+  fetcher: html
+  language: en
+  species: dog
+  axis: [problem, cause]
+  authority_tier: 1
+  methodology: reward_based
+  published_at: 2024
+  volatility: stable
+  superseded_checked_at: 2026-08-12
+  license: pending-check
+  license_checked_at: null
+
+# ── ①③④ VCA — 수의행동학 전문의(DACVB) 집필 ─────────────────
+
+- id: vca-know-your-pet
+  name: VCA Know Your Pet (behavior articles)
+  urls:
+    - https://vcahospitals.com/know-your-pet/dog-behaviorwhats-normal-and-whats-not
+    - https://vcahospitals.com/know-your-pet/signs-your-dog-is-stressed-and-how-to-relieve-it
+    - https://vcahospitals.com/know-your-pet/introduction-to-desensitization-and-counterconditioning
+    - https://vcahospitals.com/know-your-pet/overcoming-fears-with-desensitization-and-counterconditioning
+    - https://vcahospitals.com/know-your-pet/behavior-counseling---behavior-consultations---seeing-a-behaviorist
+  fetcher: html
+  language: en
+  species: dog
+  axis: [problem, cause, training, medical]
+  authority_tier: 1
+  methodology: reward_based
+  published_at: 2024
+  volatility: stable
+  superseded_checked_at: 2026-08-12
+  license: pending-check    # 상업 사이트 — ToS 확인 특히 중요
+  license_checked_at: null
+
+# ── ②④ MSD Vet Manual — 지속 갱신, 보호자용/수의사용 ─────────
+
+- id: msd-dog-behavior
+  name: MSD Veterinary Manual — Behavior of Dogs
+  urls:
+    - https://www.msdvetmanual.com/dog-owners/behavior-of-dogs/introduction-to-behavior-of-dogs
+    - https://www.msdvetmanual.com/dog-owners/behavior-of-dogs/normal-social-behavior-in-dogs
+    - https://www.msdvetmanual.com/dog-owners/behavior-of-dogs/behavior-problems-in-dogs
+    - https://www.msdvetmanual.com/behavior/behavior-of-dogs/behavior-problems-of-dogs
+  fetcher: html
+  language: en
+  species: dog
+  axis: [cause, medical, problem]
+  authority_tier: 1
+  methodology: reward_based
+  published_at: 2025        # 지속 갱신형 매뉴얼
+  volatility: volatile      # 의학 내용 포함 — 최신성 경고 대상
+  superseded_checked_at: 2026-08-12
+  license: pending-check    # 상업 사이트 — ToS 확인 특히 중요
+  license_checked_at: null
+
+# ── 한국어 자료 — 수동 다운로드 (local fetcher) ────────────────
+# 동물사랑배움터(apms.epis.or.kr)와 animal.go.kr 자료실은 로그인/동적 페이지라
+# 자동 수집이 어렵다. PDF를 직접 받아 data/raw/local/<source_id>/ 에 넣으면
+# local fetcher가 처리한다.
+
+- id: korea-gov-materials
+  name: 동물사랑배움터·국가동물보호정보시스템 발간자료 (수동)
+  urls: []
+  fetcher: local
+  language: ko
+  species: dog
+  axis: [problem, training]
+  authority_tier: 1
+  methodology: reward_based
+  published_at: 2024
+  volatility: stable
+  superseded_checked_at: 2026-08-12
+  license: korea-gov-publication   # 공공저작물 — 개별 파일의 공공누리 유형 확인
+  license_checked_at: 2026-08-12
