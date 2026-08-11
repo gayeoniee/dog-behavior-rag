@@ -1,1 +1,115 @@
 # GY_RAG
+
+반려동물 훈련 / 문제행동 상담 RAG 시스템.
+
+현재 상태: **스캐폴딩 단계**. API 골격과 provider 인터페이스만 있고,
+임베딩·검색·LLM 호출은 전부 스텁이다 (엔드포인트는 정상 응답하지만 내용은 가짜).
+
+## 요구사항
+
+- [uv](https://docs.astral.sh/uv/) (pip 사용 안 함)
+- Docker (pgvector 컨테이너용, 선택)
+
+## 빠른 시작
+
+```bash
+uv sync                      # 의존성 설치 (가볍다. torch 안 받음)
+cp .env.example .env
+uv run uvicorn app.main:app --reload
+```
+
+- API 문서: http://localhost:8000/docs
+- 헬스체크: http://localhost:8000/api/v1/health
+
+동작 확인:
+
+```bash
+curl localhost:8000/api/v1/health
+# {"status":"ok"}
+
+curl -X POST localhost:8000/api/v1/chat \
+  -H 'content-type: application/json' \
+  -d '{"question":"강아지가 초인종 소리에 계속 짖어요"}'
+# {"answer":"[stub] ...","sources":[],"latency_ms":0,"provider":"huggingface:(미설정)"}
+```
+
+## DB (pgvector)
+
+```bash
+docker compose up -d db
+curl localhost:8000/api/v1/health/ready   # {"status":"ready"}
+```
+
+`/health`(liveness)는 DB와 무관하게 200이고, `/health/ready`만 DB를 확인해
+연결이 안 되면 503을 준다. 그래서 Postgres 없이도 개발이 막히지 않는다.
+
+## 의존성 그룹
+
+무거운 ML 패키지는 기본 설치에서 빼뒀다. 필요할 때만 붙인다.
+
+| 명령 | 용도 |
+|---|---|
+| `uv sync` | API 서버만 (수 초) |
+| `uv sync --extra hf` | 실제 임베딩/추론 (sentence-transformers, torch — 수 GB) |
+| `uv sync --extra demo` | Streamlit 데모 |
+
+## Streamlit 데모 (선택)
+
+API를 HTTP로 호출하는 얇은 클라이언트다. 나중에 안드로이드 앱을 붙일 때도
+같은 API를 그대로 쓰면 된다.
+
+```bash
+uv sync --extra demo
+uv run uvicorn app.main:app --reload         # 터미널 1
+uv run streamlit run demo/streamlit_app.py   # 터미널 2
+```
+
+## 개발
+
+```bash
+uv run pytest          # 테스트 (DB 없이 동작)
+uv run ruff check .    # 린트
+uv run ruff format .   # 포맷
+uv run mypy app        # 타입 체크
+```
+
+## 구조
+
+```
+app/
+├── main.py                 앱 팩토리 + lifespan
+├── core/config.py          모든 환경변수는 여기서만 읽는다
+├── api/v1/                 health / chat / documents 엔드포인트
+├── schemas/                요청·응답 스키마 (= 안드로이드 앱과의 API 계약)
+├── services/
+│   ├── rag_service.py      임베딩 → 검색 → 프롬프트 → 생성 오케스트레이션
+│   ├── embeddings/         Embedder Protocol + HuggingFace 구현
+│   ├── llm/                LLMClient Protocol + HuggingFace 구현
+│   └── vectorstore/        VectorStore Protocol + pgvector 구현
+└── db/                     엔진/세션, ORM 모델
+demo/streamlit_app.py       테스트용 UI
+```
+
+### Provider 교체
+
+LLM/임베딩 구현체는 Protocol 뒤에 숨어 있고, 선택 지점은 각 `registry.py`
+한 곳뿐이다. Claude 등으로 바꾸려면:
+
+1. `app/services/llm/anthropic.py`에 `LLMClient` Protocol을 만족하는 클래스 추가
+2. `app/services/llm/registry.py`에 분기 한 줄 추가
+3. `app/core/config.py`의 `Provider` Literal에 이름 추가
+4. `.env`의 `LLM_PROVIDER` 변경
+
+호출부(`rag_service.py`, 엔드포인트)는 건드릴 필요 없다.
+
+## 다음 작업 (TODO)
+
+코드에 `TODO(내일)` 주석으로 표시돼 있다.
+
+- [ ] 임베딩 모델 확정 → 차원 확정 → `chunks.embedding Vector(N)` 컬럼 정의
+- [ ] `db/models.py` 실제 테이블 (`documents`, `chunks`) + HNSW 인덱스
+- [ ] Alembic 마이그레이션 도입
+- [ ] 문서 청킹 전략 + 적재 파이프라인 (`POST /documents`)
+- [ ] pgvector 코사인 유사도 검색 구현
+- [ ] LLM 연결 (로컬 추론 vs Inference API) + 프롬프트 튜닝
+- [ ] 임베딩 모델을 lifespan에서 1회 로딩하도록 변경 (요청마다 로딩 금지)

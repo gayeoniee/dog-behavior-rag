@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# uv
+.uv/
+
+# 환경 변수 (.env.example만 커밋)
+.env
+.env.*
+!.env.example
+
+# 테스트/린트 캐시
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# 데이터/모델 캐시 (내일 사용)
+data/
+models/
+.cache/
+
+# 에디터
+.vscode/
+.idea/
+.DS_Store
