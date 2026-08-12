@@ -262,6 +262,81 @@ details p {
   font-weight: 600;
 }
 
+/* ── 채팅 스레드 ── */
+.nav-reset {
+  margin-left: auto;
+}
+
+.thread {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+  margin: 1.5rem 0;
+}
+
+.msg-user {
+  align-self: flex-end;
+  max-width: 85%;
+  background: var(--accent);
+  color: #fff;
+  border-radius: 14px 14px 3px 14px;
+  padding: 0.6rem 0.9rem;
+  font-size: 0.94rem;
+  white-space: pre-wrap;
+}
+
+.msg-bot {
+  align-self: flex-start;
+  max-width: 92%;
+}
+
+.msg-body {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 14px 14px 14px 3px;
+  padding: 0.9rem 1.05rem;
+  /* 답변은 평문이다 (서버가 마크다운을 제거한다). 줄바꿈을 그대로 살린다. */
+  white-space: pre-wrap;
+  font-size: 0.94rem;
+}
+
+.msg-typing {
+  align-self: flex-start;
+  color: var(--muted);
+  font-size: 0.88rem;
+  padding: 0.4rem 0.2rem;
+}
+
+.msg-sources {
+  margin-top: 0.4rem;
+}
+
+.msg-sources summary {
+  margin-top: 0;
+}
+
+/* 입력창을 화면 아래에 붙여 스레드가 길어져도 항상 손에 닿게 한다. */
+.composer {
+  position: sticky;
+  bottom: 0;
+  flex-direction: row;
+  align-items: flex-end;
+  gap: 0.5rem;
+  background: var(--bg);
+  padding: 0.75rem 0 1rem;
+  border-top: 1px solid var(--border);
+}
+
+.composer textarea {
+  flex: 1;
+  min-height: 44px;
+}
+
+.composer button {
+  white-space: nowrap;
+  padding: 0.65rem 1.1rem;
+}
+
 /* ── 팩트체크 판정 ── */
 .verdict {
   border: 1px solid var(--border);
