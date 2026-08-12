@@ -2,7 +2,12 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { askQuestion, isStubAnswer, type ChatResponse } from "@/lib/api";
+import {
+  askQuestion,
+  isStubAnswer,
+  type ChatResponse,
+  type Turn,
+} from "@/lib/api";
 
 // data/coverage_questions.yaml의 질문들. 검색 회귀 테스트 입력과 같은 것을 쓴다 —
 // 화면에서 눌러본 결과와 통합 테스트 결과가 어긋나면 바로 눈에 띈다.
@@ -18,21 +23,38 @@ export default function Home() {
   const [result, setResult] = useState<ChatResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  // 되묻기("1. 혼자 있을 때만 긁나요?")에 "1번이요"로 답하려면 서버가 직전
+  // 대화를 알아야 한다. /chat은 무상태라 클라이언트가 들고 보낸다.
+  const [history, setHistory] = useState<Turn[]>([]);
 
-  async function submit(text: string) {
+  async function submit(text: string, keepContext = true) {
     const trimmed = text.trim();
     if (!trimmed || loading) return;
 
+    const sent = keepContext ? history : [];
     setLoading(true);
     setError(null);
     try {
-      setResult(await askQuestion(trimmed));
+      const response = await askQuestion(trimmed, sent);
+      setResult(response);
+      setHistory([
+        ...sent,
+        { role: "user", content: trimmed },
+        { role: "assistant", content: response.answer },
+      ]);
+      setQuestion("");
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
       setResult(null);
     } finally {
       setLoading(false);
     }
+  }
+
+  function startOver(text: string) {
+    setHistory([]);
+    setQuestion(text);
+    void submit(text, false);
   }
 
   return (
@@ -56,7 +78,11 @@ export default function Home() {
         <textarea
           value={question}
           onChange={(e) => setQuestion(e.target.value)}
-          placeholder="예: 강아지가 초인종 소리에 계속 짖어요"
+          placeholder={
+            history.length
+              ? "이어서 답해보세요 — 예: 1번이요"
+              : "예: 강아지가 초인종 소리에 계속 짖어요"
+          }
           onKeyDown={(e) => {
             if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
               e.preventDefault();
@@ -66,9 +92,23 @@ export default function Home() {
         />
         <div className="row">
           <button type="submit" disabled={loading || !question.trim()}>
-            {loading ? "검색 중…" : "물어보기"}
+            {loading ? "검색 중…" : history.length ? "이어서 묻기" : "물어보기"}
           </button>
           <span className="score">Ctrl/⌘ + Enter</span>
+          {history.length > 0 && (
+            <button
+              type="button"
+              className="chip"
+              disabled={loading}
+              onClick={() => {
+                setHistory([]);
+                setResult(null);
+                setQuestion("");
+              }}
+            >
+              새 상담 시작 (대화 {history.length / 2}회)
+            </button>
+          )}
         </div>
       </form>
 
@@ -79,10 +119,8 @@ export default function Home() {
             type="button"
             className="chip"
             disabled={loading}
-            onClick={() => {
-              setQuestion(example);
-              void submit(example);
-            }}
+            // 예시는 새 상담으로 시작한다 — 이전 맥락이 붙으면 엉뚱해진다.
+            onClick={() => startOver(example)}
           >
             {example}
           </button>
@@ -102,7 +140,15 @@ export default function Home() {
           )}
 
           {/* 근거가 없을 때 조용히 답만 보여주면 "근거 있는 답"으로 오해한다.
-              지금 이 배너가 이 시스템이 RAG답게 동작한다는 유일한 표시다. */}
+              다만 "범위 밖"과 "정보가 부족해 되묻는 중"은 사용자에게 전혀 다른
+              상황이라 배너를 갈라 놓는다. */}
+          {result.coverage === "needs_detail" && (
+            <div className="banner" style={{ marginTop: "1.75rem" }}>
+              <strong>조금 더 알려주세요</strong> — 증상만으로는 원인이 여러
+              가지라, 아래 질문에 답해 주시면 해당 자료를 찾아 답변드릴 수 있어요.
+            </div>
+          )}
+
           {result.coverage === "none" && (
             <div className="banner" style={{ marginTop: "1.75rem" }}>
               <strong>참고 자료 없음</strong> —{" "}

@@ -14,8 +14,12 @@ export type SourceChunk = {
   source: string | null;
 };
 
-/** 근거 충분도. none이면 코퍼스에 관련 자료가 없고 sources는 비어 있다. */
-export type Coverage = "full" | "partial" | "none";
+/**
+ * 근거 충분도. none / needs_detail 둘 다 sources가 비어 있지만 의미가 다르다.
+ *   none          질문이 서비스 범위 밖 (고양이, 가격, 장소)
+ *   needs_detail  개 행동 질문은 맞는데 정보가 부족해 되묻는 중
+ */
+export type Coverage = "full" | "partial" | "none" | "needs_detail";
 
 export type ChatResponse = {
   answer: string;
@@ -28,14 +32,19 @@ export type ChatResponse = {
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? "http://localhost:8000";
 
+/** 서버로 보내는 직전 대화. 되묻기에 "1번이요"로 답할 수 있게 한다. */
+export type Turn = { role: "user" | "assistant"; content: string };
+
 export async function askQuestion(
   question: string,
+  history: Turn[] = [],
   signal?: AbortSignal,
 ): Promise<ChatResponse> {
   const response = await fetch(`${API_BASE}/api/v1/chat`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ question }),
+    // 서버도 최근 6개만 쓰지만 보내는 쪽에서도 잘라 페이로드를 줄인다.
+    body: JSON.stringify({ question, history: history.slice(-6) }),
     signal,
   });
 

@@ -21,7 +21,9 @@
 
 import logging
 import re
+from collections.abc import Sequence
 
+from app.schemas.chat import Turn
 from app.services.llm.base import LLMClient, LLMUnavailableError
 
 logger = logging.getLogger(__name__)
@@ -32,6 +34,10 @@ for a veterinary-literature database.
 Rules:
 - Output ONLY the rewritten query. No explanation, no quotes, no preamble.
 - Translate Korean to English.
+- **If earlier conversation is given, resolve the question against it first.** The user \
+may be answering a question you asked. "1번이요" or "네 맞아요" means nothing on its own — \
+work out what they are confirming and search for THAT. Example: if you asked "혼자 있을 \
+때만 긁나요?" and the user says "1번이요", search for separation-related wall scratching.
 - Replace colloquial descriptions with the technical terms used in veterinary \
 behaviour literature. Examples:
     "복종 자세를 강제로 유지" -> alpha roll, dominance down, pinning the dog
@@ -82,6 +88,14 @@ def looks_like_english(text: str) -> bool:
     return ascii_ratio > 0.9
 
 
+def format_history(history: Sequence[Turn]) -> str:
+    """대화를 프롬프트에 넣을 형태로. 비어 있으면 빈 문자열."""
+    if not history:
+        return ""
+    lines = [f"{'보호자' if t.role == 'user' else '훈련사'}: {t.content}" for t in history]
+    return "이전 대화:\n" + "\n".join(lines) + "\n\n"
+
+
 class QueryRewriter:
     """검색용 질의 재작성기. LLM이 없거나 실패하면 원문을 그대로 돌려준다."""
 
@@ -89,13 +103,19 @@ class QueryRewriter:
         self._llm = llm
         self._enabled = enabled
 
-    async def rewrite(self, query: str) -> str:
-        if not self._enabled or self._llm is None or looks_like_english(query):
+    async def rewrite(self, query: str, history: Sequence[Turn] = ()) -> str:
+        # 대화 중이면 영어 질문이라도 재작성해야 한다 — "yes"나 "1" 같은 답은
+        # 그 자체로는 검색이 안 되고 맥락에서 풀어야 한다.
+        if not self._enabled or self._llm is None:
+            return query
+        if not history and looks_like_english(query):
             return query
 
         try:
             raw = await self._llm.generate(
-                query, system=REWRITE_SYSTEM, max_tokens=_MAX_REWRITE_TOKENS
+                f"{format_history(history)}보호자: {query}",
+                system=REWRITE_SYSTEM,
+                max_tokens=_MAX_REWRITE_TOKENS,
             )
         except LLMUnavailableError as exc:
             # 재작성은 품질 향상이지 필수 경로가 아니다. 검색까지 막지 않는다.
@@ -112,4 +132,5 @@ class QueryRewriter:
 
         logger.info("질의 재작성: %r → %r", query, rewritten)
         # 원문을 함께 남긴다. 재작성이 핵심어를 빠뜨려도 원문 신호가 살아 있게.
-        return f"{rewritten}\n{query}"
+        # 단 "1번이요" 같은 답변은 원문에 신호가 없으므로 재작성만 쓴다.
+        return rewritten if len(query.strip()) < 8 else f"{rewritten}\n{query}"

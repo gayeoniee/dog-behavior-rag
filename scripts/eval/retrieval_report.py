@@ -59,13 +59,20 @@ def is_practical(title: str) -> bool:
 
 
 def judge(entry: dict, hits: list[SearchHit], kept: list[SearchHit], coverage: str) -> bool:
-    """그룹별 합격 판정."""
-    if entry["expect"] in ("uncovered", "out-of-scope"):
-        # 거절해야 통과. 근거를 붙여 답하면 실패다.
+    """그룹별 합격 판정.
+
+    `uncovered`와 `out-of-scope`의 정답이 다르다. 둘 다 근거를 붙여 답하면 실패지만:
+      out-of-scope → `none` (답하지 않아야 한다)
+      uncovered    → `none` 또는 `needs_detail`. 개 행동 질문이므로 **되묻는 쪽이
+                     오히려 맞다** — 정보를 받으면 답할 수 있는 경우가 많다.
+    """
+    if entry["expect"] == "out-of-scope":
         return coverage == "none"
+    if entry["expect"] == "uncovered":
+        return coverage in ("none", "needs_detail")
     blob = " ".join(h.content.lower() for h in kept)
     keywords = [k.lower() for k in entry.get("keywords", [])]
-    return coverage != "none" and any(k in blob for k in keywords)
+    return coverage not in ("none", "needs_detail") and any(k in blob for k in keywords)
 
 
 async def run(save: str | None, compare: str | None) -> int:

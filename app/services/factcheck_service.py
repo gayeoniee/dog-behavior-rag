@@ -21,6 +21,7 @@ from app.schemas.chat import SourceChunk
 from app.schemas.factcheck import ClaimVerdict, FactCheckResponse, Verdict
 from app.services.embeddings.base import Embedder
 from app.services.llm.base import LLMClient
+from app.services.plain_text import strip_markdown
 from app.services.query_rewrite import QueryRewriter
 from app.services.vectorstore.base import SearchHit, VectorStore
 
@@ -175,6 +176,8 @@ class FactCheckService:
             self._build_prompt(claim, hits), system=JUDGE_SYSTEM, max_tokens=500
         )
         verdict, explanation = parse_verdict(raw)
+        # 화면이 평문으로 렌더링한다 (plain_text.py 참조).
+        explanation = strip_markdown(explanation)
 
         # 인용 없는 단정을 코드에서 막는다. 프롬프트로 부탁하지 않는 이유는
         # 모델이 지킬 거라고 믿을 수 없기 때문이다.

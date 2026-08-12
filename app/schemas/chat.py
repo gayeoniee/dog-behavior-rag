@@ -18,8 +18,27 @@ class SourceChunk(BaseModel):
     source: str | None = Field(default=None, description="출처 URL 또는 파일명")
 
 
+class Turn(BaseModel):
+    """직전 대화 한 마디."""
+
+    role: Literal["user", "assistant"]
+    content: str = Field(max_length=4000)
+
+
+MAX_HISTORY_TURNS = 6
+"""서버가 실제로 참고하는 최근 대화 수 (3번의 주고받기).
+
+되묻기에 답할 수 있으면 충분하고, 그 이상은 프롬프트만 키운다.
+"""
+
+
 class ChatRequest(BaseModel):
     question: str = Field(min_length=1, max_length=2000, description="사용자 질문")
+    history: list[Turn] = Field(
+        default_factory=list,
+        description="직전 대화 (오래된 것부터). 되묻기에 '1번이요'처럼 답할 수 있게 한다. "
+        f"서버는 최근 {MAX_HISTORY_TURNS}개만 사용한다",
+    )
     top_k: int | None = Field(
         default=None,
         ge=1,
@@ -29,16 +48,35 @@ class ChatRequest(BaseModel):
 
     model_config = {
         "json_schema_extra": {
-            "examples": [{"question": "강아지가 초인종 소리에 계속 짖어요", "top_k": 5}]
+            "examples": [
+                {"question": "강아지가 초인종 소리에 계속 짖어요", "top_k": 5},
+                {
+                    "question": "1번이요",
+                    "history": [
+                        {"role": "user", "content": "강아지가 벽을 자꾸 긁어"},
+                        {
+                            "role": "assistant",
+                            "content": "알려주시면 좋아요\n1. 혼자 있을 때만 긁나요?\n"
+                            "2. 짖거나 안절부절못하나요?",
+                        },
+                    ],
+                },
+            ]
         }
     }
 
 
-Coverage = Literal["full", "partial", "none"]
+Coverage = Literal["full", "partial", "none", "needs_detail"]
 """검색된 근거가 질문을 얼마나 덮는지.
 
-`none`이면 코퍼스에 관련 자료가 없다는 뜻이고, 이때 `sources`는 비어 있다 —
-관련 없는 근거를 인용처럼 보여주는 것이 신뢰를 깎기 때문이다.
+`none`과 `needs_detail`은 둘 다 `sources`가 비어 있지만 의미가 다르다:
+
+  none          질문이 이 서비스 범위 밖 (고양이, 가격, 장소) — 답하지 않는다
+  needs_detail  개 행동 질문은 맞는데 정보가 부족해 원인을 좁힐 수 없다 —
+                답변이 **되묻는 질문**으로 온다
+
+관련 없는 근거를 인용처럼 보여주는 것이 신뢰를 깎기 때문에 두 경우 모두
+`sources`를 비운다.
 """
 
 
