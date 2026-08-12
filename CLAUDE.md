@@ -14,11 +14,11 @@
   `/chat`이 실제 근거 문서를 반환하고, 커버리지 질문 8개가 상위 5청크에서 근거를 찾는다
   (한국어 질문 → 영어 문서 교차언어 검색)
 - ✅ Next.js 화면(`web/`), ERD(`docs/erd.md`)
-- ✅ `openai-compatible` LLM provider + 질의 재작성 (LM Studio 등 로컬 서버용)
-- ❌ **LLM 서버를 아직 실제로 붙여보지 않았다.** `LLM_PROVIDER=huggingface`로 두면
-  `answer`가 `"[stub] ..."`. LM Studio를 켜고 `openai-compatible`로 바꾸면 동작해야 하나
-  미검증 상태
-- 다음 작업: LM Studio 연결 검증 → 프롬프트 튜닝 → 팩트체크 기능
+- ✅ **LLM 연결 완료.** `openai-compatible` provider + Gemini 무료 티어
+  (`gemini-3.1-flash-lite`). `/chat`이 근거 기반 한국어 답변을 낸다 (약 17초 —
+  LLM 왕복 2회: 질의 재작성 + 답변 생성)
+- ✅ **질의 재작성으로 커버리지 8/8.** 재작성 없으면 7/8 (기법 질문 1건 실패)
+- 다음 작업: 프롬프트 튜닝 → 팩트체크 기능 → Alembic → 안드로이드 앱
 
 ## 이 PC의 함정 (2026-08-12 확인)
 
@@ -32,7 +32,12 @@
 - **uv도 Docker도 없었고 관리자 권한이 없다.** uv는 공식 스크립트로 설치했고,
   Docker 대신 `--extra pgdev`(pgserver 내장 Postgres)를 쓴다
 - **HF Inference API는 무료로 못 쓴다** — 월 $0.10, `hf-inference`는 CPU 소형 모델만.
-  로컬 GGUF(LM Studio)가 무료이면서 빠르다
+  Gemini 무료 티어(OpenAI 호환 엔드포인트)를 쓴다. 로컬이 필요하면 LM Studio로
+  `LLM_BASE_URL`만 바꾸면 되고 코드 변경은 없다
+- **PowerShell 5.1의 `Invoke-RestMethod`로 API를 확인하지 말 것.** charset 없는
+  `application/json`을 ISO-8859-1로 디코딩해서 한글이 깨진 것처럼 보인다.
+  서버는 정상 UTF-8이다. `curl`이나 python httpx로 확인할 것
+- **API 키는 `.env`에만.** `.env.example`은 `.gitignore` 예외라 **커밋된다**
 
 ## 새 머신에서 시작할 때
 

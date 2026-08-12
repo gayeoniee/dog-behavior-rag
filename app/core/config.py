@@ -49,7 +49,13 @@ class Settings(BaseSettings):
     로컬로 돌리려면 LM Studio `http://localhost:1234/v1`,
     Ollama `http://localhost:11434/v1`. 전부 같은 프로토콜이라 URL만 바꾸면 된다.
     """
-    llm_model: str = "gemini-3.6-flash"
+    llm_model: str = "gemini-3.1-flash-lite"
+    """Lite로 충분한 이유: 이 프로젝트가 LLM에 시키는 일이 작다.
+
+    질의 재작성은 입출력 30토큰씩이고, 답변 생성도 검색된 근거를 정리하는
+    일이라 추론 부담이 크지 않다. 나중에 팩트체크의 판정(judge) 단계처럼
+    분별이 필요한 작업에서 부족하면 gemini-3.6-flash로 올리면 된다.
+    """
     llm_api_key: str = ""
     """로컬 서버는 키를 검사하지 않지만 OpenAI 규격상 헤더가 필요한 구현이 있다.
     로컬이면 아무 값이나 넣으면 되고, Gemini면 AI Studio 키를 넣는다."""

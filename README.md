@@ -2,9 +2,11 @@
 
 반려동물 훈련 / 문제행동 상담 RAG 시스템.
 
-현재 상태: **검색까지 동작한다.** 청킹 → 임베딩(bge-m3) → pgvector 코사인 검색이
-실제로 돌고, `/chat`이 근거 문서(`sources[]`)를 반환한다.
-**답변 생성(LLM)은 아직 스텁이라 `answer`는 `"[stub] ..."`이다.**
+현재 상태: **끝에서 끝까지 동작한다.** 질의 재작성 → 임베딩(bge-m3) →
+pgvector 코사인 검색 → LLM 답변 생성. `/chat`이 근거 문서(`sources[]`)와 함께
+그 자료에 기반한 한국어 답변을 반환한다.
+
+코퍼스 282건 / 청크 11,281개, 커버리지 질문 8/8 통과.
 
 ## 요구사항
 
@@ -57,8 +59,17 @@ uv run uvicorn app.main:app --reload
 curl -X POST localhost:8000/api/v1/chat \
   -H 'content-type: application/json' \
   -d '{"question":"강아지가 초인종 소리에 계속 짖어요"}'
-# answer는 "[stub] ...", sources는 실제 근거 5건
+# 근거 5건 + 자료에 기반한 한국어 답변
 ```
+
+> ⚠️ **PowerShell 5.1에서 `Invoke-RestMethod`로 확인하지 말 것.** 응답
+> `Content-Type: application/json`에 charset이 없으면 PS 5.1이 ISO-8859-1로
+> 디코딩해서 한글이 깨진 것처럼 보인다. **서버는 정상 UTF-8이고 브라우저는
+> 제대로 나온다.** 터미널에서 확인하려면 `curl` 또는:
+>
+> ```powershell
+> uv run python -c "import httpx;print(httpx.post('http://localhost:8000/api/v1/chat',json={'question':'강아지가 짖어요'},timeout=120).json()['answer'])"
+> ```
 
 ## DB (pgvector) — 각자 로컬
 
@@ -267,12 +278,13 @@ Gemini · LM Studio · Ollama · llama.cpp · vLLM · Groq · OpenRouter가 전�
 ```bash
 # https://aistudio.google.com/apikey 에서 무료 발급 (카드 등록 불필요)
 LLM_BASE_URL=https://generativelanguage.googleapis.com/v1beta/openai
-LLM_MODEL=gemini-3.6-flash
+LLM_MODEL=gemini-3.1-flash-lite
 LLM_API_KEY=<발급받은 키>
 ```
 
-`gemini-3.1-flash`는 없는 id다 — 3.1은 `gemini-3.1-flash-lite`만 있고,
-현재 stable Flash는 `gemini-3.6-flash`다.
+`gemini-3.1-flash`는 없는 id다 — 3.1은 `gemini-3.1-flash-lite`만 있다.
+이 프로젝트가 LLM에 시키는 일이 작아서(질의 재작성은 입출력 30토큰) Lite로
+충분하다. 분별이 필요한 작업에서 부족하면 `gemini-3.6-flash`로 올린다.
 
 **이 PC에서는 이쪽이 유리하다.** VRAM이 6GB뿐이라 로컬 LLM(7B Q4 = 4.7GB)과
 임베딩(bge-m3 = 2.3GB)이 동시에 안 올라가는데, LLM을 밖으로 빼면 GPU를 임베딩이
@@ -294,11 +306,12 @@ Q4_K_M(약 2GB). **적재를 같이 돌리면 OOM이므로** `EMBEDDING_DEVICE=c
 
 ### 현재 검색 품질 (2026-08-12, 문서 282건 / 청크 11,281개)
 
-`uv run pytest -m integration` 기준:
+`uv run pytest -m integration` 기준 — **22 passed, 1 xfailed**:
 
 | 항목 | 결과 |
 |---|---|
-| 커버리지 질문 8개 | **7 PASS / 1 xfail** |
+| 커버리지 질문 8개 (**재작성 경로 = 실제 운영 경로**) | **8 / 8 PASS** |
+| 커버리지 질문 8개 (재작성 없는 원문 검색) | 7 PASS / 1 xfail |
 | 문서당 청크 상한 | PASS (한 문서가 top_k 독점 안 함) |
 | aversive 문서 제외 | PASS (합성 문서로 검증) |
 | observation 구획 제외 | PASS |
@@ -306,13 +319,12 @@ Q4_K_M(약 2GB). **적재를 같이 돌리면 OOM이므로** `EMBEDDING_DEVICE=c
 
 xfail 1건은 **"벌을 주면 안 되나요? 혼내면 그때만 멈춰요"** — 기법 질문이라
 재작성 없이는 못 찾는다. 코퍼스가 11건일 땐 통과했는데 282건이 되자 실패했다.
-후보가 적을 땐 우연히 맞았던 것이다.
+후보가 적을 땐 우연히 맞았던 것이다. **재작성을 태우면 통과한다** (키워드 4개
+전부, 점수 0.53 → 0.75). 이 xfail은 "재작성이 없으면 이렇게 된다"는 기록으로
+남겨둔다 — strict라서 원문만으로 통과하기 시작하면 테스트가 알려준다.
 
-**코퍼스 공백이 아니다.** 같은 질문을 영어 기술표현으로 바꾸면 키워드 4개를
-전부 찾고 점수도 0.53 → 0.75로 오른다 (`test_rewritten_query_finds_evidence`가
-이걸 못박아 둔다). LLM 서버를 붙여 질의 재작성이 동작하면 8/8이 되어야 하고,
-그러면 `KNOWN_NEEDS_REWRITE`에서 지우면 된다 (xfail이 strict라 통과하는 순간
-테스트가 알려준다).
+재작성은 다른 7개 질문의 키워드 적중도 늘렸다 (예: 초인종 질문이
+`bark, territorial` → `bark, alarm, territorial`).
 
 ### 질의 재작성
 

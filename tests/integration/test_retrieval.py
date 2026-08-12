@@ -195,6 +195,51 @@ async def test_rewritten_query_finds_evidence(
     )
 
 
+@pytest_asyncio.fixture(scope="module", loop_scope="module")
+async def rewriter(app_settings):
+    """실제 LLM에 붙는 재작성기. 서버가 없거나 키가 없으면 skip."""
+    from app.services.llm.base import LLMUnavailableError
+    from app.services.llm.registry import get_llm
+    from app.services.query_rewrite import QueryRewriter
+
+    llm = get_llm(app_settings)
+    try:
+        await llm.generate("ping", max_tokens=5)
+    except LLMUnavailableError as exc:
+        pytest.skip(f"LLM 서버 없음 — .env의 LLM_* 설정 확인 ({exc})")
+    return QueryRewriter(llm, enabled=True)
+
+
+@pytest.mark.parametrize(
+    "question_entry",
+    yaml.safe_load(COVERAGE_PATH.read_text(encoding="utf-8")) if COVERAGE_PATH.is_file() else [],
+    ids=lambda q: f"{q['axis']}:{q['question'][:20]}",
+)
+async def test_coverage_question_with_rewriting(
+    question_entry, session_factory, loaded, embedder, rewriter
+):
+    """**실제 운영 경로**(재작성 → 검색)로 커버리지 질문을 검증한다.
+
+    위 test_coverage_question_retrieves_relevant_chunk는 재작성 없는 원문 검색이라
+    기법 질문 1건이 xfail이다. 이 테스트는 재작성을 태워서 8/8이 나와야 한다.
+    2026-08-12 gemini-3.1-flash-lite 기준 8/8 확인.
+
+    LLM이 필요하므로 서버가 없으면 skip된다 — 맨몸 환경의 green을 깨지 않는다.
+    """
+    rewritten = await rewriter.rewrite(question_entry["question"])
+    async with session_factory() as session:
+        hits = await PgVectorStore(session).search(await embedder.embed_query(rewritten), TOP_K)
+
+    blob = " ".join(h.content.lower() for h in hits)
+    found = [k for k in question_entry["keywords"] if k.lower() in blob]
+    assert found, (
+        f"[{question_entry['axis']}] {question_entry['question']}\n"
+        f"  재작성: {rewritten.splitlines()[0]}\n"
+        f"  키워드 {question_entry['keywords']} 중 상위 {TOP_K}청크에서 하나도 못 찾음\n"
+        f"  상위 문서: {[h.document_title[:40] for h in hits]}"
+    )
+
+
 async def test_no_single_document_dominates(session_factory, loaded, embedder):
     """AAHA 가이드라인이 코퍼스 청크의 43%라 상한이 없으면 top_k를 독점한다."""
     settings = get_settings()
