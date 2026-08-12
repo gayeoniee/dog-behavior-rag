@@ -155,6 +155,16 @@
     - https://www.rspca.org.uk/adviceandwelfare/pets/dogs/training/toilettraining
     - https://www.rspca.org.uk/adviceandwelfare/pets/dogs/training/come
     - https://www.rspca.org.uk/adviceandwelfare/pets/dogs/training
+    # 기본 복종 동작 — 각각 "six easy steps" 단계별 문서다.
+    # 재주 훈련(빵·돌아·손)은 여기에도 없다. 아래 AKC 주석 참조.
+    - https://www.rspca.org.uk/adviceandwelfare/pets/dogs/training/sit
+    - https://www.rspca.org.uk/adviceandwelfare/pets/dogs/training/liedown
+    - https://www.rspca.org.uk/adviceandwelfare/pets/dogs/training/stay
+    - https://www.rspca.org.uk/adviceandwelfare/pets/dogs/training/trainer
+    # walknicely / leave는 훈련 인덱스 페이지에 링크가 없어서 처음에 놓쳤다.
+    # 평가셋의 남은 공백(줄 당김, 자원 보호)을 직접 겨냥한다.
+    - https://www.rspca.org.uk/adviceandwelfare/pets/dogs/training/walknicely
+    - https://www.rspca.org.uk/adviceandwelfare/pets/dogs/training/leave
     - https://www.rspca.org.uk/adviceandwelfare/pets/dogs/walking
     - https://www.rspca.org.uk/adviceandwelfare/pets/dogs/behaviour/aggression
     - https://www.rspca.org.uk/adviceandwelfare/pets/dogs/company/goodrelationship
@@ -431,3 +441,38 @@
 # 알파독·서열잡기를 상위로 올리는데, 이는 avsab-dominance가 정면으로 반박하는
 # 내용이라 같은 풀에 있으면 답변이 자기모순에 빠진다. 관찰용으로 쓰려면
 # corpus: observation 으로 선언해 답변 근거에서 격리할 것.
+
+# ── 검토 후 제외한 소스 (재조사 방지 기록) ─────────────────
+#
+# AKC (American Kennel Club) — 2026-08-12 검토, **수집하지 않는다**.
+#   후보였던 이유: expert-advice/training 아래에 기본 훈련·문제행동·재주 훈련
+#   콘텐츠가 이 분야에서 가장 풍부하다.
+#
+#   robots.txt는 관대하다 — /wp-admin/, /hidden_tag/, /tag/ 정도만 막고
+#   /expert-advice/ 는 전부 허용이며 AI 봇 지정도 없다.
+#   **하지만 ToS(akc.org/terms-of-use)가 두 군데서 막는다:**
+#     "use any robot, spider, scraper, data mining tool, data gathering or
+#      extraction tool, or any other automated means, to access, collect, copy
+#      or record our Service or AKC Content"
+#     "you may not either directly or indirectly or through the use of any
+#      software, device, internet site, web-based service or any other means
+#      download, stream capture, store in a database, archive or otherwise copy
+#      any part of the AKC Content"
+#   두 번째가 결정적이다 — 이 프로젝트 전체가 콘텐츠를 DB에 저장하는 것이라
+#   ASPCA처럼 "수동 복사 1부"로 우회되지 않는다. MSD와 같은 급이다.
+#   → robots.txt 허용이 ToS 허용이 아니라는 세 번째 사례 (ASPCA·MSD에 이어).
+#
+# Battersea — 2026-08-12 검토, 보류.
+#   "You may view the site and print one copy of any leaflet or factsheet for
+#    personal use" / "No other content may be copied, reproduced, modified or
+#    shared without permission"
+#   자동 수집 금지 조항은 없지만 복제 범위가 "인쇄 1부"로 좁아 DB 저장은
+#   허가가 필요해 보인다. RSPCA보다 빡빡하므로 필요해지면 그때 문의할 것.
+#
+# Blue Cross — WebFetch가 403. 봇 차단 신호라 접근하지 않았다.
+#
+# ※ 재주 훈련(빵·돌아·손 주기)은 라이선스가 깨끗한 기관 자료가 사실상 없다.
+#   구조적인 이유가 있다 — 자유롭게 배포하는 곳(동물복지단체, 수의사회)은
+#   복지와 문제행동을 다루지 재주는 다루지 않고, 재주 콘텐츠는 광고 수익을
+#   내는 상업 사이트에 있어서 ToS가 엄격하다.
+#   기본 복종(앉아·엎드려·기다려·이리와)은 RSPCA 훈련 페이지로 충족된다.

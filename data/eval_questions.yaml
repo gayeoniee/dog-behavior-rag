@@ -78,9 +78,10 @@
   expect: uncovered
   keywords: [jumping up, jump, four on the floor, greeting]
 
+# 2026-08-12 RSPCA walknicely 추가로 승격
 - question: "산책할 때 줄을 너무 당겨서 팔이 아파요"
   topic: leash-pulling
-  expect: uncovered
+  expect: covered
   keywords: [leash, lead, pulling, loose leash, harness]
 
 # RSPCA "Train Your Dog To Come When Called" 문서가 있는데도 논문에 밀려
@@ -91,10 +92,12 @@
   expect: covered
   keywords: [recall, come when called, cue, reward]
 
+# ASPCA 공격성 문서 + RSPCA leave 문서가 이 주제를 덮는지 평가셋이 판정하게 둔다.
+# 전용 문서는 여전히 없다 — 실패하면 그게 정직한 정보다.
 - question: "밥그릇 근처 가면 으르렁거려요 뺏길까봐 그러는 거죠?"
   topic: resource-guarding
-  expect: uncovered
-  keywords: [resource guarding, food guarding, possessive, trade]
+  expect: covered
+  keywords: [resource guarding, food guarding, possessive, trade, leave]
 
 - question: "켄넬에 들어가기 싫어하는데 크레이트 훈련 어떻게 시작해요"
   topic: crate-training
