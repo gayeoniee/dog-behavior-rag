@@ -13,6 +13,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from app.core.config import Settings, get_settings
 from app.services.chunking import ChunkConfig
 from app.services.embeddings.base import Embedder
+from app.services.factcheck_service import FactCheckService
 from app.services.ingest_service import IngestService
 from app.services.llm.registry import get_llm
 from app.services.query_rewrite import QueryRewriter
@@ -91,3 +92,20 @@ def ingest_service(
 
 
 IngestServiceDep = Annotated[IngestService, Depends(ingest_service)]
+
+
+def factcheck_service(
+    settings: SettingsDep, session: SessionDep, embedder: EmbedderDep
+) -> FactCheckService:
+    llm = get_llm(settings)
+    return FactCheckService(
+        embedder=embedder,
+        store=_store(settings, session),
+        llm=llm,
+        # 검증할 주장은 대개 기법에 대한 것이라 재작성이 chat보다 더 중요하다.
+        rewriter=QueryRewriter(llm, enabled=settings.query_rewrite_enabled),
+        default_top_k=settings.top_k,
+    )
+
+
+FactCheckServiceDep = Annotated[FactCheckService, Depends(factcheck_service)]

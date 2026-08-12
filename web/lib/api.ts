@@ -51,3 +51,44 @@ export async function askQuestion(
 export function isStubAnswer(answer: string): boolean {
   return answer.trimStart().startsWith("[stub]");
 }
+
+// ── 팩트체크 ─────────────────────────────────────────────────────────
+
+/** app/schemas/factcheck.py의 Verdict와 1:1. not_covered가 반드시 있어야 한다. */
+export type Verdict = "supported" | "contradicted" | "not_covered";
+
+export type ClaimVerdict = {
+  claim: string;
+  verdict: Verdict;
+  explanation: string;
+  sources: SourceChunk[];
+};
+
+export type FactCheckResponse = {
+  claims: ClaimVerdict[];
+  corpus_note: string;
+  latency_ms: number;
+  provider: string;
+};
+
+export async function factCheck(
+  text: string,
+  signal?: AbortSignal,
+): Promise<FactCheckResponse> {
+  const response = await fetch(`${API_BASE}/api/v1/factcheck`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ text }),
+    signal,
+  });
+
+  if (!response.ok) {
+    if (response.status === 503) {
+      throw new Error(
+        "검증 서비스가 준비되지 않았습니다. LLM과 DB가 떠 있는지 확인하세요.",
+      );
+    }
+    throw new Error(`API 오류 ${response.status}`);
+  }
+  return response.json();
+}

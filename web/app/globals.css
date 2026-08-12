@@ -191,6 +191,12 @@ h2 {
   font-size: 0.92rem;
 }
 
+/* 답변 본문의 "[자료 N]" 인용과 눈으로 이어지도록 색을 준다. */
+.source-num {
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+
 .score {
   color: var(--muted);
   font-size: 0.78rem;
@@ -232,4 +238,96 @@ details p {
   padding: 0.7rem 0.8rem;
   margin: 0.5rem 0 0;
   white-space: pre-wrap;
+}
+
+/* ── 네비게이션 ── */
+.nav {
+  display: flex;
+  gap: 1rem;
+  font-size: 0.85rem;
+  margin-bottom: 1.5rem;
+}
+
+.nav a {
+  color: var(--muted);
+  text-decoration: none;
+}
+
+.nav a:hover {
+  color: var(--accent);
+}
+
+.nav-current {
+  color: var(--text);
+  font-weight: 600;
+}
+
+/* ── 팩트체크 판정 ── */
+.verdict {
+  border: 1px solid var(--border);
+  border-left-width: 4px;
+  border-radius: 10px;
+  background: var(--panel);
+  padding: 0.9rem 1.1rem;
+  margin-bottom: 0.9rem;
+}
+
+/* 색으로만 구분하지 않는다 — 배지 텍스트가 항상 판정을 말해준다. */
+.v-bad {
+  border-left-color: #c0483f;
+}
+.v-good {
+  border-left-color: var(--accent);
+}
+.v-none {
+  border-left-color: var(--muted);
+}
+
+.verdict-head {
+  display: flex;
+  gap: 0.6rem;
+  align-items: baseline;
+  flex-wrap: wrap;
+}
+
+.verdict-badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  white-space: nowrap;
+  border: 1px solid currentColor;
+}
+
+.v-bad .verdict-badge {
+  color: #c0483f;
+}
+.v-good .verdict-badge {
+  color: var(--accent);
+}
+.v-none .verdict-badge {
+  color: var(--muted);
+}
+
+.verdict-claim {
+  font-weight: 600;
+  font-size: 0.95rem;
+  flex: 1;
+  min-width: 12rem;
+}
+
+.verdict-why {
+  font-size: 0.9rem;
+  margin: 0.6rem 0 0;
+  color: var(--text);
+}
+
+.corpus-note {
+  font-size: 0.8rem;
+  color: var(--muted);
+  border-top: 1px solid var(--border);
+  padding-top: 0.9rem;
+  margin-top: 1.5rem;
+  line-height: 1.6;
 }

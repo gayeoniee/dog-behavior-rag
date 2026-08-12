@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { askQuestion, isStubAnswer, type ChatResponse } from "@/lib/api";
 
@@ -36,6 +37,11 @@ export default function Home() {
 
   return (
     <main>
+      <nav className="nav">
+        <span className="nav-current">상담</span>
+        <Link href="/factcheck">조언 검증</Link>
+      </nav>
+
       <h1>반려동물 훈련·문제행동 상담</h1>
       <p className="subtitle">
         기관·학술 자료(AVSAB, AAHA, RSPCA, VCA, PMC 오픈액세스)만 근거로 씁니다.
@@ -109,10 +115,17 @@ export default function Home() {
               (<code>scripts.db.load_corpus</code>).
             </p>
           )}
-          {result.sources.map((source) => (
+          {result.sources.map((source, i) => (
             <article key={source.chunk_id} className="source">
               <div className="source-head">
-                <span className="source-title">{source.document_title}</span>
+                {/* 답변이 "[자료 1]에 따르면"처럼 번호로 인용한다. 그 번호는
+                    rag_service._build_prompt의 enumerate(hits, start=1)이고
+                    sources 배열 순서와 같다 — 번호를 안 보여주면 사용자가
+                    어느 근거인지 찾을 수 없다. */}
+                <span className="source-title">
+                  <span className="source-num">[자료 {i + 1}]</span>{" "}
+                  {source.document_title}
+                </span>
                 <span className="score">{source.score.toFixed(3)}</span>
               </div>
               <div className="bar">
