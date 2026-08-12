@@ -49,10 +49,20 @@ _STRIP_PREFIX = re.compile(
     r"^\s*(rewritten query|query|answer|output|재작성|검색어)\s*[:：]\s*", re.IGNORECASE
 )
 
+# 추론형 모델(Nemotron 3 Nano의 reasoning 모드, Qwen3, DeepSeek-R1 계열)은
+# 사고과정을 태그로 감싸 먼저 뱉는다. 안 걷어내면 "첫 줄"이 사고과정 첫 줄이 된다.
+_THINK_BLOCK = re.compile(r"<(think|thinking|reasoning)>.*?</\1>", re.DOTALL | re.IGNORECASE)
+_UNCLOSED_THINK = re.compile(r"^.*?</(think|thinking|reasoning)>", re.DOTALL | re.IGNORECASE)
+
 
 def clean_rewrite(raw: str) -> str:
     """모델 출력에서 실제 질의만 남긴다. 못 쓰겠으면 빈 문자열."""
     text = raw.strip()
+    text = _THINK_BLOCK.sub("", text)
+    # 여는 태그 없이 닫는 태그만 오는 구현도 있다 (여는 쪽을 프롬프트에 넣는 방식).
+    if "</think" in text.lower() or "</reasoning" in text.lower():
+        text = _UNCLOSED_THINK.sub("", text)
+    text = text.strip()
     if text.startswith("```"):
         parts = text.split("```")
         text = parts[1] if len(parts) > 1 else text.strip("`")

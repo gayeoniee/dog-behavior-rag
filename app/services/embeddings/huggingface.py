@@ -24,6 +24,7 @@ class HuggingFaceEmbedder:
         self._dimension = settings.embedding_dim
         self._batch_size = settings.embedding_batch_size
         self._max_seq_length = settings.embedding_max_seq_length
+        self._device = settings.embedding_device
         self._model: Any | None = None
 
     @property
@@ -50,8 +51,16 @@ class HuggingFaceEmbedder:
                 "sentence-transformers가 설치돼 있지 않습니다 — uv sync --extra hf"
             ) from exc
 
-        logger.info("임베딩 모델 로딩 시작: %s (최초 1회 수 GB 다운로드)", self._model_name)
-        model = SentenceTransformer(self._model_name)
+        # "auto"면 None을 넘겨 sentence-transformers가 알아서 고르게 한다
+        # (CUDA 있으면 GPU). VRAM을 LLM과 나눠 쓸 때 "cpu"로 강제할 수 있다 —
+        # config.py의 embedding_device 주석 참조.
+        device = None if self._device == "auto" else self._device
+        logger.info(
+            "임베딩 모델 로딩 시작: %s (device=%s, 최초 1회 수 GB 다운로드)",
+            self._model_name,
+            self._device,
+        )
+        model = SentenceTransformer(self._model_name, device=device)
 
         # sentence-transformers 5.x에서 get_sentence_embedding_dimension이
         # get_embedding_dimension으로 개명됐다. 둘 다 지원해 버전에 안 묶이게 한다.

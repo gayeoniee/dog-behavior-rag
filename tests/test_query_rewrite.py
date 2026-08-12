@@ -53,6 +53,21 @@ def test_trailing_explanation_is_dropped():
     assert clean_rewrite(raw) == "alpha roll, dominance down"
 
 
+def test_reasoning_block_is_stripped():
+    """추론형 모델(Nemotron reasoning 모드, Qwen3, R1 계열)이 사고과정을 먼저 뱉는다.
+
+    안 걷어내면 "첫 줄만 쓴다" 규칙이 사고과정 첫 줄을 집어간다.
+    """
+    raw = "<think>\n사용자가 알파 롤을 묻고 있다. 영어 용어는...\n</think>\nalpha roll, pinning"
+    assert clean_rewrite(raw) == "alpha roll, pinning"
+
+
+def test_unclosed_reasoning_block_is_stripped():
+    """여는 태그를 프롬프트에 넣어 닫는 태그만 오는 구현도 있다."""
+    raw = "사용자 의도를 파악하면...\n</think>\nleash correction, positive punishment"
+    assert clean_rewrite(raw) == "leash correction, positive punishment"
+
+
 def test_empty_or_overlong_output_is_rejected():
     assert clean_rewrite("") == ""
     assert clean_rewrite("   \n  ") == ""

@@ -76,6 +76,15 @@ class Settings(BaseSettings):
     테스트를 돌리는 게 전부 깨진다. 대신 warmup에서 실제 모델 차원과 대조한다.
     이 값을 바꾸면 chunks 테이블을 다시 만들어야 한다 (init --drop).
     """
+    embedding_device: Literal["auto", "cuda", "cpu"] = "auto"
+    """임베딩을 어디서 돌릴지.
+
+    `auto`면 sentence-transformers가 CUDA가 있을 때 GPU를 쓴다. **VRAM을 LLM과
+    나눠 쓴다면 주의할 것** — 이 PC는 VRAM 6GB인데 7B Q4 모델이 4.7GB를 쓰므로
+    bge-m3(약 2.3GB)까지 올리면 OOM이다. LM Studio를 같이 돌릴 거면 `cpu`로 두거나,
+    적재(load_corpus)를 돌릴 때만 LM Studio를 내리고 `cuda`를 쓴다.
+    적재는 오프라인 배치라 후자가 낫다.
+    """
     embedding_batch_size: int = 8
     embedding_max_seq_length: int = 1024
     """bge-m3의 기본값은 8192지만 그만큼 필요하지 않다. 1200자 청크가 ~300토큰,

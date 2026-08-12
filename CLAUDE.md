@@ -22,8 +22,13 @@
 
 ## 이 PC의 함정 (2026-08-12 확인)
 
-- **torch가 CPU 빌드다** (`2.13.0+cpu`). RTX 3050(VRAM 6GB)이 놀고 있어서 임베딩
-  적재가 5시간 걸렸다. CUDA 빌드로 바꾸면 십몇 분이다
+- **torch는 PyPI 기본 설치가 CPU 빌드다.** 처음에 이걸 모르고 적재를 5시간 돌렸다.
+  실측으로 **GPU가 11배 빠르다** (11,281청크: CPU 163분 vs GPU 15분).
+  `uv sync`가 torch를 다시 깔면 CPU 빌드로 되돌아가므로 그때마다 다시 설치할 것:
+  `uv pip install --index-url https://download.pytorch.org/whl/cu126 --upgrade torch`
+- **VRAM 6GB를 임베딩과 LLM이 나눠 쓴다.** 7B Q4(4.7GB) + bge-m3(2.3GB)는 안 들어간다.
+  LM Studio를 켠 채 적재하려면 `EMBEDDING_DEVICE=cpu`, 적재만 할 거면 LM Studio를
+  내리고 `auto`
 - **uv도 Docker도 없었고 관리자 권한이 없다.** uv는 공식 스크립트로 설치했고,
   Docker 대신 `--extra pgdev`(pgserver 내장 Postgres)를 쓴다
 - **HF Inference API는 무료로 못 쓴다** — 월 $0.10, `hf-inference`는 CPU 소형 모델만.
