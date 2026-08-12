@@ -252,26 +252,45 @@ app/
 demo/streamlit_app.py       테스트용 UI
 ```
 
-## LLM (로컬)
+## LLM
+
+`openai-compatible` provider는 특정 서비스가 아니라 **프로토콜**에 붙는다.
+Gemini · LM Studio · Ollama · llama.cpp · vLLM · Groq · OpenRouter가 전부 같은
+`/v1/chat/completions`를 쓰므로 **`LLM_BASE_URL`만 바꾸면 된다** (코드 변경 없음).
 
 **HF Inference API는 쓰지 않는다.** 2026-08 기준 무료 크레딧이 월 $0.10이고,
 `hf-inference`는 2025년 7월부터 CPU 추론 위주로 축소돼 최신 instruct 모델을
-서빙하지 않는다. GGUF 양자화 모델을 로컬 GPU에 올리는 쪽이 무료이면서 더 빠르다.
+서빙하지 않는다.
 
-`openai-compatible` provider는 특정 서비스가 아니라 **프로토콜**에 붙는다.
-LM Studio · Ollama · llama.cpp 서버 · vLLM · Groq · OpenRouter가 전부 같은
-`/v1/chat/completions`를 쓰므로 `LLM_BASE_URL`만 바꾸면 된다.
+### (A) Gemini 무료 티어 — 기본값
 
-LM Studio 기준:
+```bash
+# https://aistudio.google.com/apikey 에서 무료 발급 (카드 등록 불필요)
+LLM_BASE_URL=https://generativelanguage.googleapis.com/v1beta/openai
+LLM_MODEL=gemini-3.6-flash
+LLM_API_KEY=<발급받은 키>
+```
+
+`gemini-3.1-flash`는 없는 id다 — 3.1은 `gemini-3.1-flash-lite`만 있고,
+현재 stable Flash는 `gemini-3.6-flash`다.
+
+**이 PC에서는 이쪽이 유리하다.** VRAM이 6GB뿐이라 로컬 LLM(7B Q4 = 4.7GB)과
+임베딩(bge-m3 = 2.3GB)이 동시에 안 올라가는데, LLM을 밖으로 빼면 GPU를 임베딩이
+독점한다. 대신 질의가 외부로 나가고, 무료 티어는 통상 제품 개선에 사용된다.
+
+### (B) LM Studio — 완전 무료·오프라인
 
 1. 모델 받기 — `Qwen2.5-7B-Instruct` GGUF **Q4_K_M** (약 4.7GB)
 2. Developer 탭 → **Start Server** (기본 포트 1234)
-3. `.env`의 `LLM_MODEL`을 LM Studio가 표시하는 모델 id와 맞춘다
+3. `.env`에서 `LLM_BASE_URL=http://localhost:1234/v1`, `LLM_MODEL`을 LM Studio가
+   표시하는 id와 맞춘다
 
-VRAM 6GB면 7B Q4가 거의 전부 올라가 20~30 tok/s 나온다. VRAM이 부족하면
-`Qwen2.5-3B-Instruct` Q4_K_M(약 2GB)로 낮춘다.
+VRAM 6GB면 7B Q4가 거의 다 올라가 20~30 tok/s. 부족하면 `Qwen2.5-3B-Instruct`
+Q4_K_M(약 2GB). **적재를 같이 돌리면 OOM이므로** `EMBEDDING_DEVICE=cpu`로 두거나
+번갈아 쓴다.
 
-서버가 꺼져 있어도 앱은 뜬다 — `/chat`만 503을 준다.
+서버가 꺼져 있거나 키가 틀려도 앱은 뜬다 — `/chat`만 503을 주고, 원인별로
+다른 메시지를 낸다(연결 실패 / 인증 실패 / 모델 없음 / 한도 초과).
 
 ### 현재 검색 품질 (2026-08-12, 문서 282건 / 청크 11,281개)
 

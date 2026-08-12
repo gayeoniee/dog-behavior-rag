@@ -42,12 +42,17 @@ class Settings(BaseSettings):
     hf_llm_model: str = ""
     hf_api_token: str = ""
 
-    # ── OpenAI 호환 로컬/원격 서버 (LM Studio, Ollama, llama.cpp …) ──
-    llm_base_url: str = "http://localhost:1234/v1"
-    """LM Studio 기본 포트. Ollama는 http://localhost:11434/v1."""
-    llm_model: str = "qwen2.5-7b-instruct"
-    llm_api_key: str = "not-needed"
-    """로컬 서버는 키를 검사하지 않지만 OpenAI 규격상 헤더가 있어야 하는 구현이 있다."""
+    # ── OpenAI 호환 서버 (Gemini, LM Studio, Ollama, llama.cpp …) ──
+    llm_base_url: str = "https://generativelanguage.googleapis.com/v1beta/openai"
+    """기본값은 Gemini의 OpenAI 호환 엔드포인트.
+
+    로컬로 돌리려면 LM Studio `http://localhost:1234/v1`,
+    Ollama `http://localhost:11434/v1`. 전부 같은 프로토콜이라 URL만 바꾸면 된다.
+    """
+    llm_model: str = "gemini-3.6-flash"
+    llm_api_key: str = ""
+    """로컬 서버는 키를 검사하지 않지만 OpenAI 규격상 헤더가 필요한 구현이 있다.
+    로컬이면 아무 값이나 넣으면 되고, Gemini면 AI Studio 키를 넣는다."""
     llm_timeout_seconds: float = 120.0
     """CPU 폴백이나 긴 프롬프트를 감안한 값. GPU에 다 올라가면 훨씬 빨리 끝난다."""
     llm_max_tokens: int = 1024
