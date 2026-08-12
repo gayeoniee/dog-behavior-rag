@@ -9,7 +9,9 @@ from app.main import create_app
 
 @pytest.fixture
 def settings() -> Settings:
-    return Settings(app_env="test", log_level="WARNING")
+    # embedding_warmup=False: 테스트가 수 GB 모델을 로딩하려 들면 안 된다.
+    # 검색 경로 테스트는 dependency_overrides로 가짜를 주입한다.
+    return Settings(app_env="test", log_level="WARNING", embedding_warmup=False)
 
 
 @pytest.fixture

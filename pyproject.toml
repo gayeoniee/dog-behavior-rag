@@ -35,6 +35,11 @@ collect = [
     "selectolax>=0.3.27",
     "pyyaml>=6.0",
 ]
+# Docker나 관리자 권한이 없는 머신용 내장 Postgres+pgvector (개발 전용).
+# 팀 규칙상 DB는 각자 쓰므로 서버 구성 방법은 자유다 — Docker가 되는 머신은 이게 필요 없다.
+pgdev = [
+    "pgserver>=0.1.4",
+]
 
 [dependency-groups]
 dev = [
@@ -61,6 +66,9 @@ select = ["E", "F", "I", "UP", "B", "SIM"]
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 testpaths = ["tests"]
+# addopts로 integration을 제외하지 않는다. 픽스처가 조건을 보고 skip하므로
+# DB를 띄우는 순간 아무도 플래그를 기억하지 않아도 자동으로 돌기 시작한다.
+markers = ["integration: Postgres + 적재된 코퍼스 + sentence-transformers가 필요"]
 
 [tool.mypy]
 python_version = "3.12"

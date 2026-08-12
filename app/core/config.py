@@ -41,8 +41,48 @@ class Settings(BaseSettings):
     anthropic_api_key: str = ""
     anthropic_model: str = "claude-opus-5"
 
+    # ── 임베딩 ──
+    embedding_dim: int = 1024
+    """pgvector `Vector(N)` 컬럼 차원의 유일한 근원. BAAI/bge-m3 = 1024.
+
+    모델 introspection으로 정하지 않는 이유: `db/models.py`가 import 시점에 차원을
+    확정해야 하는데, 그러자고 torch를 import하면 `--extra hf` 없이 앱을 띄우거나
+    테스트를 돌리는 게 전부 깨진다. 대신 warmup에서 실제 모델 차원과 대조한다.
+    이 값을 바꾸면 chunks 테이블을 다시 만들어야 한다 (init --drop).
+    """
+    embedding_batch_size: int = 8
+    embedding_max_seq_length: int = 1024
+    """bge-m3의 기본값은 8192지만 그만큼 필요하지 않다. 1200자 청크가 ~300토큰,
+    한국어 2000자 질문이 ~1300토큰이라 1024면 충분하고 CPU 메모리 스파이크를 막는다."""
+    embedding_warmup: bool = True
+    """앱 기동 시 모델을 선로딩할지. 적재는 오프라인 CLI(scripts.db.load_corpus)가
+    하므로, API만 띄워 검색을 안 쓸 거면 꺼서 기동을 가볍게 할 수 있다."""
+
+    # ── 청킹 ──
+    chunk_size: int = 1200
+    """top_k=5 × 1200자 ≈ 6000자. 다음 라운드에 어떤 LLM을 붙여도 프롬프트에 들어간다.
+    모델(bge-m3, 8192토큰)이 아니라 프롬프트 예산이 제약이라 이 값이 나왔다."""
+    chunk_overlap: int = 150
+    chunk_min_size: int = 200
+
     # ── 검색 ──
     top_k: int = 5
+    authority_boost: float = 0.02
+    """authority_tier 부스팅 상한. tier1 +0.02 / tier2 +0.01 / tier3 +0.
+
+    작은 코퍼스에서 1위와 5위의 코사인 격차가 보통 0.02~0.10이라, 이 상한은 근소한
+    차이만 뒤집고 의미 없는 tier1을 강한 tier3 위로 올리지는 못한다. 권위는
+    타이브레이커지 검색 신호가 아니라는 뜻이고, 이 비대칭이 의도한 설계다.
+    """
+    max_chunks_per_document: int = 2
+    """문서당 반환 청크 상한. AAHA 가이드라인 한 건이 코퍼스 글자 수의 절반이라
+    이게 없으면 top_k 5개가 전부 같은 문서에서 나와 근거가 한 출처로 붕괴한다."""
+    candidate_multiplier: int = 4
+    """부스팅·다양성 재랭킹 전에 몇 배수를 과다 조회할지.
+
+    부스트를 SQL ORDER BY에 넣지 않는 이유이기도 하다 — 조인 컬럼이 낀 표현식으로
+    정렬하면 HNSW 인덱스를 못 써서 코퍼스가 커지는 순간 조용히 full scan이 된다.
+    """
 
     @property
     def cors_origin_list(self) -> list[str]:

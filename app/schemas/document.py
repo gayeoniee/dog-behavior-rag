@@ -13,6 +13,8 @@ from pydantic import BaseModel, Field
 
 Axis = Literal["problem", "cause", "training", "medical"]
 Methodology = Literal["reward_based", "aversive", "mixed", "unknown"]
+Distribution = Literal["open", "personal-only"]
+CorpusPartition = Literal["answer", "observation"]
 
 
 class DocumentIn(BaseModel):
@@ -44,6 +46,27 @@ class DocumentIn(BaseModel):
     )
     published_at: int | None = Field(default=None, description="발행/개정 연도")
     license: str | None = Field(default=None, description="라이선스/이용 근거")
+
+    # ── 아래는 전부 optional + 기본값이라 기존 호출자는 영향받지 않는다 ──
+    source_id: str | None = Field(
+        default=None,
+        max_length=100,
+        description="corpus의 source_id. 소스별 진단과 라이선스 일괄 삭제에 쓴다",
+    )
+    content_hash: str | None = Field(
+        default=None,
+        max_length=64,
+        description="재적재 멱등성 키. 생략하면 content로 계산한다",
+    )
+    distribution: Distribution = Field(
+        default="personal-only",
+        description="open=배포 가능. 기본값이 보수적인 쪽인 이유는 분류를 빠뜨린 문서가 "
+        "조용히 배포 대상에 들어가면 안 되기 때문",
+    )
+    corpus: CorpusPartition = Field(
+        default="answer",
+        description="observation은 답변 근거로 쓰지 않는 관찰용 구획(블로그 등)",
+    )
 
     model_config = {
         "json_schema_extra": {

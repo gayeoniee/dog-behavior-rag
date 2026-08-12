@@ -27,6 +27,14 @@ data/processed/
 models/
 .cache/
 
+# 내장 Postgres 데이터 디렉터리 (scripts.db.serve — Docker 없는 머신용)
+.pgdata/
+
+# Next.js
+web/node_modules/
+web/.next/
+web/out/
+
 # 에디터
 .vscode/
 .idea/

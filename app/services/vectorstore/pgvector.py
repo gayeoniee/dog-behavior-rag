@@ -1,26 +1,32 @@
-"""pgvector 기반 벡터 저장소 — 아직 스텁.
+"""pgvector 기반 벡터 저장소.
 
-TODO(내일):
-  - db/models.py의 Chunk 테이블 확정 후 실제 INSERT/SELECT 작성
-  - 검색은 코사인 거리 연산자 사용:
-        stmt = (
-            select(Chunk, Document.title, Document.source,
-                   (1 - Chunk.embedding.cosine_distance(embedding)).label("score"))
-            .join(Document, Chunk.document_id == Document.id)
-            .order_by(Chunk.embedding.cosine_distance(embedding))
-            .limit(top_k)
-        )
-  - 임베딩 정규화 여부와 인덱스 연산자(vector_cosine_ops)를 일치시킬 것
+임베딩은 `HuggingFaceEmbedder`가 `normalize_embeddings=True`로 정규화해 넣는다.
+HNSW 인덱스가 `vector_cosine_ops`이므로 둘이 일치해야 ANN 결과가 정확하다 —
+한쪽만 바꾸면 조용히 엉뚱한 순위가 나온다.
 """
 
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.db.models import Chunk, Document
+
 from .base import SearchHit
+from .ranking import Candidate, rank
 
 
 class PgVectorStore:
-    def __init__(self, session: AsyncSession) -> None:
+    def __init__(
+        self,
+        session: AsyncSession,
+        *,
+        authority_boost: float = 0.02,
+        max_per_document: int = 2,
+        candidate_multiplier: int = 4,
+    ) -> None:
         self._session = session
+        self._authority_boost = authority_boost
+        self._max_per_document = max_per_document
+        self._candidate_multiplier = candidate_multiplier
 
     async def add_chunks(
         self,
@@ -28,9 +34,62 @@ class PgVectorStore:
         chunks: list[str],
         embeddings: list[list[float]],
     ) -> int:
-        # TODO(내일): 실제 INSERT
-        return len(chunks)
+        """청크를 INSERT한다.
+
+        **commit은 하지 않는다.** 호출자(IngestService)가 문서 행과 청크 행을 한
+        트랜잭션으로 묶어야 하기 때문이다 — 중간에 실패했을 때 청크 없는 문서가
+        남으면 재적재가 content_hash 때문에 건너뛰어 영구히 빈 문서가 된다.
+        """
+        rows = [
+            Chunk(document_id=document_id, ordinal=i, content=content, embedding=embedding)
+            # strict=True: 청크와 임베딩 개수가 어긋나면 조용히 잘리지 않고 여기서 터진다.
+            for i, (content, embedding) in enumerate(zip(chunks, embeddings, strict=True))
+        ]
+        self._session.add_all(rows)
+        await self._session.flush()
+        return len(rows)
 
     async def search(self, embedding: list[float], top_k: int) -> list[SearchHit]:
-        # TODO(내일): 실제 유사도 검색
-        return []
+        distance = Chunk.embedding.cosine_distance(embedding)
+        stmt = (
+            select(
+                Chunk.id,
+                Chunk.document_id,
+                Document.title,
+                Document.source,
+                Chunk.content,
+                distance.label("distance"),
+                Document.authority_tier,
+            )
+            .join(Document, Chunk.document_id == Document.id)
+            # 아래 두 필터는 코퍼스 품질 불변식이라 호출자가 끌 수 있으면 안 된다.
+            #   - aversive: 혐오 기반 훈련법. AVSAB 문서가 정면으로 반박하는 내용이
+            #     같은 답변의 근거로 들어가면 답이 자기모순에 빠진다.
+            #   - observation: 블로그 등 지배이론이 섞일 수 있는 관찰용 구획.
+            .where(Document.methodology != "aversive")
+            .where(Document.corpus == "answer")
+            .order_by(distance)
+            # 부스팅·다양성 재랭킹을 하려면 top_k보다 넉넉히 받아와야 한다.
+            .limit(top_k * self._candidate_multiplier)
+        )
+        rows = (await self._session.execute(stmt)).all()
+
+        # 위치 인자로 풀지 않고 이름을 적는다 — SELECT 컬럼 순서를 나중에 누가
+        # 바꿔도 조용히 필드가 뒤바뀌지 않게.
+        return rank(
+            [
+                Candidate(
+                    chunk_id=row.id,
+                    document_id=row.document_id,
+                    document_title=row.title,
+                    source=row.source,
+                    content=row.content,
+                    distance=row.distance,
+                    authority_tier=row.authority_tier,
+                )
+                for row in rows
+            ],
+            top_k,
+            authority_boost=self._authority_boost,
+            max_per_document=self._max_per_document,
+        )

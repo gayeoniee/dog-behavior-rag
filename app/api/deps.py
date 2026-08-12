@@ -1,6 +1,7 @@
 """FastAPI 의존성.
 
-엔진/세션팩토리는 lifespan에서 만들어 app.state에 보관하고, 여기서 꺼내 쓴다.
+엔진/세션팩토리와 임베딩 모델은 lifespan에서 만들어 app.state에 보관하고,
+여기서 꺼내 쓴다. 특히 임베더는 **요청마다 만들면 안 된다** — 수 GB 모델이다.
 """
 
 from collections.abc import AsyncIterator
@@ -10,7 +11,9 @@ from fastapi import Depends, Request
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from app.core.config import Settings, get_settings
-from app.services.embeddings.registry import get_embedder
+from app.services.chunking import ChunkConfig
+from app.services.embeddings.base import Embedder
+from app.services.ingest_service import IngestService
 from app.services.llm.registry import get_llm
 from app.services.rag_service import RagService
 from app.services.vectorstore.pgvector import PgVectorStore
@@ -32,15 +35,54 @@ async def db_session(request: Request) -> AsyncIterator[AsyncSession]:
 SessionDep = Annotated[AsyncSession, Depends(db_session)]
 
 
-def rag_service(settings: SettingsDep, session: SessionDep) -> RagService:
-    # TODO(내일): 임베딩 모델은 무거우므로 lifespan에서 1회 로딩 후 app.state에서 재사용하도록 변경.
-    #            지금은 스텁이라 요청마다 만들어도 비용이 없다.
+def embedder_dep(request: Request) -> Embedder:
+    """lifespan에서 1회 로딩해 둔 임베더. 로딩 실패 시에도 객체는 있고,
+    embed() 호출 시점에 EmbeddingUnavailableError가 난다 (엔드포인트가 503으로 변환)."""
+    embedder: Embedder = request.app.state.embedder
+    return embedder
+
+
+EmbedderDep = Annotated[Embedder, Depends(embedder_dep)]
+
+
+def _store(settings: Settings, session: AsyncSession) -> PgVectorStore:
+    return PgVectorStore(
+        session,
+        authority_boost=settings.authority_boost,
+        max_per_document=settings.max_chunks_per_document,
+        candidate_multiplier=settings.candidate_multiplier,
+    )
+
+
+def _chunk_config(settings: Settings) -> ChunkConfig:
+    return ChunkConfig(
+        size=settings.chunk_size,
+        overlap=settings.chunk_overlap,
+        min_size=settings.chunk_min_size,
+    )
+
+
+def rag_service(settings: SettingsDep, session: SessionDep, embedder: EmbedderDep) -> RagService:
     return RagService(
-        embedder=get_embedder(settings),
-        store=PgVectorStore(session),
+        embedder=embedder,
+        store=_store(settings, session),
         llm=get_llm(settings),
         default_top_k=settings.top_k,
     )
 
 
 RagServiceDep = Annotated[RagService, Depends(rag_service)]
+
+
+def ingest_service(
+    settings: SettingsDep, session: SessionDep, embedder: EmbedderDep
+) -> IngestService:
+    return IngestService(
+        session=session,
+        embedder=embedder,
+        store=_store(settings, session),
+        chunk_config=_chunk_config(settings),
+    )
+
+
+IngestServiceDep = Annotated[IngestService, Depends(ingest_service)]

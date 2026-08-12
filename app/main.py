@@ -14,6 +14,8 @@ from app.api.v1.router import api_router
 from app.core.config import Settings, get_settings
 from app.core.logging import setup_logging
 from app.db.session import create_engine, create_session_factory
+from app.services.embeddings.base import EmbeddingUnavailableError
+from app.services.embeddings.registry import get_embedder
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +30,21 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     # 실제 연결은 첫 쿼리 때 이뤄지므로, Postgres가 꺼져 있어도 여기서 죽지 않는다.
     logger.info("앱 기동 — env=%s, llm=%s", settings.app_env, settings.llm_provider)
 
-    # TODO(내일): 임베딩 모델을 여기서 1회 로딩해 app.state에 보관
+    # 임베딩 모델은 여기서 1회만 로딩한다. 요청마다 로딩하면 수 GB 모델을 매번
+    # 디스크에서 읽는 꼴이 된다.
+    embedder = get_embedder(settings)
+    app.state.embedder = embedder
+    if settings.embedding_warmup:
+        try:
+            await embedder.warmup()
+            logger.info("임베딩 모델 준비 완료 — %s (dim=%d)", embedder.name, embedder.dimension)
+        except EmbeddingUnavailableError as exc:
+            # 여기서 앱을 죽이지 않는다. /health·/docs·DB 확인은 계속 돼야 하고,
+            # 임베딩이 필요한 경로(/chat, POST /documents)만 503으로 실패하면 된다.
+            # 이게 `uv sync`(torch 없음)만으로도 앱이 뜨는 성질을 지켜준다.
+            logger.warning("임베딩 비활성 — 검색 경로는 503을 반환합니다: %s", exc)
+    else:
+        logger.info("EMBEDDING_WARMUP=false — 임베딩 모델을 로딩하지 않습니다")
 
     yield
 
