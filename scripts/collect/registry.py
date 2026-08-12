@@ -41,4 +41,8 @@ def get_fetcher(source: Source) -> Fetcher:
         from .fetchers.local import LocalFetcher
 
         return LocalFetcher()
+    if source.fetcher == "pmc":
+        from .fetchers.pmc import PmcFetcher
+
+        return PmcFetcher()
     raise ValueError(f"지원하지 않는 fetcher: {source.fetcher!r}")

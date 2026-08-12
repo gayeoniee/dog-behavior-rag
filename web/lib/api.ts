@@ -1,0 +1,53 @@
+/**
+ * FastAPI 응답 타입.
+ *
+ * app/schemas/chat.py 와 1:1로 맞춘다 — 그쪽 독스트링이 이걸 "안드로이드 앱과의
+ * API 계약"이라고 부르고, 이 화면도 같은 계약을 쓴다. 필드를 바꾸려면 양쪽을 같이 고칠 것.
+ */
+
+export type SourceChunk = {
+  chunk_id: number;
+  document_title: string;
+  content: string;
+  /** 코사인 유사도 0~1. 권위 부스팅은 순위에만 쓰이고 이 값에는 반영되지 않는다. */
+  score: number;
+  source: string | null;
+};
+
+export type ChatResponse = {
+  answer: string;
+  sources: SourceChunk[];
+  latency_ms: number;
+  provider: string;
+};
+
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? "http://localhost:8000";
+
+export async function askQuestion(
+  question: string,
+  signal?: AbortSignal,
+): Promise<ChatResponse> {
+  const response = await fetch(`${API_BASE}/api/v1/chat`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ question }),
+    signal,
+  });
+
+  if (!response.ok) {
+    // 503은 "아직 준비 안 됨"이라 서버 버그와 구분해서 안내한다.
+    // 임베딩 모델 미로딩(uv sync --extra hf)이나 DB 미기동이 대부분이다.
+    if (response.status === 503) {
+      throw new Error(
+        "검색 서비스가 준비되지 않았습니다. 임베딩 모델과 DB가 떠 있는지 확인하세요.",
+      );
+    }
+    throw new Error(`API 오류 ${response.status}`);
+  }
+  return response.json();
+}
+
+/** answer가 아직 LLM이 아니라 스텁인지. 화면이 거짓말하지 않게 하려고 확인한다. */
+export function isStubAnswer(answer: string): boolean {
+  return answer.trimStart().startsWith("[stub]");
+}

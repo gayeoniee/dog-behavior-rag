@@ -150,9 +150,12 @@ async def ingest_all(records: list[dict], corpus_partition: str) -> int:
                 else:
                     skipped += 1
                     mark = "·"
+                # flush=True: 파이프/파일로 리다이렉트하면 stdout이 버퍼링돼서
+                # 수십 분짜리 적재의 진행 상황이 끝날 때까지 안 보인다.
                 print(
                     f"  {mark} [{i}/{len(records)}] {result.chunk_count:3d}청크  "
-                    f"{result.title[:60]}"
+                    f"{result.title[:60]}",
+                    flush=True,
                 )
     except Exception as exc:  # noqa: BLE001 — 원인을 사람이 읽게 바꿔 보여준다
         print(f"\n✗ 적재 실패: {exc}", file=sys.stderr)

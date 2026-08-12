@@ -13,7 +13,7 @@ import re
 import sys
 import unicodedata
 
-from .models import CORPUS_PATH, PROCESSED_DIR, RAW_DIR, RawDoc
+from .models import BLOG_CORPUS_PATH, CORPUS_PATH, PROCESSED_DIR, RAW_DIR, RawDoc
 from .registry import load_sources
 
 logger = logging.getLogger(__name__)
@@ -85,21 +85,40 @@ def main() -> int:
                     "volatility": source.volatility,
                     "license": source.license,
                     "fetched_at": doc.fetched_at,
+                    "corpus": source.corpus,
+                    # 소스 기본값 위에 문서별 값을 덮어쓴다. PMC는 논문마다
+                    # license/published_at이 다르므로 이게 없으면 전부 뭉개진다.
+                    **doc.meta,
                 }
             )
 
     PROCESSED_DIR.mkdir(parents=True, exist_ok=True)
-    with CORPUS_PATH.open("w", encoding="utf-8") as f:
-        for record in records:
-            f.write(json.dumps(record, ensure_ascii=False) + "\n")
 
+    # 답변 근거 코퍼스와 관찰용 코퍼스를 물리적으로 분리한다. 같은 풀에 두면
+    # 검색이 둘 다 물어와 답변이 자기모순에 빠질 수 있다(지배이론 등).
+    answer = [r for r in records if r["corpus"] == "answer"]
+    observation = [r for r in records if r["corpus"] == "observation"]
+
+    _write(CORPUS_PATH, answer)
     logger.info(
         "corpus.jsonl 생성: %d건 (짧아서 제외 %d, 중복 제외 %d)",
-        len(records),
+        len(answer),
         skipped_short,
         skipped_dupe,
     )
+    if observation:
+        _write(BLOG_CORPUS_PATH, observation)
+        logger.info(
+            "corpus_blogs.jsonl 생성: %d건 (관찰용 — 답변 근거로 검색되지 않는다)",
+            len(observation),
+        )
     return 0
+
+
+def _write(path, records: list[dict]) -> None:
+    with path.open("w", encoding="utf-8") as f:
+        for record in records:
+            f.write(json.dumps(record, ensure_ascii=False) + "\n")
 
 
 if __name__ == "__main__":

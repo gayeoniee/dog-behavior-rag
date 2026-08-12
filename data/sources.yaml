@@ -243,3 +243,170 @@
   superseded_checked_at: 2026-08-12
   license: korea-gov-publication   # 공공저작물 — 개별 파일의 공공누리 유형 확인
   license_checked_at: 2026-08-12
+
+# ── ⑤ PMC Open Access 서브셋 (pmc fetcher) ────────────────────
+#
+# 이 블록이 코퍼스 확대의 주력이다. 기관 웹사이트는 건건이 ToS를 읽어야 하고
+# 대부분 personal-use-only로 끝나는데, PMC OA는 **라이선스가 논문 메타데이터로
+# 같이 온다** (JATS <permissions><license>). 읽을 약관이 없고 CC-BY면 배포도 된다.
+# MSD 제거 주석에서 "CC-BY 오픈액세스로 채운다"고 적어둔 그 대체 경로다.
+#
+# urls 대신 query(esearch term)를 쓴다. 질의는 반드시 [tiab]로 좁힐 것 —
+# 2026-08-12 검증에서 'canine separation anxiety'를 그대로 넣었더니 3,815건이
+# 잡혔고 상위 5건 중 4건이 치매 알림 시스템·이란 디아스포라 건강 같은 무관 논문이었다.
+# 같은 주제를 [tiab]로 좁히면 22건이고 전부 관련 문헌이다.
+# (2차 방어로 fetcher가 dog/canine/puppy 언급 3회 미만 문서를 버린다.)
+#
+# license 필드는 소스 기본값일 뿐이고, 실제 값은 논문마다 RawDoc.meta로 덮어써진다
+# (cc-by / cc-by-nc / cc-by-nc-nd / cc0 ...). 배포용 코퍼스를 만들 때는
+# corpus.jsonl의 license로 거르면 된다.
+#
+# NCBI E-utilities는 프로그램 접근용 공식 API라 robots.txt가 아니라 레이트 리밋
+# (API 키 없이 3 req/s)으로 사용량을 규율한다. fetcher가 0.4초 지연으로 지킨다.
+
+- id: pmc-separation-anxiety
+  name: PMC OA — 개 분리불안
+  query: '(dog[tiab] OR dogs[tiab] OR canine[tiab]) AND ("separation anxiety"[tiab] OR "separation-related"[tiab])'
+  max_records: 40
+  fetcher: pmc
+  language: en
+  species: dog
+  axis: [problem, cause]
+  authority_tier: 1
+  methodology: reward_based
+  published_at: 2024
+  volatility: stable
+  superseded_checked_at: 2026-08-12
+  license: pmc-oa-varies-per-article
+  license_checked_at: 2026-08-12
+
+- id: pmc-behavior-problems
+  name: PMC OA — 개 문제행동 일반
+  query: '(dog[tiab] OR dogs[tiab] OR canine[tiab]) AND ("behaviour problem"[tiab] OR "behavior problem"[tiab] OR "problem behaviour"[tiab] OR "problem behavior"[tiab] OR "unwanted behaviour"[tiab])'
+  max_records: 40
+  fetcher: pmc
+  language: en
+  species: dog
+  axis: [problem]
+  authority_tier: 1
+  methodology: reward_based
+  published_at: 2024
+  volatility: stable
+  superseded_checked_at: 2026-08-12
+  license: pmc-oa-varies-per-article
+  license_checked_at: 2026-08-12
+
+- id: pmc-aggression
+  name: PMC OA — 개 공격성
+  query: '(dog[tiab] OR dogs[tiab] OR canine[tiab]) AND (aggression[tiab] OR aggressive[tiab] OR biting[tiab])'
+  max_records: 40
+  fetcher: pmc
+  language: en
+  species: dog
+  axis: [problem, medical]
+  authority_tier: 1
+  methodology: reward_based
+  published_at: 2024
+  volatility: stable
+  superseded_checked_at: 2026-08-12
+  license: pmc-oa-varies-per-article
+  license_checked_at: 2026-08-12
+
+- id: pmc-fear-stress
+  name: PMC OA — 개 공포·스트레스·바디랭귀지
+  query: '(dog[tiab] OR dogs[tiab] OR canine[tiab]) AND (fear[tiab] OR fearful[tiab] OR "stress signals"[tiab] OR "body language"[tiab] OR "calming signals"[tiab] OR noise[tiab])'
+  max_records: 40
+  fetcher: pmc
+  language: en
+  species: dog
+  axis: [cause, problem]
+  authority_tier: 1
+  methodology: reward_based
+  published_at: 2024
+  volatility: stable
+  superseded_checked_at: 2026-08-12
+  license: pmc-oa-varies-per-article
+  license_checked_at: 2026-08-12
+
+- id: pmc-training-methods
+  name: PMC OA — 훈련법·강화·둔감화
+  query: '(dog[tiab] OR dogs[tiab] OR canine[tiab] OR puppy[tiab]) AND (training[tiab] OR "positive reinforcement"[tiab] OR desensitization[tiab] OR counterconditioning[tiab] OR punishment[tiab] OR aversive[tiab])'
+  max_records: 50
+  fetcher: pmc
+  language: en
+  species: dog
+  axis: [training]
+  authority_tier: 1
+  methodology: reward_based
+  published_at: 2024
+  volatility: stable
+  superseded_checked_at: 2026-08-12
+  license: pmc-oa-varies-per-article
+  license_checked_at: 2026-08-12
+
+- id: pmc-socialization
+  name: PMC OA — 강아지 사회화·발달
+  query: '(puppy[tiab] OR puppies[tiab] OR dog[tiab]) AND (socialization[tiab] OR socialisation[tiab] OR "early experience"[tiab] OR "developmental period"[tiab])'
+  max_records: 30
+  fetcher: pmc
+  language: en
+  species: dog
+  axis: [cause, training]
+  authority_tier: 1
+  methodology: reward_based
+  published_at: 2024
+  volatility: stable
+  superseded_checked_at: 2026-08-12
+  license: pmc-oa-varies-per-article
+  license_checked_at: 2026-08-12
+
+- id: pmc-cognitive-dysfunction
+  name: PMC OA — 노령견 인지기능장애 (CCDS)
+  query: '(dog[tiab] OR dogs[tiab] OR canine[tiab]) AND ("cognitive dysfunction"[tiab] OR "cognitive decline"[tiab] OR dementia[tiab] OR "senior dog"[tiab] OR ageing[tiab] OR aging[tiab])'
+  max_records: 30
+  fetcher: pmc
+  language: en
+  species: dog
+  axis: [medical, cause]
+  authority_tier: 1
+  methodology: reward_based
+  published_at: 2024
+  volatility: volatile     # 약물·진단 기준이 갱신된다 — 리포트가 5년 초과 시 경고
+  superseded_checked_at: 2026-08-12
+  license: pmc-oa-varies-per-article
+  license_checked_at: 2026-08-12
+
+- id: pmc-medical-differentials
+  name: PMC OA — 행동 변화의 의학적 감별 (통증·내분비·신경)
+  query: '(dog[tiab] OR dogs[tiab] OR canine[tiab]) AND ("behaviour change"[tiab] OR "behavior change"[tiab] OR pain[tiab] OR "medical cause"[tiab] OR hypothyroidism[tiab] OR "veterinary behaviour"[tiab] OR "veterinary behavior"[tiab])'
+  max_records: 40
+  fetcher: pmc
+  language: en
+  species: dog
+  axis: [medical]
+  authority_tier: 1
+  methodology: reward_based
+  published_at: 2024
+  volatility: volatile
+  superseded_checked_at: 2026-08-12
+  license: pmc-oa-varies-per-article
+  license_checked_at: 2026-08-12
+
+# ── 수집하지 않기로 한 소스 (기록) ─────────────────────────────
+#
+# 네이버 블로그 (blog.naver.com) — 2026-08-12 확인, 수집하지 않는다.
+#
+# robots.txt(https://blog.naver.com/robots.txt)에 용도와 봇을 명시적으로 지정한
+# 금지 조항이 있다. 원문:
+#   "# BOT ACCESS FOR THE PURPOSES OF AI TRAINING AND RETRIEVAL-AUGMENTED
+#    GENERATION (RAG) IS STRICTLY PROHIBITED."
+#   User-agent: ClaudeBot / Claude-SearchBot / GPTBot / CCBot ... → Disallow: /
+# 이 프로젝트가 정확히 RAG라서 해석의 여지가 없다. User-agent: * 그룹이 특정
+# .naver 엔드포인트만 막는다는 이유로 우회하지 않는다 — 사이트가 용도를 콕
+# 집어 밝혔기 때문이다.
+#
+# 대체: 한국어 자료 공백은 korea-gov-materials(공공누리)로 메운다. 훈련사
+# 콘텐츠의 "공통점"을 코퍼스에 넣는 건 별개로 위험하다 — 빈도 기반 집계는
+# 알파독·서열잡기를 상위로 올리는데, 이는 avsab-dominance가 정면으로 반박하는
+# 내용이라 같은 풀에 있으면 답변이 자기모순에 빠진다. 관찰용으로 쓰려면
+# corpus: observation 으로 선언해 답변 근거에서 격리할 것.

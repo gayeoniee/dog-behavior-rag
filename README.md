@@ -2,13 +2,15 @@
 
 반려동물 훈련 / 문제행동 상담 RAG 시스템.
 
-현재 상태: **스캐폴딩 단계**. API 골격과 provider 인터페이스만 있고,
-임베딩·검색·LLM 호출은 전부 스텁이다 (엔드포인트는 정상 응답하지만 내용은 가짜).
+현재 상태: **검색까지 동작한다.** 청킹 → 임베딩(bge-m3) → pgvector 코사인 검색이
+실제로 돌고, `/chat`이 근거 문서(`sources[]`)를 반환한다.
+**답변 생성(LLM)은 아직 스텁이라 `answer`는 `"[stub] ..."`이다.**
 
 ## 요구사항
 
 - [uv](https://docs.astral.sh/uv/) (pip 사용 안 함)
-- Docker (pgvector 컨테이너용, 선택)
+- Postgres + pgvector — Docker 또는 내장 서버(아래 참조)
+- Node.js 20+ (Next.js 화면을 볼 경우)
 
 ## 빠른 시작
 
@@ -21,27 +23,73 @@ uv run uvicorn app.main:app --reload
 - API 문서: http://localhost:8000/docs
 - 헬스체크: http://localhost:8000/api/v1/health
 
+검색까지 돌리려면 아래 "전체 파이프라인"을 따라간다.
+
+## 전체 파이프라인 (새 머신 기준)
+
+```bash
+# 1) 수집 — 2~3분
+uv sync --extra collect
+cp .env.example .env
+uv run python -m scripts.collect.fetch --all
+uv run python -m scripts.collect.normalize
+uv run python -m scripts.collect.report      # 네 축 + 커버리지 8개 PASS면 정상
+
+# 2) DB
+docker compose up -d db
+uv run python -m scripts.db.init
+
+# 3) 청킹 확인 (torch 없이) → 적재
+uv run python -m scripts.db.load_corpus --dry-run
+uv sync --extra hf --extra collect           # torch 포함, 수 GB
+uv run python -m scripts.db.load_corpus
+
+# 4) 실행
+uv run uvicorn app.main:app --reload
+```
+
+> ⚠️ `uv sync`를 extra 없이 다시 돌리면 이전 extra가 **제거된다.**
+> 항상 필요한 extra를 전부 나열할 것: `uv sync --extra hf --extra collect`
+
 동작 확인:
 
 ```bash
-curl localhost:8000/api/v1/health
-# {"status":"ok"}
-
 curl -X POST localhost:8000/api/v1/chat \
   -H 'content-type: application/json' \
   -d '{"question":"강아지가 초인종 소리에 계속 짖어요"}'
-# {"answer":"[stub] ...","sources":[],"latency_ms":0,"provider":"huggingface:(미설정)"}
+# answer는 "[stub] ...", sources는 실제 근거 5건
 ```
 
-## DB (pgvector)
+## DB (pgvector) — 각자 로컬
+
+**공용 DB를 쓰지 않는다.** 서브 PC에서 적재할 때 병목이 생길 수 있어서 팀에서
+각자 로컬 DB를 쓰기로 했다. 그래서 기기를 옮기면 스키마 생성과 적재를 다시 해야
+한다 (코퍼스도 저장소에 없으므로 어차피 재수집이 정상 경로다).
 
 ```bash
 docker compose up -d db
+uv run python -m scripts.db.init          # 테이블 + HNSW 인덱스
+uv run python -m scripts.db.init --drop   # 스키마를 바꿨을 때 (재적재 필요)
 curl localhost:8000/api/v1/health/ready   # {"status":"ready"}
 ```
 
 `/health`(liveness)는 DB와 무관하게 200이고, `/health/ready`만 DB를 확인해
 연결이 안 되면 503을 준다. 그래서 Postgres 없이도 개발이 막히지 않는다.
+
+스키마와 필드별 근거는 **[docs/erd.md](docs/erd.md)** 에 있다.
+
+### Docker나 관리자 권한이 없는 머신
+
+`pgserver`가 PostgreSQL 16 + pgvector 바이너리를 휠에 담아 배포한다. 설치도
+관리자 권한도 필요 없다 (학원 PC 등에서 검증함).
+
+```bash
+uv sync --extra pgdev
+uv run python -m scripts.db.serve    # 기동 + .env의 DATABASE_URL 자동 갱신
+uv run python -m scripts.db.serve --stop
+```
+
+기동할 때마다 빈 포트를 새로 잡기 때문에 `serve`가 `.env`를 직접 고친다.
 
 ## 의존성 그룹
 
@@ -50,13 +98,29 @@ curl localhost:8000/api/v1/health/ready   # {"status":"ready"}
 | 명령 | 용도 |
 |---|---|
 | `uv sync` | API 서버만 (수 초) |
-| `uv sync --extra hf` | 실제 임베딩/추론 (sentence-transformers, torch — 수 GB) |
+| `uv sync --extra hf` | 실제 임베딩 (sentence-transformers, torch — 수 GB) |
+| `uv sync --extra collect` | 데이터 수집 파이프라인 |
+| `uv sync --extra pgdev` | 내장 Postgres+pgvector (Docker 없는 머신) |
 | `uv sync --extra demo` | Streamlit 데모 |
 
-## Streamlit 데모 (선택)
+## 화면
 
-API를 HTTP로 호출하는 얇은 클라이언트다. 나중에 안드로이드 앱을 붙일 때도
-같은 API를 그대로 쓰면 된다.
+**표준 화면은 `web/`의 Next.js다.** Streamlit 데모는 디버그용으로 남겨뒀다.
+
+```bash
+cd web
+npm install
+cp .env.local.example .env.local
+npm run dev        # http://localhost:3000
+```
+
+FastAPI 쪽 `.env`의 `CORS_ORIGINS`에 `http://localhost:3000`이 있어야 한다
+(`.env.example` 기본값이 그렇게 돼 있다).
+
+`answer`가 스텁인 동안 화면 상단에 "LLM 미연결 — 근거 문서만 표시" 배너가 뜬다.
+지금 만든 게 검색이지 답변 생성이 아니므로 화면이 그걸 감추지 않게 한 것이다.
+
+### Streamlit 데모 (선택)
 
 ```bash
 uv sync --extra demo
