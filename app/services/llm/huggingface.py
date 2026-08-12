@@ -27,7 +27,7 @@ class HuggingFaceLLM:
         prompt: str,
         *,
         system: str | None = None,
-        max_tokens: int = 1024,
+        max_tokens: int | None = None,
     ) -> str:
         # TODO(내일): 실제 추론 호출
         return (

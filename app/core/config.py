@@ -8,8 +8,13 @@ from typing import Literal
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-Provider = Literal["huggingface"]
-"""지원하는 provider. Claude 등으로 확장할 때 여기와 registry.py 두 곳만 고치면 된다."""
+Provider = Literal["huggingface", "openai-compatible"]
+"""지원하는 provider. 확장할 때 여기와 registry.py 두 곳만 고치면 된다.
+
+`openai-compatible`은 특정 서비스가 아니라 **프로토콜**이다. LM Studio, Ollama,
+llama.cpp 서버, vLLM, Groq, OpenRouter가 전부 같은 `/v1/chat/completions`를
+쓰므로 구현 하나로 다 커버된다. 바꿀 때는 LLM_BASE_URL / LLM_MODEL만 고치면 된다.
+"""
 
 
 class Settings(BaseSettings):
@@ -36,6 +41,27 @@ class Settings(BaseSettings):
     hf_embedding_model: str = "BAAI/bge-m3"
     hf_llm_model: str = ""
     hf_api_token: str = ""
+
+    # ── OpenAI 호환 로컬/원격 서버 (LM Studio, Ollama, llama.cpp …) ──
+    llm_base_url: str = "http://localhost:1234/v1"
+    """LM Studio 기본 포트. Ollama는 http://localhost:11434/v1."""
+    llm_model: str = "qwen2.5-7b-instruct"
+    llm_api_key: str = "not-needed"
+    """로컬 서버는 키를 검사하지 않지만 OpenAI 규격상 헤더가 있어야 하는 구현이 있다."""
+    llm_timeout_seconds: float = 120.0
+    """CPU 폴백이나 긴 프롬프트를 감안한 값. GPU에 다 올라가면 훨씬 빨리 끝난다."""
+    llm_max_tokens: int = 1024
+    llm_temperature: float = 0.2
+    """근거 기반 답변이라 창의성이 필요 없다. 낮을수록 자료에서 덜 벗어난다."""
+
+    # ── 질의 재작성 ──
+    query_rewrite_enabled: bool = True
+    """한국어 질문을 영어 기술표현으로 바꾼 뒤 임베딩할지.
+
+    측정 근거: "복종 자세를 강제로 1~2분 유지" 원문은 무관 문서를 물어왔고(0.552),
+    영어 기술표현으로 바꾸니 AVSAB 지배이론 성명서가 0.724로 1위였다. bge-m3가
+    주제는 교차언어로 넘나드는데 기법 명칭(알파 롤 ↔ alpha roll)은 못 넘는다.
+    """
 
     # ── Anthropic (provider 전환 시에만 사용. 현재 코드 경로 없음) ──
     anthropic_api_key: str = ""

@@ -252,6 +252,43 @@ app/
 demo/streamlit_app.py       테스트용 UI
 ```
 
+## LLM (로컬)
+
+**HF Inference API는 쓰지 않는다.** 2026-08 기준 무료 크레딧이 월 $0.10이고,
+`hf-inference`는 2025년 7월부터 CPU 추론 위주로 축소돼 최신 instruct 모델을
+서빙하지 않는다. GGUF 양자화 모델을 로컬 GPU에 올리는 쪽이 무료이면서 더 빠르다.
+
+`openai-compatible` provider는 특정 서비스가 아니라 **프로토콜**에 붙는다.
+LM Studio · Ollama · llama.cpp 서버 · vLLM · Groq · OpenRouter가 전부 같은
+`/v1/chat/completions`를 쓰므로 `LLM_BASE_URL`만 바꾸면 된다.
+
+LM Studio 기준:
+
+1. 모델 받기 — `Qwen2.5-7B-Instruct` GGUF **Q4_K_M** (약 4.7GB)
+2. Developer 탭 → **Start Server** (기본 포트 1234)
+3. `.env`의 `LLM_MODEL`을 LM Studio가 표시하는 모델 id와 맞춘다
+
+VRAM 6GB면 7B Q4가 거의 전부 올라가 20~30 tok/s 나온다. VRAM이 부족하면
+`Qwen2.5-3B-Instruct` Q4_K_M(약 2GB)로 낮춘다.
+
+서버가 꺼져 있어도 앱은 뜬다 — `/chat`만 503을 준다.
+
+### 질의 재작성
+
+한국어 질문을 영어 기술표현으로 바꾼 뒤 임베딩한다. bge-m3가 *주제*는 교차언어로
+넘나들지만 *기법 명칭*은 못 넘기 때문이다. 코퍼스 282건에서 실측:
+
+| 질의 | 원문으로 검색 | 영어 재작성 후 |
+|---|---|---|
+| 복종 자세를 강제로 1~2분 유지 (알파 롤) | 0.552 — 무관 문서 | **0.724 — AVSAB 지배이론 성명서** |
+| 목줄 잡고 "안 돼" 소리치기 | 0.580 — 무관 문서 | **0.629 — AAHA 가이드라인** |
+
+코퍼스에는 반박 근거가 다 있었다(`alpha roll` 6건, `pinning` 22건). 찾지 못했을
+뿐이다. 커버리지 질문 8개가 전부 통과했던 건 그것들이 주제형 질문이라 생긴 착시다.
+
+LLM 서버가 꺼져 있으면 원문으로 폴백하므로 검색이 막히지는 않는다
+(`QUERY_REWRITE_ENABLED=false`로 끌 수도 있다).
+
 ### Provider 교체
 
 LLM/임베딩 구현체는 Protocol 뒤에 숨어 있고, 선택 지점은 각 `registry.py`

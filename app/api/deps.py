@@ -15,6 +15,7 @@ from app.services.chunking import ChunkConfig
 from app.services.embeddings.base import Embedder
 from app.services.ingest_service import IngestService
 from app.services.llm.registry import get_llm
+from app.services.query_rewrite import QueryRewriter
 from app.services.rag_service import RagService
 from app.services.vectorstore.pgvector import PgVectorStore
 
@@ -63,11 +64,15 @@ def _chunk_config(settings: Settings) -> ChunkConfig:
 
 
 def rag_service(settings: SettingsDep, session: SessionDep, embedder: EmbedderDep) -> RagService:
+    llm = get_llm(settings)
     return RagService(
         embedder=embedder,
         store=_store(settings, session),
-        llm=get_llm(settings),
+        llm=llm,
         default_top_k=settings.top_k,
+        # 재작성에도 같은 LLM을 쓴다. 별도 모델을 둘 이유가 없고, 서버가 꺼져 있으면
+        # QueryRewriter가 원문으로 폴백하므로 검색은 계속 동작한다.
+        rewriter=QueryRewriter(llm, enabled=settings.query_rewrite_enabled),
     )
 
 

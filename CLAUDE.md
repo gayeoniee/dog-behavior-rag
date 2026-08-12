@@ -14,8 +14,20 @@
   `/chat`이 실제 근거 문서를 반환하고, 커버리지 질문 8개가 상위 5청크에서 근거를 찾는다
   (한국어 질문 → 영어 문서 교차언어 검색)
 - ✅ Next.js 화면(`web/`), ERD(`docs/erd.md`)
-- ❌ **LLM만 스텁이다.** `/chat`의 `answer`는 여전히 `"[stub] ..."`
-- 다음 작업: LLM 연결 + 프롬프트 튜닝. 그다음 Alembic, 안드로이드 앱
+- ✅ `openai-compatible` LLM provider + 질의 재작성 (LM Studio 등 로컬 서버용)
+- ❌ **LLM 서버를 아직 실제로 붙여보지 않았다.** `LLM_PROVIDER=huggingface`로 두면
+  `answer`가 `"[stub] ..."`. LM Studio를 켜고 `openai-compatible`로 바꾸면 동작해야 하나
+  미검증 상태
+- 다음 작업: LM Studio 연결 검증 → 프롬프트 튜닝 → 팩트체크 기능
+
+## 이 PC의 함정 (2026-08-12 확인)
+
+- **torch가 CPU 빌드다** (`2.13.0+cpu`). RTX 3050(VRAM 6GB)이 놀고 있어서 임베딩
+  적재가 5시간 걸렸다. CUDA 빌드로 바꾸면 십몇 분이다
+- **uv도 Docker도 없었고 관리자 권한이 없다.** uv는 공식 스크립트로 설치했고,
+  Docker 대신 `--extra pgdev`(pgserver 내장 Postgres)를 쓴다
+- **HF Inference API는 무료로 못 쓴다** — 월 $0.10, `hf-inference`는 CPU 소형 모델만.
+  로컬 GGUF(LM Studio)가 무료이면서 빠르다
 
 ## 새 머신에서 시작할 때
 
