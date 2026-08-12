@@ -14,6 +14,7 @@ from pydantic import BaseModel, Field
 Axis = Literal["problem", "cause", "training", "medical"]
 Methodology = Literal["reward_based", "aversive", "mixed", "unknown"]
 Distribution = Literal["open", "personal-only"]
+DocType = Literal["guide", "study"]
 CorpusPartition = Literal["answer", "observation"]
 
 
@@ -62,6 +63,10 @@ class DocumentIn(BaseModel):
         default="personal-only",
         description="open=배포 가능. 기본값이 보수적인 쪽인 이유는 분류를 빠뜨린 문서가 "
         "조용히 배포 대상에 들어가면 안 되기 때문",
+    )
+    doc_type: DocType = Field(
+        default="guide",
+        description="guide=기관 실무 가이드 / study=학술 논문. 검색에서 guide를 소폭 우대한다",
     )
     corpus: CorpusPartition = Field(
         default="answer",

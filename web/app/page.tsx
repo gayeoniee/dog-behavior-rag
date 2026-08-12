@@ -101,6 +101,16 @@ export default function Home() {
             </div>
           )}
 
+          {/* 근거가 없을 때 조용히 답만 보여주면 "근거 있는 답"으로 오해한다.
+              지금 이 배너가 이 시스템이 RAG답게 동작한다는 유일한 표시다. */}
+          {result.coverage === "none" && (
+            <div className="banner" style={{ marginTop: "1.75rem" }}>
+              <strong>참고 자료 없음</strong> —{" "}
+              {result.coverage_note ??
+                "이 주제는 코퍼스에 근거 자료가 없습니다. 아래 답변은 근거 문서 없이 작성된 일반 안내입니다."}
+            </div>
+          )}
+
           <div className="meta">
             <span>{result.latency_ms}ms</span>
             <span>{result.provider}</span>
@@ -108,13 +118,7 @@ export default function Home() {
           </div>
           <div className="answer">{result.answer}</div>
 
-          <h2>근거 문서</h2>
-          {result.sources.length === 0 && (
-            <p className="subtitle">
-              검색 결과가 없습니다. 코퍼스가 적재됐는지 확인하세요
-              (<code>scripts.db.load_corpus</code>).
-            </p>
-          )}
+          {result.sources.length > 0 && <h2>근거 문서</h2>}
           {result.sources.map((source, i) => (
             <article key={source.chunk_id} className="source">
               <div className="source-head">

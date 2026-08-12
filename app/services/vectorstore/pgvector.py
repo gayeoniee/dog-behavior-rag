@@ -20,11 +20,13 @@ class PgVectorStore:
         session: AsyncSession,
         *,
         authority_boost: float = 0.02,
+        guide_boost: float = 0.03,
         max_per_document: int = 2,
         candidate_multiplier: int = 4,
     ) -> None:
         self._session = session
         self._authority_boost = authority_boost
+        self._guide_boost = guide_boost
         self._max_per_document = max_per_document
         self._candidate_multiplier = candidate_multiplier
 
@@ -60,6 +62,7 @@ class PgVectorStore:
                 Chunk.content,
                 distance.label("distance"),
                 Document.authority_tier,
+                Document.doc_type,
             )
             .join(Document, Chunk.document_id == Document.id)
             # 아래 두 필터는 코퍼스 품질 불변식이라 호출자가 끌 수 있으면 안 된다.
@@ -86,10 +89,12 @@ class PgVectorStore:
                     content=row.content,
                     distance=row.distance,
                     authority_tier=row.authority_tier,
+                    doc_type=row.doc_type,
                 )
                 for row in rows
             ],
             top_k,
             authority_boost=self._authority_boost,
+            guide_boost=self._guide_boost,
             max_per_document=self._max_per_document,
         )

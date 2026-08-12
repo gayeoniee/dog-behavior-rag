@@ -143,10 +143,7 @@ class FactCheckService:
         search_queries = await asyncio.gather(*(self._rewriter.rewrite(c) for c in claims))
         hits_per_claim = [await self._search(q, k) for q in search_queries]
         verdicts = await asyncio.gather(
-            *(
-                self._judge(claim, hits)
-                for claim, hits in zip(claims, hits_per_claim, strict=True)
-            )
+            *(self._judge(claim, hits) for claim, hits in zip(claims, hits_per_claim, strict=True))
         )
 
         return FactCheckResponse(

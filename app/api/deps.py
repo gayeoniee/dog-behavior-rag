@@ -13,6 +13,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from app.core.config import Settings, get_settings
 from app.services.chunking import ChunkConfig
 from app.services.embeddings.base import Embedder
+from app.services.evidence_select import EvidenceSelector
 from app.services.factcheck_service import FactCheckService
 from app.services.ingest_service import IngestService
 from app.services.llm.registry import get_llm
@@ -51,6 +52,7 @@ def _store(settings: Settings, session: AsyncSession) -> PgVectorStore:
     return PgVectorStore(
         session,
         authority_boost=settings.authority_boost,
+        guide_boost=settings.guide_boost,
         max_per_document=settings.max_chunks_per_document,
         candidate_multiplier=settings.candidate_multiplier,
     )
@@ -74,6 +76,7 @@ def rag_service(settings: SettingsDep, session: SessionDep, embedder: EmbedderDe
         # 재작성에도 같은 LLM을 쓴다. 별도 모델을 둘 이유가 없고, 서버가 꺼져 있으면
         # QueryRewriter가 원문으로 폴백하므로 검색은 계속 동작한다.
         rewriter=QueryRewriter(llm, enabled=settings.query_rewrite_enabled),
+        selector=EvidenceSelector(llm, enabled=settings.evidence_select_enabled),
     )
 
 

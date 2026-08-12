@@ -95,6 +95,7 @@ class IngestService:
                 published_at=doc.published_at,
                 license=doc.license,
                 distribution=doc.distribution,
+                doc_type=doc.doc_type,
                 corpus=doc.corpus,
             )
             self._session.add(document)

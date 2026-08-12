@@ -29,6 +29,13 @@ class Settings(BaseSettings):
     api_prefix: str = "/api/v1"
     log_level: str = "INFO"
     cors_origins: str = "*"
+    cors_origin_regex: str = ""
+    """정규식으로 오리진을 허용한다 (cors_origins와 함께 적용된다).
+
+    LAN에서 접근할 때 필요하다. 개발 서버를 휴대폰이나 다른 PC에서 열면 오리진이
+    `http://192.168.0.244:3000`처럼 되는데, IP가 DHCP로 바뀌므로 목록에 박아두면
+    계속 깨진다. 사설 대역을 정규식으로 열어두는 편이 낫다.
+    """
 
     # ── DB ──
     database_url: str = "postgresql+asyncpg://gyrag:gyrag@localhost:5432/gyrag"
@@ -59,6 +66,17 @@ class Settings(BaseSettings):
     llm_api_key: str = ""
     """로컬 서버는 키를 검사하지 않지만 OpenAI 규격상 헤더가 필요한 구현이 있다.
     로컬이면 아무 값이나 넣으면 되고, Gemini면 AI Studio 키를 넣는다."""
+    llm_max_retries: int = 4
+    """429(요청 한도 초과)를 만났을 때 재시도 횟수.
+
+    무료 티어는 분당 한도가 있어서 연속 호출이 몰리면 바로 걸린다. 평가셋 20문항이
+    질문당 LLM을 2~3회 부르는데, 재시도가 없으면 절반이 폴백으로 떨어져 **측정
+    자체가 오염된다** (실제로 겪었다). 서버 오류(5xx)에도 같이 적용된다.
+    """
+    llm_retry_base_delay: float = 2.0
+    """재시도 대기의 기준값. 지수 백오프(2, 4, 8, 16초)로 늘어난다.
+    응답에 Retry-After 헤더가 있으면 그 값을 우선한다."""
+
     llm_timeout_seconds: float = 120.0
     """CPU 폴백이나 긴 프롬프트를 감안한 값. GPU에 다 올라가면 훨씬 빨리 끝난다."""
     llm_max_tokens: int = 1024
@@ -66,6 +84,14 @@ class Settings(BaseSettings):
     """근거 기반 답변이라 창의성이 필요 없다. 낮을수록 자료에서 덜 벗어난다."""
 
     # ── 질의 재작성 ──
+    evidence_select_enabled: bool = True
+    """검색 결과 중 질문에 실제로 답하는 것만 LLM으로 골라낼지.
+
+    끄면 검색된 top_k를 그대로 쓴다 — 코퍼스에 없는 주제에도 "가장 덜 무관한" 5건에
+    근거를 붙여 답하게 되고, 그게 "RAG 느낌이 안 난다"의 직접 원인이었다.
+    LLM 왕복이 1회 늘어 응답이 5~8초 느려진다.
+    """
+
     query_rewrite_enabled: bool = True
     """한국어 질문을 영어 기술표현으로 바꾼 뒤 임베딩할지.
 
@@ -119,6 +145,13 @@ class Settings(BaseSettings):
     작은 코퍼스에서 1위와 5위의 코사인 격차가 보통 0.02~0.10이라, 이 상한은 근소한
     차이만 뒤집고 의미 없는 tier1을 강한 tier3 위로 올리지는 못한다. 권위는
     타이브레이커지 검색 신호가 아니라는 뜻이고, 이 비대칭이 의도한 설계다.
+    """
+    guide_boost: float = 0.03
+    """실무 가이드(ASPCA/VCA/RSPCA/AAHA) 부스트. 논문(PMC)에는 0.
+
+    코퍼스 청크의 97%가 논문이라 "어떻게 해요" 질문에 실행 절차 대신 연구 결과가
+    올라온다. 0.03인 이유: 근거 있는 질문(0.714)과 주제 공백(0.673)의 차이가
+    0.04라, 그보다 커지면 무관한 가이드가 정확한 논문을 밀어낸다.
     """
     max_chunks_per_document: int = 2
     """문서당 반환 청크 상한. AAHA 가이드라인 한 건이 코퍼스 글자 수의 절반이라

@@ -19,7 +19,7 @@ from sqlalchemy import select
 from app.core.config import get_settings
 from app.db.models import Document
 from app.db.session import create_engine, create_session_factory
-from scripts.db.load_corpus import derive_distribution
+from scripts.db.load_corpus import derive_distribution, derive_doc_type
 
 
 async def run() -> int:
@@ -34,8 +34,13 @@ async def run() -> int:
             for doc in rows:
                 expected = derive_distribution(doc.license)
                 if doc.distribution != expected:
-                    changed[f"{doc.distribution} → {expected}"] += 1
+                    changed[f"distribution: {doc.distribution} → {expected}"] += 1
                     doc.distribution = expected
+
+                expected_type = derive_doc_type(doc.source_id)
+                if doc.doc_type != expected_type:
+                    changed[f"doc_type: {doc.doc_type} → {expected_type}"] += 1
+                    doc.doc_type = expected_type
             await session.commit()
     except Exception as exc:  # noqa: BLE001 — 원인을 사람이 읽게 바꿔 보여준다
         print(f"✗ 갱신 실패: {exc}", file=sys.stderr)

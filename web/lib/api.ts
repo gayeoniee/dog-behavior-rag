@@ -14,11 +14,16 @@ export type SourceChunk = {
   source: string | null;
 };
 
+/** 근거 충분도. none이면 코퍼스에 관련 자료가 없고 sources는 비어 있다. */
+export type Coverage = "full" | "partial" | "none";
+
 export type ChatResponse = {
   answer: string;
   sources: SourceChunk[];
   latency_ms: number;
   provider: string;
+  coverage: Coverage;
+  coverage_note: string | null;
 };
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? "http://localhost:8000";

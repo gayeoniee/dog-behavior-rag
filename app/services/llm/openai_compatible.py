@@ -20,6 +20,7 @@ bge-m3(2.3GB)가 동시에 안 올라가는데, LLM을 밖으로 빼면 GPU를 �
 httpx는 이미 기본 의존성이라 새 패키지가 필요 없다 — openai SDK를 안 쓰는 이유다.
 """
 
+import asyncio
 import logging
 
 import httpx
@@ -39,6 +40,8 @@ class OpenAICompatibleLLM:
         self._timeout = settings.llm_timeout_seconds
         self._default_max_tokens = settings.llm_max_tokens
         self._temperature = settings.llm_temperature
+        self._max_retries = settings.llm_max_retries
+        self._retry_base_delay = settings.llm_retry_base_delay
 
     @property
     def name(self) -> str:
@@ -65,14 +68,7 @@ class OpenAICompatibleLLM:
         }
 
         try:
-            async with httpx.AsyncClient(timeout=self._timeout) as client:
-                response = await client.post(
-                    f"{self._base_url}/chat/completions",
-                    json=payload,
-                    headers={"Authorization": f"Bearer {self._api_key}"},
-                )
-                response.raise_for_status()
-                data = response.json()
+            data = await self._post_with_retry(payload)
         except httpx.ConnectError as exc:
             # 가장 흔한 실패다. 원인을 바로 알 수 있게 서버 주소를 함께 보여준다.
             raise LLMUnavailableError(
@@ -92,6 +88,58 @@ class OpenAICompatibleLLM:
             return data["choices"][0]["message"]["content"] or ""
         except (KeyError, IndexError) as exc:
             raise LLMUnavailableError(f"예상과 다른 응답 형식: {str(data)[:200]}") from exc
+
+    async def _post_with_retry(self, payload: dict) -> dict:
+        """429·5xx는 잠시 뒤 다시 시도한다.
+
+        무료 티어의 분당 한도는 **일시적 상태**지 오류가 아니다. 재시도가 없으면
+        연속 호출이 몰릴 때(평가셋 실행, 팩트체크 병렬 판정) 절반이 폴백으로
+        떨어져 결과가 조용히 나빠진다 — 실제로 평가 측정이 그렇게 오염됐다.
+        """
+        last: httpx.HTTPStatusError | None = None
+        async with httpx.AsyncClient(timeout=self._timeout) as client:
+            for attempt in range(self._max_retries + 1):
+                response = await client.post(
+                    f"{self._base_url}/chat/completions",
+                    json=payload,
+                    headers={"Authorization": f"Bearer {self._api_key}"},
+                )
+                if response.status_code < 400:
+                    return response.json()
+
+                error = httpx.HTTPStatusError(
+                    f"{response.status_code}", request=response.request, response=response
+                )
+                # 재시도해도 달라지지 않는 것들(키 오류, 잘못된 모델명)은 즉시 포기한다.
+                if response.status_code != 429 and response.status_code < 500:
+                    raise error
+                last = error
+                if attempt == self._max_retries:
+                    break
+
+                delay = self._retry_after(response) or self._retry_base_delay * (2**attempt)
+                logger.warning(
+                    "LLM %d — %.1f초 후 재시도 (%d/%d)",
+                    response.status_code,
+                    delay,
+                    attempt + 1,
+                    self._max_retries,
+                )
+                await asyncio.sleep(delay)
+
+        assert last is not None
+        raise last
+
+    @staticmethod
+    def _retry_after(response: httpx.Response) -> float | None:
+        """서버가 대기 시간을 알려주면 그걸 따른다 (초 단위 형식만 처리)."""
+        value = response.headers.get("retry-after")
+        if not value:
+            return None
+        try:
+            return max(0.0, float(value))
+        except ValueError:
+            return None
 
     def _explain_status(self, exc: httpx.HTTPStatusError) -> str:
         """HTTP 오류를 원인별로 다르게 안내한다.

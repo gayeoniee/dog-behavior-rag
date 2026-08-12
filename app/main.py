@@ -69,6 +69,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.cors_origin_list,
+        # LAN에서 열 때(휴대폰 등) 오리진이 사설 IP라 목록으로는 감당이 안 된다.
+        # 빈 문자열이면 None으로 넘겨 정규식 검사를 끈다.
+        allow_origin_regex=settings.cors_origin_regex or None,
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],

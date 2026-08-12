@@ -69,6 +69,15 @@ def derive_distribution(license_value: str | None) -> str:
     return "open" if license_value.strip().lower() in OPEN_LICENSES else "personal-only"
 
 
+def derive_doc_type(source_id: str | None) -> str:
+    """PMC 논문이면 study, 나머지(기관 실무 가이드)는 guide.
+
+    소스 id로 판단하는 이유: 실제 구분 기준이 "학술지에 실렸는가"이고, 그게
+    `pmc-` 접두사와 정확히 일치한다. 나중에 다른 학술 소스가 생기면 여기만 고친다.
+    """
+    return "study" if (source_id or "").startswith("pmc-") else "guide"
+
+
 def to_document_in(record: dict, *, corpus_partition: str) -> DocumentIn:
     """corpus.jsonl(15키) → DocumentIn 리매핑.
 
@@ -93,6 +102,7 @@ def to_document_in(record: dict, *, corpus_partition: str) -> DocumentIn:
         published_at=record.get("published_at"),
         license=record.get("license"),
         distribution=derive_distribution(record.get("license")),
+        doc_type=derive_doc_type(record.get("source_id")),
         corpus=corpus_partition,
     )
 

@@ -116,13 +116,77 @@ async def test_model_not_found_names_the_model(monkeypatch):
     assert "없는-모델" in str(exc.value)
 
 
-async def test_rate_limit_is_explained(monkeypatch):
+async def test_rate_limit_is_explained_after_retries_exhausted(monkeypatch):
     def handler(request: httpx.Request) -> httpx.Response:
         return json_response(429, {"error": {"message": "quota exceeded"}})
 
     patch_transport(monkeypatch, handler)
     with pytest.raises(LLMUnavailableError, match="한도 초과"):
-        await make_llm().generate("질문")
+        await make_llm(llm_max_retries=1, llm_retry_base_delay=0).generate("질문")
+
+
+async def test_rate_limit_is_retried_then_succeeds(monkeypatch):
+    """무료 티어 분당 한도는 일시적 상태다. 여기서 포기하면 연속 호출이 몰릴 때
+    (평가셋 실행, 팩트체크 병렬 판정) 절반이 조용히 폴백으로 떨어진다."""
+    calls = {"n": 0}
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        calls["n"] += 1
+        if calls["n"] < 3:
+            return json_response(429, {"error": {"message": "quota"}})
+        return json_response(200, {"choices": [{"message": {"content": "성공"}}]})
+
+    patch_transport(monkeypatch, handler)
+    llm = make_llm(llm_max_retries=4, llm_retry_base_delay=0)
+    assert await llm.generate("질문") == "성공"
+    assert calls["n"] == 3
+
+
+async def test_server_error_is_retried(monkeypatch):
+    calls = {"n": 0}
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        calls["n"] += 1
+        if calls["n"] == 1:
+            return json_response(503, {"error": {"message": "overloaded"}})
+        return json_response(200, {"choices": [{"message": {"content": "ok"}}]})
+
+    patch_transport(monkeypatch, handler)
+    assert await make_llm(llm_retry_base_delay=0).generate("질문") == "ok"
+    assert calls["n"] == 2
+
+
+async def test_auth_error_is_not_retried(monkeypatch):
+    """키가 틀린 건 기다려도 안 고쳐진다. 재시도하면 시간만 버린다."""
+    calls = {"n": 0}
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        calls["n"] += 1
+        return json_response(401, {"error": {"message": "bad key"}})
+
+    patch_transport(monkeypatch, handler)
+    with pytest.raises(LLMUnavailableError, match="인증 실패"):
+        await make_llm(llm_retry_base_delay=0).generate("질문")
+    assert calls["n"] == 1
+
+
+async def test_retry_after_header_is_respected(monkeypatch):
+    calls = {"n": 0}
+    slept: list[float] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        calls["n"] += 1
+        if calls["n"] == 1:
+            return httpx.Response(429, json={"e": 1}, headers={"Retry-After": "7"})
+        return json_response(200, {"choices": [{"message": {"content": "ok"}}]})
+
+    async def fake_sleep(seconds: float) -> None:
+        slept.append(seconds)
+
+    patch_transport(monkeypatch, handler)
+    monkeypatch.setattr("app.services.llm.openai_compatible.asyncio.sleep", fake_sleep)
+    await make_llm().generate("질문")
+    assert slept == [7.0]
 
 
 async def test_unexpected_payload_shape_is_reported(monkeypatch):

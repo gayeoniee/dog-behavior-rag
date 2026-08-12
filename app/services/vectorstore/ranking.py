@@ -29,6 +29,8 @@ class Candidate:
     distance: float
     """pgvector 코사인 거리. 0이면 동일, 클수록 멀다."""
     authority_tier: int
+    doc_type: str = "guide"
+    """`guide` | `study`. 실무 가이드에 소폭 부스트를 준다 (rank 독스트링 참조)."""
 
 
 def rank(
@@ -36,23 +38,36 @@ def rank(
     top_k: int,
     *,
     authority_boost: float = 0.02,
+    guide_boost: float = 0.03,
     max_per_document: int = 2,
 ) -> list[SearchHit]:
-    """권위 부스팅 + 문서 다양성 상한을 적용해 상위 top_k를 고른다.
+    """권위·문서종류 부스팅 + 문서 다양성 상한을 적용해 상위 top_k를 고른다.
 
-    부스팅: `(1 - distance) + authority_boost * (3 - tier) / 2`
-    → tier1 +0.02 / tier2 +0.01 / tier3 +0.
+    ```
+    점수 = (1 - distance)
+         + authority_boost * (3 - tier) / 2      # tier1 +0.02 … tier3 +0
+         + guide_boost * (doc_type == "guide")   # 실무 가이드 +0.03
+    ```
 
-    상한이 작은 게 핵심이다. 작은 코퍼스에서 1위와 5위의 코사인 격차가 보통
-    0.02~0.10이라, 이 값은 근소한 차이만 뒤집고 의미 없는 tier1 청크를 강한 tier3
-    청크 위로 올리지는 못한다. 권위는 타이브레이커지 검색 신호가 아니다.
+    **부스트가 작은 게 핵심이다.** 근거 있는 질문(0.714)과 주제 공백(0.673)의 차이가
+    0.04라, 부스트가 그보다 크면 무관한 가이드가 정확한 논문을 밀어낸다. 권위도
+    문서 종류도 타이브레이커지 검색 신호가 아니다.
+
+    `guide_boost`가 필요한 이유: 코퍼스 청크의 97%가 논문이라 "어떻게 해요"라는
+    질문에 실행 절차 대신 연구 결과가 올라온다. RSPCA 리콜 문서(3청크)가 존재하는데도
+    논문 11,000청크에 밀려 상위에 못 오던 것이 실제 사례다.
 
     곱셈형(`sim * (1 + w)`)은 기각했다 — 유사도가 높을수록 부스트가 커지는데,
     거기가 바로 재정렬이 가장 불필요한 구간이다.
     """
     scored = sorted(
         (
-            (cand, (1.0 - cand.distance) + authority_boost * (3 - cand.authority_tier) / 2)
+            (
+                cand,
+                (1.0 - cand.distance)
+                + authority_boost * (3 - cand.authority_tier) / 2
+                + (guide_boost if cand.doc_type == "guide" else 0.0),
+            )
             for cand in candidates
         ),
         key=lambda pair: pair[1],

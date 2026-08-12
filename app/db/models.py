@@ -75,6 +75,14 @@ class Document(Base):
     license 문자열 매칭이 아니라 한 필드로 만든 것. 기본값이 보수적인 쪽인 이유는
     분류를 빠뜨린 문서가 조용히 배포 대상에 들어가면 안 되기 때문이다."""
 
+    doc_type: Mapped[str] = mapped_column(String(10), default="guide")
+    """`guide`(실무 가이드) | `study`(학술 논문).
+
+    코퍼스 청크의 97%가 논문이라, 보호자가 "어떻게 해요"라고 물으면 실행 절차가
+    아니라 연구 결과가 올라온다. 검색에서 가이드에 소폭 부스트를 줘 그걸 보정한다
+    (vectorstore/ranking.py). `source_id`가 `pmc-`로 시작하면 study다.
+    """
+
     corpus: Mapped[str] = mapped_column(String(20), default="answer")
     """`answer` | `observation`.
 
@@ -92,6 +100,7 @@ class Document(Base):
         # 이 둘은 모든 검색의 WHERE 절에 들어간다.
         Index("ix_documents_methodology", "methodology"),
         Index("ix_documents_corpus", "corpus"),
+        Index("ix_documents_doc_type", "doc_type"),
         # 축별 커버리지 조회용 (배열 겹침 연산자).
         Index("ix_documents_axis", "axis", postgresql_using="gin"),
     )

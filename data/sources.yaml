@@ -150,6 +150,21 @@
   urls:
     - https://www.rspca.org.uk/adviceandwelfare/pets/dogs/behaviour/understanding
     - https://www.rspca.org.uk/adviceandwelfare/pets/dogs/behaviour/separationrelatedbehaviour
+    # 2026-08-12 추가 — 실사용 평가에서 드러난 주제 공백을 메운다.
+    # 보호자가 매일 묻는 배변·리콜·줄당김에 전용 문서가 하나도 없었다.
+    - https://www.rspca.org.uk/adviceandwelfare/pets/dogs/training/toilettraining
+    - https://www.rspca.org.uk/adviceandwelfare/pets/dogs/training/come
+    - https://www.rspca.org.uk/adviceandwelfare/pets/dogs/training
+    - https://www.rspca.org.uk/adviceandwelfare/pets/dogs/walking
+    - https://www.rspca.org.uk/adviceandwelfare/pets/dogs/behaviour/aggression
+    - https://www.rspca.org.uk/adviceandwelfare/pets/dogs/company/goodrelationship
+    - https://www.rspca.org.uk/adviceandwelfare/pets/dogs/health/puppycare
+  # robots.txt 재확인 2026-08-12: GPTBot을 Disallow: / 로 차단한다.
+  #   단 ClaudeBot 지정은 없고, 용도(AI 학습/RAG) 금지 문구도 없으며,
+  #   User-agent: * 는 쿼리스트링·관리 경로만 막고 콘텐츠는 허용한다.
+  #   우리 UA(gy-rag-collector)로 위 URL 전부 허용됨을 확인했다.
+  #   네이버(ClaudeBot 지정 + RAG 명시 금지)와는 성격이 다르지만 신호이므로 기록해둔다.
+  #   같은 이유로 license는 personal-use-only를 유지한다 — 배포 대상이 아니다.
   # ToS 확인 2026-08-12 (utilities/termsandconditions + .../copyrightandtrademarks):
   #   robots.txt 허용. 자동 수집을 금지하는 조항이 없다 (4개 소스 중 유일).
   #   개인 학습 목적의 로컬 저장은 명시적으로 허용한다 —
@@ -163,7 +178,7 @@
   fetcher: html
   language: en
   species: dog
-  axis: [problem, cause]
+  axis: [problem, cause, training]   # 훈련 페이지가 추가되어 training 축이 붙었다
   authority_tier: 1
   methodology: reward_based
   published_at: 2024
