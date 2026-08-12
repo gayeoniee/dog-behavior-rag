@@ -115,9 +115,12 @@
     - https://www.aspca.org/pet-care/dog-care/common-dog-behavior-issues/whining
     - https://www.aspca.org/pet-care/dog-care/common-dog-behavior-issues/howling
     - https://www.aspca.org/pet-care/dog-care/common-dog-behavior-issues/mounting-and-masturbation
-  # 2026-08-12 수동 저장 완료 (8건). 위 목록은 실제로 저장된 것과 맞춰둔 것이다 —
-  # local fetcher는 디렉터리를 읽으므로 이 목록은 "무엇을 받았는지"의 기록일 뿐이다.
-  # 아직 안 받은 것: fear-of-noises, digging (받으면 목록에 추가할 것)
+  # 2026-08-12 수동 저장 완료 (8건). local fetcher는 디렉터리를 읽으므로 이 목록은
+  # "무엇을 받았는지"의 기록일 뿐이다.
+  #
+  # 원래 목록에 있던 fear-of-noises / digging은 2026-08-12 확인 결과 **404**다
+  # (ASPCA가 페이지를 내렸다). 다시 찾지 말 것. 대신 같은 시리즈의 howling /
+  # mounting-and-masturbation으로 대체해 8건을 채웠다.
   # ToS 확인 2026-08-12 (https://www.aspca.org/about-us/legal-information):
   #   robots.txt는 위 8개 URL 전부 허용이지만 ToS가 자동 접근을 금지한다 —
   #   "Use any robot, spider or other automatic device, process or means to access
