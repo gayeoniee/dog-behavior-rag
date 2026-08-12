@@ -20,7 +20,7 @@ class LocalFetcher:
         directory = LOCAL_DIR / source.id
         if not directory.is_dir():
             logger.warning(
-                "%s 없음 — 수동 다운로드 파일을 %s 에 넣어주세요 (.pdf/.txt)",
+                "%s 없음 — 수동 다운로드 파일을 %s 에 넣어주세요 (.pdf/.txt/.md)",
                 directory,
                 directory,
             )

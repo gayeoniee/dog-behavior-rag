@@ -167,6 +167,28 @@ uv run python -m scripts.collect.report
 > CC-BY 오픈액세스 문헌(PMC OA 서브셋 등)으로 채우면 된다 — 후보는 `sources.yaml`의
 > MSD 제거 주석에 적어뒀다.
 
+#### 수동 저장 대기 소스 (사람이 해야 하는 일)
+
+`fetcher: local` 소스는 **사람이 브라우저로 저장한 파일**만 쓴다. 자동화 도구로
+받아오면 ToS가 금지한 "automatic device, process or means"에 그대로 해당하고,
+ASPCA가 허용한 건 사람이 뜨는 사본 한 부이기 때문이다. 그래서 이 단계는
+스크립트로 대신할 수 없다.
+
+| 소스 | 할 일 |
+|---|---|
+| `aspca-behavior-issues` | `sources.yaml`의 `urls:` 8개를 브라우저로 열어 본문을 복사 → `data/raw/local/aspca-behavior-issues/<주제>.md` (또는 Ctrl+P → PDF 저장) |
+| `korea-gov-materials` | 동물사랑배움터·animal.go.kr 자료실 PDF를 `data/raw/local/korea-gov-materials/`에 저장 |
+
+넣은 뒤:
+
+```bash
+uv run python -m scripts.collect.fetch --source aspca-behavior-issues
+uv run python -m scripts.collect.normalize
+uv run python -m scripts.db.load_corpus   # content_hash 덕분에 기존 문서는 건너뛴다
+```
+
+디렉터리가 없으면 `fetch`가 0건으로 넘어갈 뿐 실패하지 않으므로, 나중에 채워도 된다.
+
 #### 새 소스를 추가할 때
 
 `license: pending-check`로 넣으면 fetch가 거부한다. 확인 작업의 기계적인 부분은
