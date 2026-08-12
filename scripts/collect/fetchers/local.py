@@ -44,7 +44,9 @@ class LocalFetcher:
                 RawDoc(
                     source_id=source.id,
                     url=f"file://{path}",
-                    title=path.stem,
+                    # 파일명만 쓰면 화면 인용에 "aggression"처럼 출처를 알 수 없는
+                    # 제목이 뜬다. 다른 소스는 기관명이 제목에 들어 있으므로 맞춰준다.
+                    title=f"{source.name} — {path.stem}",
                     text=text,
                     fetched_at=fetched_at,
                 )

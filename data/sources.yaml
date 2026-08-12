@@ -111,10 +111,13 @@
     - https://www.aspca.org/pet-care/dog-care/common-dog-behavior-issues/separation-anxiety
     - https://www.aspca.org/pet-care/dog-care/common-dog-behavior-issues/destructive-chewing
     - https://www.aspca.org/pet-care/dog-care/common-dog-behavior-issues/aggression
-    - https://www.aspca.org/pet-care/dog-care/common-dog-behavior-issues/fear-of-noises
     - https://www.aspca.org/pet-care/dog-care/common-dog-behavior-issues/mouthing-nipping-and-play-biting-adult-dogs
     - https://www.aspca.org/pet-care/dog-care/common-dog-behavior-issues/whining
-    - https://www.aspca.org/pet-care/dog-care/common-dog-behavior-issues/digging
+    - https://www.aspca.org/pet-care/dog-care/common-dog-behavior-issues/howling
+    - https://www.aspca.org/pet-care/dog-care/common-dog-behavior-issues/mounting-and-masturbation
+  # 2026-08-12 수동 저장 완료 (8건). 위 목록은 실제로 저장된 것과 맞춰둔 것이다 —
+  # local fetcher는 디렉터리를 읽으므로 이 목록은 "무엇을 받았는지"의 기록일 뿐이다.
+  # 아직 안 받은 것: fear-of-noises, digging (받으면 목록에 추가할 것)
   # ToS 확인 2026-08-12 (https://www.aspca.org/about-us/legal-information):
   #   robots.txt는 위 8개 URL 전부 허용이지만 ToS가 자동 접근을 금지한다 —
   #   "Use any robot, spider or other automatic device, process or means to access
