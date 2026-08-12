@@ -32,21 +32,41 @@ from app.services.vectorstore.pgvector import PgVectorStore
 
 DEFAULT_CORPUS = Path("data/processed/corpus.jsonl")
 
-_PERSONAL_LICENSE_PREFIX = "personal-use-only"
+OPEN_LICENSES = frozenset(
+    {
+        # 배포·재이용에 제약이 없는 것만 여기 넣는다.
+        "cc-by",
+        "cc-by-sa",
+        "cc0",
+        "public-position-statement",
+        "public-guideline-pdf",
+        "korea-gov-nuri-1",  # 공공누리 제1유형(출처표시)만 해당
+    }
+)
+"""배포 가능한 license 값의 **허용 목록**.
+
+거부 목록이 아니라 허용 목록인 이유: 예전 구현이 "personal-use-only로 시작하지
+않으면 open"이었는데, 그러면 처음 보는 license가 조용히 배포 대상이 됐다.
+실제로 `korea-gov-publication`으로 넣은 문서가 알고 보니 민간 저작권물
+("저작권은 (주)펫앤스토리에게 귀속 ... 무단 복제, 사용 시 법적 제재")이었고
+그게 open으로 분류됐다. 정부기관이 배포한다고 공공저작물인 게 아니다.
+
+**NC/ND를 일부러 뺐다.** cc-by-nc는 상업적 이용을, cc-by-nc-nd는 2차적 저작물
+작성을 금지한다. RAG 답변이 2차적 저작물인지, 앱이 상업적인지가 아직 정해지지
+않았으므로 보수적으로 둔다. 앱의 성격이 확정되면 그때 재분류할 것.
+"""
 
 
 def derive_distribution(license_value: str | None) -> str:
     """license 문자열 → distribution 한 필드.
 
     CLAUDE.md가 "배포 시 코퍼스에서 제외"라고 한 판정을 매번 문자열 매칭하지 않도록
-    적재 시점에 한 번만 정규화한다. 모르는 값은 보수적으로 personal-only로 본다 —
+    적재 시점에 한 번만 정규화한다. **허용 목록에 없으면 전부 personal-only다** —
     분류를 빠뜨린 문서가 조용히 배포 대상이 되면 안 된다.
     """
     if not license_value:
         return "personal-only"
-    if license_value.startswith(_PERSONAL_LICENSE_PREFIX):
-        return "personal-only"
-    return "open"
+    return "open" if license_value.strip().lower() in OPEN_LICENSES else "personal-only"
 
 
 def to_document_in(record: dict, *, corpus_partition: str) -> DocumentIn:

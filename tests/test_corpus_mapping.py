@@ -73,17 +73,37 @@ def test_personal_use_licenses_become_personal_only():
     assert derive_distribution("personal-use-only-manual-copy") == "personal-only"
 
 
-def test_public_licenses_become_open():
+def test_permissive_licenses_become_open():
+    assert derive_distribution("cc-by") == "open"
+    assert derive_distribution("cc0") == "open"
     assert derive_distribution("public-position-statement") == "open"
     assert derive_distribution("public-guideline-pdf") == "open"
-    assert derive_distribution("korea-gov-publication") == "open"
-    assert derive_distribution("CC BY") == "open"
+    assert derive_distribution("korea-gov-nuri-1") == "open"
+
+
+def test_nc_and_nd_licenses_are_not_open():
+    """NC는 상업적 이용을, ND는 2차적 저작물 작성을 금지한다.
+
+    앱이 상업적인지, RAG 답변이 2차적 저작물인지가 정해지기 전까지는 배포 대상이
+    아니다. 정해지면 OPEN_LICENSES에서 재분류할 것.
+    """
+    assert derive_distribution("cc-by-nc") == "personal-only"
+    assert derive_distribution("cc-by-nc-nd") == "personal-only"
+    assert derive_distribution("cc-by-nc-sa") == "personal-only"
 
 
 def test_unknown_license_is_conservative():
-    """분류를 빠뜨린 문서가 조용히 배포 대상이 되면 안 된다."""
+    """허용 목록에 없으면 전부 personal-only.
+
+    회귀 대상: `korea-gov-publication`은 예전 구현에서 open으로 분류됐는데,
+    실제로 그 이름으로 넣은 PDF가 민간 저작권물이었다 — 정부기관이 배포한다고
+    공공저작물인 게 아니다.
+    """
     assert derive_distribution(None) == "personal-only"
     assert derive_distribution("") == "personal-only"
+    assert derive_distribution("korea-gov-publication") == "personal-only"
+    assert derive_distribution("pmc-oa-unspecified") == "personal-only"
+    assert derive_distribution("처음 보는 값") == "personal-only"
 
 
 # ── content_hash ─────────────────────────────────────────────────────
