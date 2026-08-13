@@ -116,6 +116,10 @@ class QueryRewriter:
                 f"{format_history(history)}보호자: {query}",
                 system=REWRITE_SYSTEM,
                 max_tokens=_MAX_REWRITE_TOKENS,
+                # 숙고가 필요한 일이 아니다 — "줄 당김 → leash pulling" 수준의
+                # 용어 치환이다. 추론형 모델에서 켜두면 사고과정 250토큰을
+                # 만드느라 6초가 걸린다 (전체 20초 중 3분의 1).
+                reasoning=False,
             )
         except LLMUnavailableError as exc:
             # 재작성은 품질 향상이지 필수 경로가 아니다. 검색까지 막지 않는다.

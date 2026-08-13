@@ -66,13 +66,13 @@ def test_realistic_answer_is_cleaned():
         "**이렇게 해보세요**\n"
         "1. 멀리 **멈춥니다**.\n"
         "2. 즉시 간식을 줍니다.\n\n"
-        "**피하세요:** 줄 잡아당기기"
+        "**주의점:** 줄 잡아당기기"
     )
     cleaned = strip_markdown(raw)
     assert "*" not in cleaned
     assert "진단: 좌절감입니다." in cleaned
     assert "1. 멀리 멈춥니다." in cleaned
-    assert "피하세요: 줄 잡아당기기" in cleaned
+    assert "주의점: 줄 잡아당기기" in cleaned
 
 
 # ── trim_to_form ─────────────────────────────────────────────────────
@@ -84,19 +84,28 @@ def test_trailing_restatement_after_form_is_cut():
         "진단: 흥분해서 당기는 것입니다.\n\n"
         "이렇게 해보세요\n"
         "1. 멈추고 기다리세요.\n\n"
-        "피하세요: 힘으로 제압하지 마세요.\n\n"
+        "주의점: 힘으로 제압하지 마세요.\n\n"
         "보호자가 줄을 너무 당긴다고 하셨으니, 산책 전에 간식을 주고…"
     )
     trimmed = trim_to_form(raw)
-    assert trimmed.endswith("피하세요: 힘으로 제압하지 마세요.")
+    assert trimmed.endswith("주의점: 힘으로 제압하지 마세요.")
     assert "보호자가 줄을" not in trimmed
+
+
+def test_old_label_is_still_trimmed():
+    """프롬프트를 "주의점"으로 바꿔도 모델이 옛 라벨을 뱉는 일이 있다.
+
+    그때 폼의 끝을 못 찾으면 사족 잘라내기가 조용히 죽는다. 둘 다 받는다.
+    """
+    raw = "진단: 좌절감입니다.\n\n피하세요: 혼내지 마세요.\n\n덧붙이자면 산책을 늘리세요."
+    assert trim_to_form(raw).endswith("피하세요: 혼내지 마세요.")
 
 
 def test_vet_line_is_part_of_the_form_and_survives():
     """`병원:` 줄은 통증이 의심될 때 붙는 폼의 일부다. 사족이 아니다."""
     raw = (
         "진단: 통증일 수 있습니다.\n\n"
-        "피하세요: 혼내지 마세요.\n\n"
+        "주의점: 혼내지 마세요.\n\n"
         "병원: 절뚝이면 바로 가보세요.\n\n"
         "다시 말씀드리면 통증이 의심되니 병원에 가보세요."
     )
@@ -125,7 +134,7 @@ def test_answers_without_form_labels_are_untouched():
 
 
 def test_form_at_end_of_text_is_kept_whole():
-    raw = "진단: 좌절감입니다.\n\n피하세요: 혼내지 마세요."
+    raw = "진단: 좌절감입니다.\n\n주의점: 혼내지 마세요."
     assert trim_to_form(raw) == raw
 
 
