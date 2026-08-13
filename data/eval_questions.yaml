@@ -13,6 +13,16 @@
 # "RAG 느낌"의 핵심이기 때문이다. 자료를 보강하면 uncovered → covered로 옮긴다.
 #
 # keywords: 근거 문서라면 포함할 법한 영어 표현 (코퍼스가 영어)
+#
+# **키워드는 그 주제를 실제로 다뤄야만 통과하도록 고른다.** 판정이 `any`라
+# 하나만 헐거우면 항목 전체가 헐거워진다. 두 가지를 피할 것 (2026-08-13 정비):
+#
+#   흔한 결과어   fear 16.7%, aggression 13.6%, stress 10.5%, anxiety 9.4%가
+#                 answer 코퍼스 11,354청크에 걸린다. 주제와 무관한 근거도 통과한다
+#   부분 문자열   judge()가 단어 시작 경계로 보므로(retrieval_report.mentions)
+#                 tail←detail, aging←managing, cue←rescue는 이제 안 걸린다.
+#                 다만 lead←leading처럼 **앞에서 시작하는** 오탐은 여전히 막지
+#                 못하므로 그런 단어는 구절로 쓴다 ("loose lead")
 
 # ── 전용 문서가 있는 주제 ──────────────────────────────
 - question: "강아지가 초인종 소리만 들리면 미친듯이 짖어요"
@@ -25,10 +35,12 @@
   expect: covered
   keywords: [destructive, chew, separation]
 
+# anxiety(9.4%)는 코퍼스 전반에 깔려 있어 분리불안이 아닌 근거도 통과시킨다.
+# 구절 "separation anxiety"로 바꾼다.
 - question: "출근하려고 하면 따라다니면서 낑낑대고 난리나요"
   topic: separation-anxiety
   expect: covered
-  keywords: [separation, anxiety, departure, alone]
+  keywords: [separation anxiety, separation, departure, alone]
 
 - question: "손을 자꾸 입으로 깨물어요 아직 아기라서 그런가요"
   topic: mouthing
@@ -50,15 +62,20 @@
   expect: covered
   keywords: [cognitive, dysfunction, senior, aging, sleep]
 
+# fear(16.7%)·aggression(13.6%)을 뺐다 — 평가셋에서 가장 헐거운 키워드였다.
+# 처벌의 **결과**를 가리키는 말이라 처벌을 다루지 않는 근거도 통과시킨다.
+# 주제어 punishment(2.0%)·aversive(2.9%)로 충분하다.
 - question: "혼내면 그때만 멈추고 또 그래요 벌 주는 게 맞나요?"
   topic: punishment
   expect: covered
-  keywords: [punishment, aversive, fear, aggression]
+  keywords: [punishment, aversive, positive punishment]
 
+# stress(10.5%)·signal은 뺐다. 이 질문의 핵심은 "하품·입술 핥기가 신호인가"라
+# 그 행동을 실제로 언급해야 근거다. 스트레스를 말하는 문서는 코퍼스에 널려 있다.
 - question: "강아지가 자꾸 하품하고 입술을 핥아요 스트레스인가요"
   topic: stress-signals
   expect: covered
-  keywords: [yawn, lip lick, calming, stress, signal]
+  keywords: [yawn, lip lick, licking lips, calming signal, appeasement]
 
 - question: "꼬리 흔드는데 왜 으르렁거리죠? 좋다는 거 아닌가요"
   topic: body-language
@@ -82,22 +99,34 @@
 - question: "산책할 때 줄을 너무 당겨서 팔이 아파요"
   topic: leash-pulling
   expect: covered
-  keywords: [leash, lead, pulling, loose leash, harness]
+  # 맨 lead는 leading·misleading에 걸린다(경계 매칭도 앞에서 시작하는 건 못 막는다).
+  # RSPCA가 영국식으로 "lead"를 쓰므로 구절 "loose lead"·"on the lead"로 남긴다.
+  keywords: [leash, pulling, loose leash, loose lead, on the lead, harness]
 
 # RSPCA "Train Your Dog To Come When Called" 문서가 있는데도 논문에 밀려
 # 상위에 못 온다. 자료 문제가 아니라 **랭킹 문제**라서 covered로 둔다 —
 # doc_type 부스트(C)가 이걸 해결해야 한다.
+#
+# 2026-08-13 추가: 위 진단은 doc_type 부스트 이전 것이고, 지금은 절반만 맞다.
+# 네 번의 실행에서 RSPCA 리콜 문서가 **두 번은 1위로 올라왔다.** 나머지 두 번은
+# ASPCA 공격성 문서가 1위였고 그때 실패한다. 재작성 문구에 따라 갈린다.
+#
+# cue·reward를 뺐다. 리콜을 전혀 다루지 않는 훈련 문서도 그 두 단어는 갖고 있어서
+# **무엇이 검색되든 통과할 수 있었다.** 좁힌 뒤로는 통과가 "RSPCA 문서가 실제로
+# 올라왔다"를 뜻한다. 이 항목의 흔들림이 이제 랭킹 흔들림을 그대로 비춘다.
 - question: "이름 불러도 안 와요 오라고 하면 도망가요"
   topic: recall
   expect: covered
-  keywords: [recall, come when called, cue, reward]
+  keywords: [recall, come when called, comes when called, coming back]
 
 # ASPCA 공격성 문서 + RSPCA leave 문서가 이 주제를 덮는지 평가셋이 판정하게 둔다.
 # 전용 문서는 여전히 없다 — 실패하면 그게 정직한 정보다.
 - question: "밥그릇 근처 가면 으르렁거려요 뺏길까봐 그러는 거죠?"
   topic: resource-guarding
   expect: covered
-  keywords: [resource guarding, food guarding, possessive, trade, leave]
+  # trade는 trade-off에, leave는 "leaving the dog alone"에 걸린다(분리불안 문서에
+  # 흔하다). 실제 표현인 "trade up"·"leave it"으로 바꾸고 주제어 guard를 넣는다.
+  keywords: [resource guarding, food guarding, guard, possessive, trade up, leave it]
 
 # 2026-08-13 uncovered → covered. **자료 문제가 아니라 랭킹 문제**라서 리콜과 같이
 # 승격한다. ASPCA 분리불안 문서 안에 "To Crate or Not to Crate?" 단락이 통째로 있고

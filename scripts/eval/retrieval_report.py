@@ -19,6 +19,7 @@
 import argparse
 import asyncio
 import json
+import re
 import statistics
 import sys
 from dataclasses import asdict, dataclass
@@ -58,6 +59,24 @@ def is_practical(title: str) -> bool:
     return any(m in title for m in PRACTICAL_MARKERS)
 
 
+def mentions(blob: str, keyword: str) -> bool:
+    """근거 본문에 키워드가 **단어로** 등장하는지.
+
+    단순 `in`으로 보면 부분 문자열에 걸린다. 실측된 오탐:
+
+        tail  ← detail, detailed   (논문에 매우 흔하다)
+        aging ← managing
+        cue   ← rescue
+        lead  ← leading, misleading
+        den   ← sudden, evidence   (크레이트 항목에서 처음 발견)
+
+    **앞쪽 경계만 건다. 뒤는 열어둔다.** 양쪽에 `\\b`를 걸면 `bark`가 `barking`을,
+    `chew`가 `chewing`을 못 잡아 멀쩡한 근거가 떨어진다. 앞만 걸면 `tail`은 잡고
+    `detail`은 안 잡는다 — 필요한 게 정확히 이것이다.
+    """
+    return re.search(r"\b" + re.escape(keyword), blob) is not None
+
+
 def judge(entry: dict, hits: list[SearchHit], kept: list[SearchHit], coverage: str) -> bool:
     """그룹별 합격 판정.
 
@@ -72,7 +91,9 @@ def judge(entry: dict, hits: list[SearchHit], kept: list[SearchHit], coverage: s
         return coverage in ("none", "needs_detail")
     blob = " ".join(h.content.lower() for h in kept)
     keywords = [k.lower() for k in entry.get("keywords", [])]
-    return coverage not in ("none", "needs_detail") and any(k in blob for k in keywords)
+    return coverage not in ("none", "needs_detail") and any(
+        mentions(blob, k) for k in keywords
+    )
 
 
 async def run(save: str | None, compare: str | None) -> int:
