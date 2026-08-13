@@ -5,6 +5,7 @@
   2. 선별이 실패해도 **답변을 막지 않는가** (폴백)
 """
 
+from app.schemas.chat import Turn
 from app.services.evidence_select import (
     EvidenceSelector,
     Selection,
@@ -29,6 +30,7 @@ class StubLLM:
         self.domain_reply = domain_reply
         self.calls = 0
         self.reasoning_flags: list[bool | None] = []
+        self.prompts: list[str] = []
 
     @property
     def name(self) -> str:
@@ -37,6 +39,7 @@ class StubLLM:
     async def generate(self, prompt, *, system=None, max_tokens=None, reasoning=None) -> str:
         self.calls += 1
         self.reasoning_flags.append(reasoning)
+        self.prompts.append(prompt)
         if self.error:
             raise self.error
         if self.domain_reply is not None and system and "DOG or OTHER" in system:
@@ -154,6 +157,18 @@ async def test_undecidable_domain_falls_back_to_selector_hint():
     llm = StubLLM('{"keep":[],"in_domain":true}', domain_reply="잘 모르겠습니다")
     result = await EvidenceSelector(llm).select("벽을 긁어요", [hit(1)])
     assert result.coverage == "needs_detail"
+
+
+async def test_history_reaches_the_selection_prompt():
+    """맥락이 없으면 후속 질문("켄넬 훈련이 도움이 될까?")을 판정할 수 없다.
+
+    검색(재작성)은 이미 맥락을 쓰고 있었는데 판정만 안 써서, 같은 취지의 질문이
+    한 번은 답이 되고 한 번은 되묻기가 됐다.
+    """
+    llm = StubLLM('{"keep":[1],"in_domain":true}')
+    history = [Turn(role="user", content="밤에 너무 짖는데?")]
+    await EvidenceSelector(llm).select("켄넬 훈련이 도움이 될까?", [hit(1)], history)
+    assert "밤에 너무 짖는데" in llm.prompts[0]
 
 
 async def test_selection_asks_for_reasoning():

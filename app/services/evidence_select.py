@@ -21,10 +21,13 @@ dynamic range가 좁아 임계값이 성립하지 않는다. 그래서 LLM에게
 import json
 import logging
 import re
+from collections.abc import Sequence
 from dataclasses import dataclass, field
 from typing import Literal
 
+from app.schemas.chat import Turn
 from app.services.llm.base import LLMClient, LLMUnavailableError
+from app.services.query_rewrite import format_history
 from app.services.vectorstore.base import SearchHit
 
 logger = logging.getLogger(__name__)
@@ -71,6 +74,19 @@ question asking what to do.
 even if the excerpts do not cover it. "My dog scratches the wall" is in_domain.
 - false: cat care, product or brand recommendations, prices, clinic or cafe locations, \
 anything not about dog behaviour or training."""
+
+_CONTEXT_HINT = (
+    "Read the question in the context of the conversation above. A follow-up like "
+    '"would crate training help?" is about whatever the conversation was about — '
+    "judge the excerpts against that, not against the bare sentence.\n"
+)
+"""맥락이 있을 때만 붙이는 지시.
+
+처음에는 SELECT_SYSTEM에 넣었는데 **단발 질문 두 개가 깨졌다** (18/20 → 16/20).
+대화가 없는데 "이전 대화가 주어지면…"을 항상 읽히면 잡음이 된다 — 초인종 질문은
+검색 결과가 완전히 같은데 판정만 뒤집혔고, 꼬리 질문은 근거를 하나도 안 남겼다.
+쓰이는 자리에만 붙여야 한다.
+"""
 
 DOMAIN_SYSTEM = """Is the question asking about a DOG's behaviour, training, or wellbeing?
 
@@ -172,7 +188,15 @@ class EvidenceSelector:
         self._llm = llm
         self._enabled = enabled
 
-    async def select(self, question: str, hits: list[SearchHit]) -> Selection:
+    async def select(
+        self, question: str, hits: list[SearchHit], history: Sequence[Turn] = ()
+    ) -> Selection:
+        """근거를 고른다. history를 주면 후속 질문을 그 맥락에서 판정한다.
+
+        맥락이 없으면 "켄넬 훈련이 도움이 될까?" 같은 후속 질문이 **무엇에 대한
+        질문인지 알 수 없어** 근거를 못 고르고 되묻기로 떨어진다. 검색(재작성)은
+        이미 맥락을 쓰고 있었는데 판정만 안 쓰던 비대칭을 없앤다.
+        """
         if not hits:
             return Selection(kept=[], coverage="none", note=NO_EVIDENCE_NOTE)
         if not self._enabled or self._llm is None:
@@ -180,7 +204,7 @@ class EvidenceSelector:
 
         try:
             raw = await self._llm.generate(
-                self._build_prompt(question, hits),
+                self._build_prompt(question, hits, history),
                 system=SELECT_SYSTEM,
                 max_tokens=_MAX_SELECT_TOKENS,
                 # 이 프로젝트에서 LLM에게 시키는 일 중 유일하게 숙고가 필요한 판정이다.
@@ -205,7 +229,7 @@ class EvidenceSelector:
             # 개 질문인데 근거를 못 고른 것과, 애초에 범위 밖인 것은 다르다.
             # 전자는 되물어야 하고 후자는 답하지 않아야 한다. 갈림길이 여기뿐이라
             # 여기서만 범위를 따로 묻는다 (일반 경로는 호출이 늘지 않는다).
-            in_domain = await self._ask_domain(question, fallback=in_domain)
+            in_domain = await self._ask_domain(question, fallback=in_domain, history=history)
             if in_domain:
                 logger.info("정보 부족 — 되묻기로 전환: %r", question[:50])
                 return Selection(kept=[], coverage="needs_detail", note=NEEDS_DETAIL_NOTE)
@@ -217,7 +241,9 @@ class EvidenceSelector:
         logger.info("근거 선별: %d건 중 %d건 유지", len(hits), len(kept))
         return Selection(kept=kept, coverage=coverage)
 
-    async def _ask_domain(self, question: str, *, fallback: bool) -> bool:
+    async def _ask_domain(
+        self, question: str, *, fallback: bool, history: Sequence[Turn] = ()
+    ) -> bool:
         """질문이 개 행동 영역인지만 따로 묻는다. 실패하면 선별이 준 값을 쓴다.
 
         폴백이 "범위 안"으로 기우는 게 맞다 — 개 질문을 범위 밖으로 잘못 처리하면
@@ -227,7 +253,7 @@ class EvidenceSelector:
             return fallback
         try:
             raw = await self._llm.generate(
-                question,
+                f"{format_history(history)}{question}",
                 system=DOMAIN_SYSTEM,
                 max_tokens=_MAX_DOMAIN_TOKENS,
                 reasoning=True,
@@ -244,9 +270,11 @@ class EvidenceSelector:
         return verdict
 
     @staticmethod
-    def _build_prompt(question: str, hits: list[SearchHit]) -> str:
+    def _build_prompt(question: str, hits: list[SearchHit], history: Sequence[Turn] = ()) -> str:
         blocks = [
             f"[{i}] {hit.document_title}\n{hit.content[:_SNIPPET_CHARS]}"
             for i, hit in enumerate(hits, start=1)
         ]
-        return "\n\n".join(blocks) + f"\n\nQuestion: {question}"
+        context = format_history(history)
+        hint = _CONTEXT_HINT if context else ""
+        return "\n\n".join(blocks) + f"\n\n{context}{hint}Question: {question}"
