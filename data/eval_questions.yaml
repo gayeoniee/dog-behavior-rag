@@ -148,6 +148,16 @@
   expect: covered
   keywords: [crate, kennel]
 
+# 2026-08-13 추가. 사용자가 실제로 물어서 코퍼스를 뒤져보고 넣었다.
+# **반쪽만 있는 주제**다 — "혼자 있을 때 배변한다"는 분리불안 증상으로 잘 다뤄지지만
+# (35청크), 반대 패턴인 "혼자 있을 때 참고 안 한다"(억제된 배변)는 자료가 없다.
+# 억제·참기로 검색해도 잡히는 5건이 전부 "hold your hand" 오탐이었다.
+# 그러니 정답은 거절이나 되묻기다. 근거를 붙여 답하면 지어낸 것이다.
+- question: "혼자 있을 때는 하루 종일 대변을 안 봐요 보호자가 있을 때만 봐요"
+  topic: inhibited-elimination
+  expect: uncovered
+  keywords: [holding, inhibited, refuse to eliminate]
+
 # ── 서비스 범위 밖 (거절해야 통과) ──────────────────────
 - question: "고양이 화장실 모래는 어떤 게 제일 좋아요?"
   topic: cat-litter
