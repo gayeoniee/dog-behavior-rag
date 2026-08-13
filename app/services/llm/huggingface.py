@@ -28,7 +28,9 @@ class HuggingFaceLLM:
         *,
         system: str | None = None,
         max_tokens: int | None = None,
+        reasoning: bool | None = None,
     ) -> str:
+        # reasoning은 추론형 모델에만 의미가 있어 여기서는 받기만 한다.
         # TODO(내일): 실제 추론 호출
         return (
             "[stub] 아직 LLM이 연결되지 않았습니다. "

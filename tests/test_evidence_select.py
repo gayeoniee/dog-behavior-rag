@@ -5,25 +5,42 @@
   2. 선별이 실패해도 **답변을 막지 않는가** (폴백)
 """
 
-from app.services.evidence_select import EvidenceSelector, Selection, parse_selection
+from app.services.evidence_select import (
+    EvidenceSelector,
+    Selection,
+    parse_domain,
+    parse_selection,
+)
 from app.services.llm.base import LLMUnavailableError
 from tests.fakes import hit
 
 
 class StubLLM:
-    def __init__(self, reply: str = "", error: Exception | None = None) -> None:
+    """reply 하나를 계속 돌려준다. domain_reply를 주면 범위 판정에만 그걸 쓴다."""
+
+    def __init__(
+        self,
+        reply: str = "",
+        error: Exception | None = None,
+        domain_reply: str | None = None,
+    ) -> None:
         self.reply = reply
         self.error = error
+        self.domain_reply = domain_reply
         self.calls = 0
+        self.reasoning_flags: list[bool | None] = []
 
     @property
     def name(self) -> str:
         return "stub"
 
-    async def generate(self, prompt, *, system=None, max_tokens=None) -> str:
+    async def generate(self, prompt, *, system=None, max_tokens=None, reasoning=None) -> str:
         self.calls += 1
+        self.reasoning_flags.append(reasoning)
         if self.error:
             raise self.error
+        if self.domain_reply is not None and system and "DOG or OTHER" in system:
+            return self.domain_reply
         return self.reply
 
 
@@ -71,6 +88,29 @@ def test_duplicates_are_collapsed():
     assert parse_selection('{"keep":[2,2,1],"in_domain":true}', 3) == ([0, 1], True)
 
 
+# ── parse_domain ─────────────────────────────────────────────────────
+
+
+def test_domain_single_word_verdicts():
+    assert parse_domain("DOG") is True
+    assert parse_domain("OTHER") is False
+    assert parse_domain(" other\n") is False
+
+
+def test_domain_reasoning_block_is_stripped():
+    assert parse_domain("<think>고양이 얘기니까 OTHER겠지 DOG는 아님</think>\nOTHER") is False
+
+
+def test_domain_both_words_is_undecided():
+    """설명을 덧붙이면 두 단어가 다 나온다. 그때는 판정하지 않는 편이 낫다."""
+    assert parse_domain("This is not a DOG question, it is OTHER") is None
+
+
+def test_domain_no_verdict_returns_none():
+    assert parse_domain("잘 모르겠습니다") is None
+    assert parse_domain("") is None
+
+
 # ── EvidenceSelector ─────────────────────────────────────────────────
 
 
@@ -84,11 +124,43 @@ async def test_empty_hits_short_circuits_without_calling_llm():
 
 async def test_out_of_domain_with_no_evidence_yields_none():
     """범위 밖 질문은 답하지 않는다."""
-    llm = StubLLM('{"keep":[],"in_domain":false}')
+    llm = StubLLM('{"keep":[],"in_domain":false}', domain_reply="OTHER")
     result = await EvidenceSelector(llm).select("애견카페 추천", [hit(1), hit(2)])
     assert result.coverage == "none"
     assert result.kept == []
     assert result.note and "근거 자료가 없습니다" in result.note
+
+
+async def test_domain_call_overrides_selector_hint():
+    """선별이 범위를 잘못 봐도 전용 판정이 바로잡는다.
+
+    작은 모델은 "근거 고르기"와 "개 질문인지"를 한 번에 시키면 후자를 놓친다.
+    실제로 고양이 모래·중성화 비용을 in_domain=true로 판정해 거절이 안 됐다.
+    """
+    llm = StubLLM('{"keep":[],"in_domain":true}', domain_reply="OTHER")
+    result = await EvidenceSelector(llm).select("고양이 모래 뭐가 좋아요", [hit(1)])
+    assert result.coverage == "none"
+
+
+async def test_domain_call_only_happens_when_nothing_kept():
+    """답할 근거가 있으면 범위 밖인지 물을 이유가 없다 — 호출을 늘리지 않는다."""
+    llm = StubLLM('{"keep":[1],"in_domain":true}')
+    await EvidenceSelector(llm).select("질문", [hit(1), hit(2)])
+    assert llm.calls == 1
+
+
+async def test_undecidable_domain_falls_back_to_selector_hint():
+    """판정을 못 읽으면 개 질문 쪽으로 기운다 — 되묻기가 거절보다 회복 가능하다."""
+    llm = StubLLM('{"keep":[],"in_domain":true}', domain_reply="잘 모르겠습니다")
+    result = await EvidenceSelector(llm).select("벽을 긁어요", [hit(1)])
+    assert result.coverage == "needs_detail"
+
+
+async def test_selection_asks_for_reasoning():
+    """근거 선별은 이 프로젝트에서 유일하게 숙고가 필요한 판정이다."""
+    llm = StubLLM('{"keep":[1],"in_domain":true}')
+    await EvidenceSelector(llm).select("질문", [hit(1)])
+    assert llm.reasoning_flags == [True]
 
 
 async def test_in_domain_with_no_evidence_asks_for_detail():
@@ -97,7 +169,7 @@ async def test_in_domain_with_no_evidence_asks_for_detail():
     실제 사례: "강아지가 벽을 자꾸 긁어"는 분리불안·지루함·강박 중 무엇인지에
     따라 대응이 달라 그대로는 답할 수 없다. "혼자 있을 때"를 붙이면 바로 답이 나온다.
     """
-    llm = StubLLM('{"keep":[],"in_domain":true}')
+    llm = StubLLM('{"keep":[],"in_domain":true}', domain_reply="DOG")
     result = await EvidenceSelector(llm).select("벽을 자꾸 긁어요", [hit(1), hit(2)])
     assert result.coverage == "needs_detail"
     assert result.kept == []

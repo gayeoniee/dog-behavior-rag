@@ -336,14 +336,55 @@ LLM_API_KEY=<발급받은 키>
 
 ### (B) LM Studio — 완전 무료·오프라인
 
-1. 모델 받기 — `Qwen2.5-7B-Instruct` GGUF **Q4_K_M** (약 4.7GB)
-2. Developer 탭 → **Start Server** (기본 포트 1234)
-3. `.env`에서 `LLM_BASE_URL=http://localhost:1234/v1`, `LLM_MODEL`을 LM Studio가
-   표시하는 id와 맞춘다
+`google/gemma-4-e2b`(4.6B, 4.41GB)로 실제로 돌려본 설정이다 (2026-08-13).
 
-VRAM 6GB면 7B Q4가 거의 다 올라가 20~30 tok/s. 부족하면 `Qwen2.5-3B-Instruct`
-Q4_K_M(약 2GB). **적재를 같이 돌리면 OOM이므로** `EMBEDDING_DEVICE=cpu`로 두거나
-번갈아 쓴다.
+1. Developer 탭 → **Start Server** (기본 포트 1234). CLI로는 `lms server start`
+2. 모델을 **컨텍스트 8192 이상으로** 로드한다. 답변 프롬프트가 근거 5청크 ×
+   1200자라 4096으로 로드하면 근거가 잘려 조용히 나빠진다 (`lms ps`로 확인)
+3. `.env`:
+
+```bash
+LLM_BASE_URL=http://localhost:1234/v1
+LLM_MODEL=google/gemma-4-e2b   # GET /v1/models 가 돌려주는 id 그대로. 틀리면 404
+LLM_API_KEY=not-needed         # 검사하진 않지만 헤더는 항상 나간다
+LLM_REASONING_EFFORT=medium    # 추론형 모델일 때만. 아래 참조
+EMBEDDING_DEVICE=cpu           # 모델이 4.41GB라 bge-m3(2.3GB)까지 안 올라간다
+```
+
+**임베딩을 CPU로 내리는 게 실질적인 대가다.** GPU가 11배 빠르다는 실측은
+적재(11,281청크) 이야기이고 서빙은 요청당 짧은 텍스트 1건이라 체감이 작지만,
+`load_corpus`를 돌릴 때는 LM Studio를 내리고 `auto`로 되돌려야 한다.
+
+#### 추론형(thinking) 모델이면 반드시 확인할 것
+
+gemma-4-e2b는 사고과정을 먼저 뱉는다. 사고과정도 completion 토큰을 쓰므로
+**질의 재작성(80토큰)·근거 선별(60토큰)의 예산을 사고과정이 다 먹고 `content`가
+빈 채로 잘린다.** 두 단계는 실패해도 폴백이 있어 죽지 않고 **조용히 비활성화**되는데,
+근거 선별이 빠지면 "고양이 모래" 같은 범위 밖 질문에도 개 문서 5건이 붙는다.
+
+`LLM_REASONING_EFFORT`를 설정하면 `openai_compatible.py`가
+`LLM_REASONING_RESERVE_TOKENS`(기본 2048)를 예산에 더해 이 문제를 막는다.
+빈 응답이 잘려서 나오면 경고 로그가 원인과 해결책을 함께 알려준다.
+
+호출별로도 갈린다 — 근거 선별·범위 판정은 추론을 켜고(`reasoning=True`),
+답변 생성은 끈다(`reasoning=False`). 생성에 켜두면 요청당 13초를 더 쓰면서
+평가 점수는 그대로였다.
+
+#### 실측 (평가셋 20문항, `data/eval_results/`)
+
+| 구성 | covered | uncovered | out-of-scope | 전체 | 응답 |
+|---|---|---|---|---|---|
+| Gemini `gemini-3.1-flash-lite` | 14/14 | 1/2 | 4/4 | **19/20** | 4~5초 |
+| gemma-4-e2b 추론 끔 | 13/14 | 0/2 | 1/4 | 14/20 | 5.9초 |
+| gemma-4-e2b 추론 켬 | 14/14 | 0/2 | 1/4 | 15/20 | 28초 |
+| gemma-4-e2b + 범위 판정 분리 | 14/14 | 0/2 | 4/4 | **18/20** | 19~21초 |
+
+**로컬로 좁힌 마지막 4점 중 3점은 범위 판정을 떼어낸 것이다.** 근거 선별 한 번의
+호출에 "쓸 근거 고르기"와 "개 질문인지"를 같이 시키면 4.6B는 후자를 놓친다
+(`evidence_select.py`의 `DOMAIN_SYSTEM` 참조). 남은 1점은 "크레이트 훈련" 한 건이다.
+
+단계별로는 재작성 6초 / 근거 선별 11초 / 범위 판정 3초(근거 0건일 때만) /
+답변 생성 3초다.
 
 서버가 꺼져 있거나 키가 틀려도 앱은 뜬다 — `/chat`만 503을 주고, 원인별로
 다른 메시지를 낸다(연결 실패 / 인증 실패 / 모델 없음 / 한도 초과).

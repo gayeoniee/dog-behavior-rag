@@ -24,7 +24,7 @@ class ScriptedLLM:
     def name(self) -> str:
         return "scripted"
 
-    async def generate(self, prompt, *, system=None, max_tokens=None) -> str:
+    async def generate(self, prompt, *, system=None, max_tokens=None, reasoning=None) -> str:
         self.prompts.append(prompt)
         return self.replies.pop(0) if self.replies else "{}"
 

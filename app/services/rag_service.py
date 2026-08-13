@@ -12,7 +12,7 @@ from app.schemas.chat import MAX_HISTORY_TURNS, ChatResponse, SourceChunk, Turn
 from app.services.embeddings.base import Embedder
 from app.services.evidence_select import EvidenceSelector
 from app.services.llm.base import LLMClient
-from app.services.plain_text import strip_markdown
+from app.services.plain_text import strip_markdown, trim_to_form
 from app.services.query_rewrite import QueryRewriter, format_history
 from app.services.vectorstore.base import SearchHit, VectorStore
 
@@ -203,7 +203,13 @@ class RagService:
 
         # 6) 답변 생성. 화면이 평문으로 렌더링하므로 마크다운 기호를 걷어낸다 —
         #    프롬프트에서 금지해도 모델이 습관적으로 **굵게**를 넣는다.
-        answer = strip_markdown(await self._llm.generate(prompt, system=system))
+        #    reasoning=False: 무엇을 말할지는 앞 단계(검색·선별)가 이미 정했고 여기는
+        #    정해진 폼으로 옮기는 일이라 숙고가 필요 없다. 추론형 모델에서 켜두면
+        #    요청당 13초를 더 쓰면서 평가 점수는 그대로였다 (gemma-4-e2b 실측).
+        #    trim_to_form: 추론을 끄면 폼을 지킨 뒤 같은 조언을 한 문단 더 붙이는
+        #    일이 생긴다. 프롬프트로 금지해도 안 지키므로 코드에서 자른다.
+        raw_answer = await self._llm.generate(prompt, system=system, reasoning=False)
+        answer = trim_to_form(strip_markdown(raw_answer))
 
         if selection.coverage in ("none", "needs_detail"):
             logger.info("%s로 응답 — 질문: %r", selection.coverage, question[:50])

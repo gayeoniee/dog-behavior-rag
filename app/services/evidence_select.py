@@ -72,10 +72,40 @@ even if the excerpts do not cover it. "My dog scratches the wall" is in_domain.
 - false: cat care, product or brand recommendations, prices, clinic or cafe locations, \
 anything not about dog behaviour or training."""
 
+DOMAIN_SYSTEM = """Is the question asking about a DOG's behaviour, training, or wellbeing?
+
+Answer with exactly one word: DOG or OTHER.
+
+DOG — what a dog does, why it does it, how to train it, whether a behaviour is normal, \
+or a dog's health as it affects behaviour. Vague ones still count: "my dog scratches the \
+wall", "he barks a lot".
+OTHER — everything else, even if a dog is mentioned: cats or other animals, product or \
+brand recommendations, prices and costs, surgery fees, where to buy something, clinic or \
+cafe locations, adoption paperwork, insurance.
+
+Examples:
+"고양이 화장실 모래는 어떤 게 좋아요?" -> OTHER
+"강아지 사료 브랜드 추천해주세요" -> OTHER
+"강아지 중성화 수술 비용이 얼마예요?" -> OTHER
+"강아지가 벽을 자꾸 긁어요" -> DOG
+"켄넬에 들어가기 싫어해요" -> DOG"""
+"""범위 판정을 근거 선별에서 떼어낸 이유 (2026-08-13 실측).
+
+한 번의 호출로 "쓸 근거 고르기"와 "개 질문인지"를 같이 시키면 gemma-4-e2b(4.6B)가
+후자를 놓친다. 선별 프롬프트에 이미 "고양이·가격·브랜드는 false"라고 적혀 있는데도
+고양이 모래와 중성화 비용을 in_domain=true로 판정해 out-of-scope가 1/4이었다.
+
+작은 모델이 확실히 하는 형태는 **한 가지만 묻는 단답 분류**다. 큰 모델에는 불필요한
+분리지만 손해도 없다 — 근거가 하나도 안 남았을 때만 부르므로 일반 경로의 호출 수는
+그대로다. 답할 근거가 있으면 범위 밖인지 물을 이유가 애초에 없다.
+"""
+
 _JSON_ARRAY = re.compile(r"\[[^\]]*\]", re.DOTALL)
 _JSON_OBJECT = re.compile(r"\{.*\}", re.DOTALL)
 _THINK = re.compile(r"<(think|thinking|reasoning)>.*?</\1>", re.DOTALL | re.IGNORECASE)
 _MAX_SELECT_TOKENS = 60
+_MAX_DOMAIN_TOKENS = 4
+"""한 단어만 받으면 되므로 4토큰. 추론형이면 provider가 사고과정 여유분을 더한다."""
 _SNIPPET_CHARS = 700
 """선별용 프롬프트에 넣는 근거 길이. 전문을 넣으면 5×1200자라 판정만으로 느려진다.
 앞부분 700자면 주제 판단에는 충분하고, 답변 생성에는 여전히 전문이 들어간다."""
@@ -118,6 +148,20 @@ def parse_selection(raw: str, count: int) -> tuple[list[int], bool] | None:
     return None
 
 
+def parse_domain(raw: str) -> bool | None:
+    """DOG/OTHER 단답 → in_domain. 둘 다 없거나 둘 다 있으면 None (호출자가 폴백).
+
+    부분 문자열로 보지 않고 단어로 본다 — 설명을 덧붙이는 모델이 "not a DOG question,
+    it is OTHER"처럼 둘 다 말할 수 있어서, 그때는 판정하지 않는 편이 낫다.
+    """
+    text = _THINK.sub("", raw).upper()
+    words = set(re.findall(r"[A-Z]+", text))
+    is_dog, is_other = "DOG" in words, "OTHER" in words
+    if is_dog == is_other:
+        return None
+    return is_dog
+
+
 def _clean_indices(items: list, count: int) -> list[int]:
     """1-based 번호 목록 → 0-based. 범위를 벗어난 숫자는 조용히 버린다."""
     return sorted({int(i) - 1 for i in items if isinstance(i, int) and 1 <= i <= count})
@@ -139,6 +183,9 @@ class EvidenceSelector:
                 self._build_prompt(question, hits),
                 system=SELECT_SYSTEM,
                 max_tokens=_MAX_SELECT_TOKENS,
+                # 이 프로젝트에서 LLM에게 시키는 일 중 유일하게 숙고가 필요한 판정이다.
+                # 추론을 끄면 gemma-4-e2b가 "하나도 안 남김"을 아예 못 내놨다.
+                reasoning=True,
             )
         except LLMUnavailableError as exc:
             # 선별 실패가 답변을 막으면 안 된다. 검색 결과를 그대로 쓴다.
@@ -156,7 +203,9 @@ class EvidenceSelector:
         indices, in_domain = parsed
         if not indices:
             # 개 질문인데 근거를 못 고른 것과, 애초에 범위 밖인 것은 다르다.
-            # 전자는 되물어야 하고 후자는 답하지 않아야 한다.
+            # 전자는 되물어야 하고 후자는 답하지 않아야 한다. 갈림길이 여기뿐이라
+            # 여기서만 범위를 따로 묻는다 (일반 경로는 호출이 늘지 않는다).
+            in_domain = await self._ask_domain(question, fallback=in_domain)
             if in_domain:
                 logger.info("정보 부족 — 되묻기로 전환: %r", question[:50])
                 return Selection(kept=[], coverage="needs_detail", note=NEEDS_DETAIL_NOTE)
@@ -167,6 +216,32 @@ class EvidenceSelector:
         coverage: Coverage = "full" if len(kept) == len(hits) else "partial"
         logger.info("근거 선별: %d건 중 %d건 유지", len(hits), len(kept))
         return Selection(kept=kept, coverage=coverage)
+
+    async def _ask_domain(self, question: str, *, fallback: bool) -> bool:
+        """질문이 개 행동 영역인지만 따로 묻는다. 실패하면 선별이 준 값을 쓴다.
+
+        폴백이 "범위 안"으로 기우는 게 맞다 — 개 질문을 범위 밖으로 잘못 처리하면
+        보호자가 답을 못 받지만, 반대는 되묻기 한 번으로 끝난다.
+        """
+        if self._llm is None:
+            return fallback
+        try:
+            raw = await self._llm.generate(
+                question,
+                system=DOMAIN_SYSTEM,
+                max_tokens=_MAX_DOMAIN_TOKENS,
+                reasoning=True,
+            )
+        except Exception as exc:  # noqa: BLE001 — 판정 실패가 답변을 막지 않는다
+            logger.warning("범위 판정 실패, 선별 결과를 그대로 사용: %s", exc)
+            return fallback
+
+        verdict = parse_domain(raw)
+        if verdict is None:
+            logger.warning("범위 판정을 해석하지 못해 선별 결과를 사용: %r", raw[:60])
+            return fallback
+        logger.info("범위 판정: %s — %r", "개 행동" if verdict else "범위 밖", question[:40])
+        return verdict
 
     @staticmethod
     def _build_prompt(question: str, hits: list[SearchHit]) -> str:

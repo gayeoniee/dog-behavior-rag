@@ -20,7 +20,7 @@ class StubLLM:
     def name(self) -> str:
         return "stub"
 
-    async def generate(self, prompt, *, system=None, max_tokens=None) -> str:
+    async def generate(self, prompt, *, system=None, max_tokens=None, reasoning=None) -> str:
         self.calls += 1
         if self.error:
             raise self.error

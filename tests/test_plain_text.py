@@ -4,7 +4,7 @@
 **내용은 지우지 않는다**는 게 핵심이다 — 기호만 벗긴다.
 """
 
-from app.services.plain_text import strip_markdown
+from app.services.plain_text import strip_markdown, trim_to_form
 
 
 def test_bold_markers_are_removed_but_text_stays():
@@ -73,3 +73,61 @@ def test_realistic_answer_is_cleaned():
     assert "진단: 좌절감입니다." in cleaned
     assert "1. 멀리 멈춥니다." in cleaned
     assert "피하세요: 줄 잡아당기기" in cleaned
+
+
+# ── trim_to_form ─────────────────────────────────────────────────────
+
+
+def test_trailing_restatement_after_form_is_cut():
+    """폼이 끝난 뒤 같은 조언을 다시 푸는 사족을 자른다 (gemma-4-e2b 실제 출력)."""
+    raw = (
+        "진단: 흥분해서 당기는 것입니다.\n\n"
+        "이렇게 해보세요\n"
+        "1. 멈추고 기다리세요.\n\n"
+        "피하세요: 힘으로 제압하지 마세요.\n\n"
+        "보호자가 줄을 너무 당긴다고 하셨으니, 산책 전에 간식을 주고…"
+    )
+    trimmed = trim_to_form(raw)
+    assert trimmed.endswith("피하세요: 힘으로 제압하지 마세요.")
+    assert "보호자가 줄을" not in trimmed
+
+
+def test_vet_line_is_part_of_the_form_and_survives():
+    """`병원:` 줄은 통증이 의심될 때 붙는 폼의 일부다. 사족이 아니다."""
+    raw = (
+        "진단: 통증일 수 있습니다.\n\n"
+        "피하세요: 혼내지 마세요.\n\n"
+        "병원: 절뚝이면 바로 가보세요.\n\n"
+        "다시 말씀드리면 통증이 의심되니 병원에 가보세요."
+    )
+    trimmed = trim_to_form(raw)
+    assert "병원: 절뚝이면 바로 가보세요." in trimmed
+    assert "다시 말씀드리면" not in trimmed
+
+
+def test_training_form_ends_at_point_line():
+    raw = (
+        "앉아 가르치기\n1. 간식을 코앞에.\n\n"
+        "포인트: 엉덩이가 닿는 순간 보상.\n\n"
+        "요약하자면 타이밍이 중요합니다."
+    )
+    assert trim_to_form(raw).endswith("포인트: 엉덩이가 닿는 순간 보상.")
+
+
+def test_answers_without_form_labels_are_untouched():
+    """되묻기·근거 없음 응답은 폼이 다르다. 손대면 내용이 날아간다."""
+    raw = (
+        "증상만으로는 원인을 좁힐 수 없습니다.\n\n"
+        "알려주시면 좋아요\n1. 혼자 있을 때만 그러나요?\n\n"
+        "2. 언제부터였나요?"
+    )
+    assert trim_to_form(raw) == raw
+
+
+def test_form_at_end_of_text_is_kept_whole():
+    raw = "진단: 좌절감입니다.\n\n피하세요: 혼내지 마세요."
+    assert trim_to_form(raw) == raw
+
+
+def test_empty_input_survives():
+    assert trim_to_form("") == ""

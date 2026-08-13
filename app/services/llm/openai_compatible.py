@@ -40,6 +40,8 @@ class OpenAICompatibleLLM:
         self._timeout = settings.llm_timeout_seconds
         self._default_max_tokens = settings.llm_max_tokens
         self._temperature = settings.llm_temperature
+        self._reasoning_effort = settings.llm_reasoning_effort
+        self._reasoning_reserve = settings.llm_reasoning_reserve_tokens
         self._max_retries = settings.llm_max_retries
         self._retry_base_delay = settings.llm_retry_base_delay
 
@@ -53,19 +55,30 @@ class OpenAICompatibleLLM:
         *,
         system: str | None = None,
         max_tokens: int | None = None,
+        reasoning: bool | None = None,
     ) -> str:
         messages: list[dict[str, str]] = []
         if system:
             messages.append({"role": "system", "content": system})
         messages.append({"role": "user", "content": prompt})
 
+        effort = self._effort_for(reasoning)
+        budget = max_tokens or self._default_max_tokens
+        # 사고과정도 completion 토큰을 먹으므로 호출자가 요구한 예산에 여유분을 더한다.
+        if effort and effort != "none":
+            budget += self._reasoning_reserve
+
         payload = {
             "model": self._model,
             "messages": messages,
-            "max_tokens": max_tokens or self._default_max_tokens,
+            "max_tokens": budget,
             "temperature": self._temperature,
             "stream": False,
         }
+        # 설정이 비어 있으면 필드를 아예 넣지 않는다 — 모르는 필드에 400을 내는 서버가
+        # 있고, 추론형이 아닌 모델에는 의미도 없기 때문이다.
+        if effort:
+            payload["reasoning_effort"] = effort
 
         try:
             data = await self._post_with_retry(payload)
@@ -85,9 +98,39 @@ class OpenAICompatibleLLM:
             raise LLMUnavailableError(self._explain_status(exc)) from exc
 
         try:
-            return data["choices"][0]["message"]["content"] or ""
+            choice = data["choices"][0]
+            content = choice["message"]["content"] or ""
         except (KeyError, IndexError) as exc:
             raise LLMUnavailableError(f"예상과 다른 응답 형식: {str(data)[:200]}") from exc
+
+        # 빈 응답 + finish_reason=length는 사고과정이 예산을 다 먹은 것이다. 호출부는
+        # 전부 폴백이 있어서 **조용히** 넘어가는데, 근거 선별이 빠지면 코퍼스에 없는
+        # 주제에도 근거가 붙는다. 원인이 보이도록 여기서 시끄럽게 남긴다.
+        if not content.strip() and choice.get("finish_reason") == "length":
+            reasoning = (
+                data.get("usage", {}).get("completion_tokens_details", {}).get("reasoning_tokens")
+            )
+            logger.warning(
+                "LLM이 빈 응답을 냈습니다 (max_tokens=%d에서 잘림, 사고과정 %s토큰). "
+                "추론형 모델이면 LLM_REASONING_EFFORT=none 으로 끄거나 "
+                "LLM_REASONING_RESERVE_TOKENS를 올리세요.",
+                budget,
+                reasoning if reasoning is not None else "?",
+            )
+        return content
+
+    def _effort_for(self, reasoning: bool | None) -> str:
+        """호출별 요청을 실제 `reasoning_effort` 값으로 옮긴다.
+
+        None이면 설정값 그대로(= 전역 기본). False는 명시적으로 끄는 것이라
+        설정이 비어 있어도 "none"을 보낸다 — 추론형 기본값이 켜짐인 모델이 있다.
+        True인데 설정이 비어 있으면 "medium"으로 켠다.
+        """
+        if reasoning is None:
+            return self._reasoning_effort
+        if not reasoning:
+            return "none" if self._reasoning_effort else ""
+        return self._reasoning_effort if self._reasoning_effort not in ("", "none") else "medium"
 
     async def _post_with_retry(self, payload: dict) -> dict:
         """429·5xx는 잠시 뒤 다시 시도한다.

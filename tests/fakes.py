@@ -54,7 +54,12 @@ class FakeLLM:
         return "huggingface:fake"
 
     async def generate(
-        self, prompt: str, *, system: str | None = None, max_tokens: int = 1024
+        self,
+        prompt: str,
+        *,
+        system: str | None = None,
+        max_tokens: int = 1024,
+        reasoning: bool | None = None,
     ) -> str:
         self.last_prompt = prompt
         return "[stub] 테스트 답변"
