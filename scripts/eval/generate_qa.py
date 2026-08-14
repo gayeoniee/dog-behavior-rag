@@ -209,8 +209,30 @@ def is_valid_question(q: str) -> tuple[bool, str]:
     return True, ""
 
 
+def used_chunk_ids(paths: list[Path]) -> set[int]:
+    """이미 평가셋에 쓰인 정답 청크 id.
+
+    평가셋을 **이어서 키울 때** 필요하다. 같은 청크로 또 질문을 만들면 사실상
+    중복 문항이 되고, 지표가 그 문서 쪽으로 기운다.
+    """
+    used: set[int] = set()
+    for path in paths:
+        if not path.is_file():
+            continue
+        for line in path.read_text(encoding="utf-8").splitlines():
+            if line.strip():
+                used.add(json.loads(line)["chunk_id"])
+    return used
+
+
 async def sample_chunks(
-    factory, n: int, seed: int, min_chars: int, max_per_doc: int, stratum: str = "all"
+    factory,
+    n: int,
+    seed: int,
+    min_chars: int,
+    max_per_doc: int,
+    stratum: str = "all",
+    exclude: set[int] | None = None,
 ) -> list[tuple[int, int, str, str]]:
     """(chunk_id, document_id, title, content) 표본.
 
@@ -234,10 +256,11 @@ async def sample_chunks(
             stmt = stmt.where(Document.source_id.like("pmc-%"))
         rows = (await session.execute(stmt)).all()
 
+    skip = exclude or set()
     pool = [
         (r.id, r.document_id, r.title, r.content)
         for r in rows
-        if is_usable_chunk(r.content, min_chars)
+        if r.id not in skip and is_usable_chunk(r.content, min_chars)
     ]
     rng = random.Random(seed)
     rng.shuffle(pool)
@@ -318,13 +341,22 @@ async def run(args: argparse.Namespace) -> int:
     out_file = None
 
     try:
+        exclude = used_chunk_ids(args.exclude)
         chunks = await sample_chunks(
-            factory, args.n, args.seed, args.min_chars, args.max_per_doc, args.stratum
+            factory,
+            args.n,
+            args.seed,
+            args.min_chars,
+            args.max_per_doc,
+            args.stratum,
+            exclude,
         )
         if not chunks:
             print("✗ 표본을 못 뽑았습니다 — DB에 청크가 있는지 확인하세요", file=sys.stderr)
             return 1
         label = STRATA.get(args.stratum) or "코퍼스 전체"
+        if exclude:
+            print(f"이미 쓴 청크 {len(exclude)}개 제외")
         print(f"청크 {len(chunks)}개 표본 · 층={args.stratum}({label})")
         print(f"seed={args.seed} · LLM={llm.name}\n")
 
@@ -415,6 +447,13 @@ def main() -> int:
     parser.add_argument("--out", type=Path, default=DEFAULT_OUT)
     parser.add_argument("--min-chars", type=int, default=400, help="이보다 짧은 청크는 제외")
     parser.add_argument("--max-per-doc", type=int, default=2, help="한 문서에서 뽑을 최대 청크 수")
+    parser.add_argument(
+        "--exclude",
+        type=Path,
+        nargs="*",
+        default=[],
+        help="이미 만든 평가셋 파일들. 거기 쓰인 청크는 다시 뽑지 않는다",
+    )
     parser.add_argument(
         "--stratum",
         choices=tuple(STRATA),
