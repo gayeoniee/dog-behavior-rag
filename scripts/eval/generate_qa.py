@@ -127,6 +127,28 @@ _MAX_Q_CHARS = 120
 _DIGIT_HEAVY = 0.15
 
 
+STRATA = {
+    "all": None,
+    "owner-docs": "보호자용 기관 문서 (ASPCA·RSPCA·VCA·AVSAB)",
+    "papers": "PMC 논문",
+}
+"""**층화 표집(stratified sampling).**
+
+무작위로 뽑으면 코퍼스 구성이 그대로 반영되는데, 그게 여기서는 문제다 (2026-08-14 실측):
+
+    무작위 표본 (논문 96%)                OWNER 통과율  0/10
+    보호자용 기관 문서 (ASPCA·RSPCA·VCA)  OWNER 통과율  14/15
+
+**병목은 모델이 아니라 코퍼스다.** 더 강한 모델(Gemini)로 바꿔도 무작위 표본은
+0%였다. 논문 청크의 대부분이 방법론·통계·결과표라 보호자 질문의 근거가 못 된다.
+
+그래서 층을 나눠 뽑을 수 있게 했다. 다만 **`owner-docs` 층은 전체 청크의 2.8%
+(320개)뿐**이라, 그 층으로만 만든 평가셋은 "이 시스템이 ASPCA를 잘 찾는가"를 재지
+"코퍼스 전체를 잘 찾는가"를 재지 않는다. 결과를 읽을 때 반드시 감안할 것 —
+그래서 생성된 각 문항에 어느 층에서 왔는지 남긴다.
+"""
+
+
 @dataclass(slots=True)
 class QAPair:
     question: str
@@ -135,6 +157,8 @@ class QAPair:
     document_title: str
     chunk_excerpt: str
     """청크 앞부분. 사람이 눈으로 검수할 때 쓴다 — 라벨이 맞는지 보려면 원문이 필요하다."""
+    stratum: str = "all"
+    """어느 층에서 뽑았는지. 지표를 층별로 쪼개 보려면 필요하다."""
 
 
 def digit_ratio(text: str) -> float:
@@ -186,7 +210,7 @@ def is_valid_question(q: str) -> tuple[bool, str]:
 
 
 async def sample_chunks(
-    factory, n: int, seed: int, min_chars: int, max_per_doc: int
+    factory, n: int, seed: int, min_chars: int, max_per_doc: int, stratum: str = "all"
 ) -> list[tuple[int, int, str, str]]:
     """(chunk_id, document_id, title, content) 표본.
 
@@ -200,6 +224,14 @@ async def sample_chunks(
             .where(Document.corpus == "answer")
             .where(func.length(Chunk.content) >= min_chars)
         )
+        # doc_type이 아니라 source_id로 가른다. AAHA는 doc_type=guide지만 수의사용
+        # 진료 지침이라 보호자 문서와 성격이 다르다 (실측에서도 절반이 RESEARCH였다).
+        if stratum == "owner-docs":
+            stmt = stmt.where(Document.source_id.notlike("pmc-%")).where(
+                Document.source_id.notlike("aaha%")
+            )
+        elif stratum == "papers":
+            stmt = stmt.where(Document.source_id.like("pmc-%"))
         rows = (await session.execute(stmt)).all()
 
     pool = [
@@ -283,15 +315,23 @@ async def run(args: argparse.Namespace) -> int:
     llm = get_llm(settings)
     engine = create_engine(settings.database_url)
     factory = create_session_factory(engine)
+    out_file = None
 
     try:
         chunks = await sample_chunks(
-            factory, args.n, args.seed, args.min_chars, args.max_per_doc
+            factory, args.n, args.seed, args.min_chars, args.max_per_doc, args.stratum
         )
         if not chunks:
             print("✗ 표본을 못 뽑았습니다 — DB에 청크가 있는지 확인하세요", file=sys.stderr)
             return 1
-        print(f"청크 {len(chunks)}개 표본 (seed={args.seed}) · LLM={llm.name}\n")
+        label = STRATA.get(args.stratum) or "코퍼스 전체"
+        print(f"청크 {len(chunks)}개 표본 · 층={args.stratum}({label})")
+        print(f"seed={args.seed} · LLM={llm.name}\n")
+
+        # **한 건씩 즉시 기록한다.** 끝에서 한 번에 저장하면 긴 실행이 중간에 죽었을 때
+        # (Gemini 무료 티어의 429 같은 이유로) 몇십 분치가 통째로 날아간다.
+        args.out.parent.mkdir(parents=True, exist_ok=True)
+        out_file = args.out.open("w", encoding="utf-8")
 
         pairs: list[QAPair] = []
         rejected: Counter[str] = Counter()
@@ -310,23 +350,22 @@ async def run(args: argparse.Namespace) -> int:
                 rejected["검증 실패(답이 안 됨)"] += 1
                 print(f"  [{i:>3}/{len(chunks)}] ✗ 검증 실패        {question[:36]}", flush=True)
                 continue
-            pairs.append(
-                QAPair(
-                    question=question,
-                    chunk_id=chunk_id,
-                    document_id=doc_id,
-                    document_title=title,
-                    chunk_excerpt=content[:300],
-                )
+            pair = QAPair(
+                question=question,
+                chunk_id=chunk_id,
+                document_id=doc_id,
+                document_title=title,
+                chunk_excerpt=content[:300],
+                stratum=args.stratum,
             )
+            pairs.append(pair)
+            out_file.write(json.dumps(asdict(pair), ensure_ascii=False) + "\n")
+            out_file.flush()
             print(f"  [{i:>3}/{len(chunks)}] ✓ {question[:46]}", flush=True)
     finally:
+        if out_file is not None:
+            out_file.close()
         await engine.dispose()
-
-    args.out.parent.mkdir(parents=True, exist_ok=True)
-    with args.out.open("w", encoding="utf-8") as f:
-        for p in pairs:
-            f.write(json.dumps(asdict(p), ensure_ascii=False) + "\n")
 
     print(f"\n{'─' * 60}")
     print(f"  생성 {len(pairs)} / 시도 {len(chunks)} ({len(pairs) / len(chunks):.0%})")
@@ -376,6 +415,12 @@ def main() -> int:
     parser.add_argument("--out", type=Path, default=DEFAULT_OUT)
     parser.add_argument("--min-chars", type=int, default=400, help="이보다 짧은 청크는 제외")
     parser.add_argument("--max-per-doc", type=int, default=2, help="한 문서에서 뽑을 최대 청크 수")
+    parser.add_argument(
+        "--stratum",
+        choices=tuple(STRATA),
+        default="all",
+        help="어느 층에서 뽑을지 (STRATA 독스트링 참조)",
+    )
     parser.add_argument("--inspect", type=Path, help="생성된 파일의 품질 통계만 본다")
     args = parser.parse_args()
 
