@@ -1,0 +1,106 @@
+[
+  {
+    "question": "아버지보다 수입이 적었는데도 돈을 벌었나요?",
+    "gold_chunk_id": 10541,
+    "gold_document_id": 267,
+    "chunk_rank": 0,
+    "doc_rank": 0,
+    "top_title": "One pair of hands is not like another: caudate BOL"
+  },
+  {
+    "question": "훈련할 때 잠을 충분히 자게 해야 하나요?",
+    "gold_chunk_id": 10263,
+    "gold_document_id": 262,
+    "chunk_rank": 3,
+    "doc_rank": 3,
+    "top_title": "Sleep Characteristics in Dogs; Effect on Caregiver"
+  },
+  {
+    "question": "우리 강아지가 짖을 때 불안하거나 무서워하는 건가요?",
+    "gold_chunk_id": 332,
+    "gold_document_id": 20,
+    "chunk_rank": 10,
+    "doc_rank": 10,
+    "top_title": "ASPCA Common Dog Behavior Issues — barking"
+  },
+  {
+    "question": "방사성 치료 후 부작용이 생길 수 있나요?",
+    "gold_chunk_id": 5601,
+    "gold_document_id": 151,
+    "chunk_rank": 2,
+    "doc_rank": 2,
+    "top_title": "AAHA Canine and Feline Behavior Management Guideli"
+  },
+  {
+    "question": "강아지가 다른 자극에 어떻게 반응하는지 테스트해 주시나요?",
+    "gold_chunk_id": 8488,
+    "gold_document_id": 224,
+    "chunk_rank": 0,
+    "doc_rank": 0,
+    "top_title": "Heritability and Genome-Wide Association Study of "
+  },
+  {
+    "question": "입양 후 강아지들의 행동은 어떻게 예측되나요?",
+    "gold_chunk_id": 7600,
+    "gold_document_id": 206,
+    "chunk_rank": 0,
+    "doc_rank": 1,
+    "top_title": "Do Behaviour Assessments in a Shelter Predict the "
+  },
+  {
+    "question": "강아지를 어디서 데려왔는지 알아야 하나요?",
+    "gold_chunk_id": 11022,
+    "gold_document_id": 277,
+    "chunk_rank": 0,
+    "doc_rank": 1,
+    "top_title": "Investigation into owner-reported differences betw"
+  },
+  {
+    "question": "앱을 사용하면 강아지 문제 행동이 줄어들까요?",
+    "gold_chunk_id": 10823,
+    "gold_document_id": 274,
+    "chunk_rank": 0,
+    "doc_rank": 1,
+    "top_title": "Educational Apps and Dog Behavioural Problem Preve"
+  },
+  {
+    "question": "훈련 후에 강아지가 덜 무서워졌나요?",
+    "gold_chunk_id": 10701,
+    "gold_document_id": 270,
+    "chunk_rank": 1,
+    "doc_rank": 1,
+    "top_title": "Effect of a Standardized Four-Week Desensitization"
+  },
+  {
+    "question": "우리 강아지 행동에 보호자의 기분도 영향을 주나요?",
+    "gold_chunk_id": 7536,
+    "gold_document_id": 205,
+    "chunk_rank": 0,
+    "doc_rank": 7,
+    "top_title": "Effects of Mindfulness Practice on Owner-Reported "
+  },
+  {
+    "question": "강아지가 가족에게 어떤 영향을 주나요?",
+    "gold_chunk_id": 3551,
+    "gold_document_id": 102,
+    "chunk_rank": 0,
+    "doc_rank": 0,
+    "top_title": "Does Play After Training Improve a Canine Good Cit"
+  },
+  {
+    "question": "침 분비로 스트레스 정도를 측정할 수 있나요?",
+    "gold_chunk_id": 7415,
+    "gold_document_id": 201,
+    "chunk_rank": 1,
+    "doc_rank": 1,
+    "top_title": "Evaluation of effects of olfactory and auditory st"
+  },
+  {
+    "question": "통증이 나아지면 소음과 관련된 행동도 고쳐야 하나요?",
+    "gold_chunk_id": 2575,
+    "gold_document_id": 76,
+    "chunk_rank": 1,
+    "doc_rank": 1,
+    "top_title": "Noise Sensitivities in Dogs: An Exploration of Sig"
+  }
+]
