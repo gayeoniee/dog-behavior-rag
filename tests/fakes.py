@@ -65,11 +65,18 @@ class FakeLLM:
         return "[stub] 테스트 답변"
 
 
-def hit(chunk_id: int = 1, *, title: str = "문서 A", score: float = 0.9) -> SearchHit:
+def hit(
+    chunk_id: int = 1,
+    *,
+    title: str = "문서 A",
+    score: float = 0.9,
+    content: str | None = None,
+) -> SearchHit:
+    """검색 결과 1건. `content`는 키워드 판정을 시험할 때만 넘긴다."""
     return SearchHit(
         chunk_id=chunk_id,
         document_title=title,
-        content=f"근거 본문 {chunk_id}",
+        content=content if content is not None else f"근거 본문 {chunk_id}",
         score=score,
         source=f"https://example.test/{chunk_id}",
     )

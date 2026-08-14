@@ -12,6 +12,7 @@
   지시문 누출   프롬프트 폼의 슬롯 설명이 답변에 그대로 찍혔는가
   반복          이전 답변과 얼마나 겹치는가 (부분 반복을 놓치지 않으려고 비율로 본다)
   고정 문구     같은 라벨 줄(주의점 등)이 매 턴 같은 말인가
+  분량          답변이 몇 자인가 (프롬프트의 분량 규율이 지켜지는가)
 
 **완전 일치만 보면 놓친다.** 처음엔 그렇게 만들었는데, 진단·단계·주의점을 재사용하고
 단계 하나만 바꾼 답변이 검사를 통과했다. 사람 눈에는 같은 답인데 통과한 것이다.
@@ -54,6 +55,14 @@ REPEAT_WARN = 0.5
 바꾼 것으로 0.7 언저리였고, 정상적인 후속 답변은 0.3 아래였다.
 """
 
+LENGTH_WARN = 400
+"""이만큼 넘으면 답변 줄에 ⚠를 붙인다. 실패로 만들지는 않는다.
+
+프롬프트의 분량 규율과 같은 값이다. `trim_to_form`이 폼 **뒤**의 사족은 이미
+잘라내므로, 여기 걸린다는 건 폼 **안**이 부풀었다는 뜻이다 — 잘라내기로는 못 고치고
+프롬프트를 봐야 한다. 실측 범위는 190~360자였다.
+"""
+
 
 @dataclass
 class TurnResult:
@@ -62,6 +71,7 @@ class TurnResult:
     coverage: str
     sources: int
     seconds: float
+    chars: int
     repeat_ratio: float
     repeat_of: int | None
     leaks: list[str]
@@ -129,13 +139,14 @@ def run(name: str, turns: list[str], label: str, timeout: float) -> list[TurnRes
                 coverage=payload.get("coverage", "?"),
                 sources=len(payload.get("sources", [])),
                 seconds=seconds,
+                chars=len(answer),
                 repeat_ratio=best_ratio,
                 repeat_of=best_of if best_ratio >= REPEAT_WARN else None,
                 leaks=[m for m in LEAK_MARKERS if m in answer],
             )
         )
         print(f"  [{i}/{len(turns)}] {question[:34]:36s} {payload.get('coverage','?'):12s}"
-              f" 겹침 {best_ratio:.0%}")
+              f" 겹침 {best_ratio:.0%} · {len(answer)}자")
 
         history.append({"role": "user", "content": question})
         history.append({"role": "assistant", "content": answer})
@@ -151,9 +162,11 @@ def report(name: str, results: list[TurnResult]) -> None:
             flags.append(f"지시문 누출({r.leaks[0][:12]}…)")
         if r.repeat_of:
             flags.append(f"{r.repeat_of}번과 {r.repeat_ratio:.0%} 겹침")
+        if r.chars > LENGTH_WARN:
+            flags.append(f"{r.chars}자 (기준 {LENGTH_WARN})")
         mark = "  ⚠ " + " / ".join(flags) if flags else ""
         print(f"[{i}] {r.question}")
-        print(f"    {r.coverage} · 근거 {r.sources}건 · {r.seconds:.1f}s{mark}")
+        print(f"    {r.coverage} · 근거 {r.sources}건 · {r.chars}자 · {r.seconds:.1f}s{mark}")
 
     # 라벨별로 매 턴 같은 말을 쓰는지 — 폼이 강제하는 자리를 관성으로 채우는 신호다.
     print("\n── 고정 문구 검사 ──")
@@ -172,8 +185,11 @@ def report(name: str, results: list[TurnResult]) -> None:
 
     leaks = sum(1 for r in results if r.leaks)
     repeats = sum(1 for r in results if r.repeat_of)
+    lengths = [r.chars for r in results] or [0]  # 빈 대화도 리포트가 죽지 않게
     print(f"\n── 요약 ──\n  지시문 누출 {leaks}건 · 반복 경고 {repeats}건 "
           f"(임계 {REPEAT_WARN:.0%})")
+    over = "  ⚠ 기준 초과" if max(lengths) > LENGTH_WARN else ""
+    print(f"  분량 {min(lengths)}~{max(lengths)}자 (기준 {LENGTH_WARN}){over}")
 
 
 def main() -> int:

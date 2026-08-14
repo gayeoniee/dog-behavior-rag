@@ -67,12 +67,18 @@ def mentions(blob: str, keyword: str) -> bool:
         tail  ← detail, detailed   (논문에 매우 흔하다)
         aging ← managing
         cue   ← rescue
-        lead  ← leading, misleading
+        lead  ← misleading
         den   ← sudden, evidence   (크레이트 항목에서 처음 발견)
 
     **앞쪽 경계만 건다. 뒤는 열어둔다.** 양쪽에 `\\b`를 걸면 `bark`가 `barking`을,
     `chew`가 `chewing`을 못 잡아 멀쩡한 근거가 떨어진다. 앞만 걸면 `tail`은 잡고
     `detail`은 안 잡는다 — 필요한 게 정확히 이것이다.
+
+    **막지 못하는 종류가 하나 남는다.** 키워드가 다른 단어의 **접두사**면 그 자리에
+    단어 경계가 있으므로 그대로 걸린다 — `lead`는 "leading"에 걸린다. `bark`로
+    "barking"을 잡는 것과 같은 동작이라 코드로는 가를 수 없다. 그래서 흔한 접두사인
+    단어는 **평가셋에서 두 단어로 쓴다** (leash-pulling이 `loose lead`·`on the lead`를
+    쓰는 이유다). 이 한계는 `tests/test_eval_judge.py`에 고정해 뒀다.
     """
     return re.search(r"\b" + re.escape(keyword), blob) is not None
 

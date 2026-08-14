@@ -28,7 +28,10 @@
   "혼자 있을 때 배변한다"는 35청크나 있는데 이쪽은 자료가 없다). 둘 다 전용 문서가
   없고 라이선스 깨끗한 소스를 못 찾았다 (판단 근거는 `sources.yaml`)
 - ✅ **멀티턴 재현 검사** (`scripts.eval.replay`). 평가셋이 못 보는 층 —
-  지시문 누출·이전 답변과의 겹침·라벨별 고정 문구를 본다
+  지시문 누출·이전 답변과의 겹침·라벨별 고정 문구·**답변 분량**을 본다
+- ✅ **평가 판정 함수 자체의 테스트** (`tests/test_eval_judge.py`, 22개).
+  평가셋이 거짓말을 하면 아무도 모른다 — `mentions()` 오탐으로 실제로 그랬다.
+  DB·LLM 없이 순수 함수만 부른다
 - ✅ **답변 형식 고정과 되묻기.** 훈련사 화법 + 폼 고정으로 1,200자 → 300자,
   마크다운은 서버에서 평문화(`plain_text.py`). 근거가 없어도 개 행동 질문이면
   거절 대신 원인을 가르는 질문을 되묻는다(`coverage=needs_detail`), 그 답을
@@ -154,10 +157,16 @@ ASPCA 분리불안 문서 안에 "To Crate or Not to Crate?" 단락이 통째로
   `none`(범위 밖)으로 처리하고 통과했다. 라벨 덕에 통과한 것이지 옳아서가 아니다
 - **키워드가 판정을 무의미하게 만들 수 있다.** 크레이트에서 `den`이 sudden·evidence에
   걸리는 걸 보고 전체를 재봤더니 두 종류의 고장이 있었다 (11,354청크 기준):
-  - **부분 문자열** — `tail`←detail, `aging`←managing, `cue`←rescue, `lead`←leading.
+  - **부분 문자열** — `tail`←detail, `aging`←managing, `cue`←rescue, `den`←sudden.
     `judge()`를 **단어 시작 경계**로 바꿔 해결했다(`retrieval_report.mentions`).
     앞쪽만 걸어야 한다 — 양쪽에 `\b`를 걸면 `bark`가 `barking`을 못 잡는다.
     이것만으로 `aging`이 669청크 → 342청크가 됐다(사라진 327건이 전부 managing)
+  - **접두사 충돌은 이 방법으로 못 막는다** (2026-08-14 테스트로 확인). 여기 `lead`←leading을
+    막힌 오탐으로 적어뒀었는데 **틀렸다** — `leading`은 `lead`로 시작하므로 앞쪽 경계가
+    그대로 열려 있다. 막히는 건 `misleading`뿐이다. `bark`로 `barking`을 잡는 동작과
+    같은 것이라 코드로는 가를 수 없고, **평가셋에서 두 단어로 쓰는 게 해법이다**
+    (leash-pulling이 `loose lead`·`on the lead`를 쓴다). 지금 쓰이는 키워드 중
+    피해자는 없다
   - **너무 흔한 단어** — `fear` 16.7%, `aggression` 13.6%, `stress` 10.5%,
     `anxiety` 9.4%. 주제를 안 다루는 근거도 통과시킨다. 결과어가 아니라
     주제어로 판정하게 바꿨다(처벌 질문은 `punishment`·`aversive`로 충분하다)
