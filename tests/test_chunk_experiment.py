@@ -88,9 +88,26 @@ def test_covers_full_containment():
 
 
 def test_covers_half_overlap_is_the_boundary():
-    # 정답 100자 중 50자를 덮는다 → 임계 0.5면 통과, 0.6이면 실패.
+    # 겹침 50자 / 짧은 쪽 100자 = 0.5 → 임계 0.5면 통과, 0.6이면 실패.
     assert covers(gold(100, 200), passage(150, 400), 0.5)
     assert not covers(gold(100, 200), passage(150, 400), 0.6)
+
+
+def test_small_chunk_inside_the_gold_span_counts():
+    """**이 실험을 통째로 망칠 뻔한 케이스다.**
+
+    정답 구간이 1,200자인데 400자 청크가 그 안에 온전히 들어가 있다. 정답 길이로
+    나누면 400/1200 = 33%라 임계 50%를 원리상 못 넘어서, **작은 청크는 검색이
+    아무리 정확해도 0점**이 된다. 크기 비교 실험이 크기 자랑이 되는 것이다.
+
+    짧은 쪽으로 나누면 400/400 = 100%로 정답이 된다.
+    """
+    assert covers(gold(0, 1200), passage(400, 800), 0.5)
+
+
+def test_large_chunk_containing_the_gold_counts():
+    """반대 방향도 성립해야 대칭이다 — 2,000자 청크가 정답을 통째로 품은 경우."""
+    assert covers(gold(500, 700), passage(0, 2000), 0.5)
 
 
 def test_covers_rejects_a_grazing_overlap():

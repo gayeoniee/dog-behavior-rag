@@ -53,12 +53,24 @@ REWRITE_CACHE = Path("data/eval_results/rewrites.json")
 RESULT_PATH = Path("data/eval_results/chunk-experiment.json")
 
 OVERLAP_THRESHOLD = 0.5
-"""검색된 청크가 정답 구간을 이만큼 덮으면 정답으로 친다 (정답 구간 길이 기준).
+"""검색된 청크와 정답 구간이 이만큼 겹치면 정답으로 친다.
 
-0.5인 이유: 절반을 덮으면 그 청크만 읽어도 답의 요지가 들어 있다고 보는 것이다.
-너무 낮추면(0.1) 스쳐 지나간 청크까지 정답이 되어 큰 청크가 유리해지고, 너무
-높이면(0.9) 작은 청크는 원리상 정답이 될 수 없어 실험이 크기 비교가 아니라
-**크기 자랑**이 된다. 이 값이 결과를 좌우하므로 반드시 같이 보고할 것.
+**기준 길이는 둘 중 짧은 쪽이다.** 이게 이 실험의 공정성을 좌우한다.
+
+처음에는 정답 구간 길이로 나눴다가 실험을 통째로 망칠 뻔했다. 정답 청크의 중앙값이
+1,061자인데, **400자 청크는 아무리 정확히 맞아도 400/1061 = 38%밖에 못 덮는다.**
+즉 임계 50%를 원리상 넘을 수 없어 작은 크기는 검색 성능과 무관하게 0점이 된다.
+"작은 청크는 원리상 정답이 될 수 없어 크기 비교가 크기 자랑이 된다"고 이 주석에
+적어놓고 정확히 그렇게 만들었다.
+
+짧은 쪽으로 나누면 양쪽이 대칭이 된다:
+
+    400자 청크가 정답 구간 안에 온전히 들어감   → 400/400 = 100%  정답
+    2000자 청크가 정답 구간을 통째로 포함        → 1200/1200 = 100% 정답
+    400자 청크가 정답 구간을 50자만 스침         → 50/400 = 12.5%   오답
+
+**교훈: 지표가 특정 조건에서 원리상 도달 불가능한 값을 요구하는지 확인할 것.**
+실험 결과는 그럴듯한 표로 나오기 때문에 이걸 놓치면 아무도 모른다.
 """
 
 
@@ -119,12 +131,17 @@ def locate_chunks(cleaned: str, chunks: list[str]) -> list[tuple[int, int]]:
 
 
 def covers(gold: Gold, passage: Passage, threshold: float) -> bool:
-    """이 청크가 정답 구간을 충분히 덮는가."""
+    """이 청크와 정답 구간이 충분히 겹치는가.
+
+    **짧은 쪽 길이로 나눈다** — 이유는 `OVERLAP_THRESHOLD` 주석 참조.
+    """
     if passage.document_id != gold.document_id or passage.start < 0:
         return False
     overlap = min(gold.end, passage.end) - max(gold.start, passage.start)
-    gold_len = max(1, gold.end - gold.start)
-    return overlap / gold_len >= threshold
+    if overlap <= 0:
+        return False
+    shorter = max(1, min(gold.end - gold.start, passage.end - passage.start))
+    return overlap / shorter >= threshold
 
 
 def build_passages(docs: list[dict], size: int, overlap: int) -> list[Passage]:
@@ -302,7 +319,7 @@ async def run(args: argparse.Namespace) -> int:
     rewrites = await cached_rewrites([g.question for g in golds], settings)
     query_vectors = await embedder.embed([rewrites[g.question] for g in golds])
 
-    results = {}
+    results: dict[int, dict] = {}
     for size in sizes:
         passages = build_passages(corpus, size, args.overlap)
         print(f"  size={size} — 청크 {len(passages):,}개 임베딩 중…", flush=True)
@@ -313,15 +330,25 @@ async def run(args: argparse.Namespace) -> int:
         results[size]["chunks"] = len(passages)
         r = results[size]
         print(f"    hit@5 {r['hit@5']:.1%} · MRR {r['mrr']:.3f}", flush=True)
+        # **크기 하나가 끝날 때마다 저장한다.** 끝에서 한 번만 쓰면 중간에 죽을 때
+        # 몇십 분치 GPU 시간이 통째로 날아간다 — 실제로 3/4까지 끝낸 실행을 그렇게
+        # 잃었다. generate_qa에서 겪은 것과 같은 실수를 여기서 반복했다.
+        _save(results, args, len(golds))
 
-    _report(results, sizes, golds)
+    _report(results, [s for s in sizes if s in results], golds)
+    print(f"\n✓ 저장: {RESULT_PATH}")
+    return 0
+
+
+def _save(results: dict[int, dict], args: argparse.Namespace, questions: int) -> None:
     RESULT_PATH.parent.mkdir(parents=True, exist_ok=True)
     RESULT_PATH.write_text(
         json.dumps(
             {
                 "threshold": args.threshold,
                 "distractors": args.distractors,
-                "questions": len(golds),
+                "questions": questions,
+                "overlap": args.overlap,
                 "results": {str(k): v for k, v in results.items()},
             },
             ensure_ascii=False,
@@ -329,8 +356,6 @@ async def run(args: argparse.Namespace) -> int:
         ),
         encoding="utf-8",
     )
-    print(f"\n✓ 저장: {RESULT_PATH}")
-    return 0
 
 
 def _report(results: dict, sizes: list[int], golds: list[Gold]) -> None:
