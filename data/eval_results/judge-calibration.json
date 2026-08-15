@@ -1,0 +1,24 @@
+{
+  "model": "openai-compatible:google/gemma-4-e2b",
+  "n": 40,
+  "results": {
+    "current": {
+      "positive": 0.325,
+      "negative": 1.0,
+      "balanced": 0.6625,
+      "unreadable": 0
+    },
+    "short": {
+      "positive": 0.425,
+      "negative": 1.0,
+      "balanced": 0.7125,
+      "unreadable": 0
+    },
+    "positive-frame": {
+      "positive": 0.275,
+      "negative": 1.0,
+      "balanced": 0.6375,
+      "unreadable": 0
+    }
+  }
+}

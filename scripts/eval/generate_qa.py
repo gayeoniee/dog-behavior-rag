@@ -35,6 +35,7 @@ import re
 import sys
 from collections import Counter
 from dataclasses import asdict, dataclass
+from difflib import SequenceMatcher
 from pathlib import Path
 
 from sqlalchemy import func, select
@@ -87,23 +88,31 @@ gemma-4-e2b(4.6B)가 **20개 중 0개를 SKIP했다.** 종양 반응, T세포 �
 안 지킨다. 생성처럼 "무언가를 만들라"는 지시가 있으면 특히 그쪽이 이긴다.
 """
 
-VERIFY_SYSTEM = """Does the excerpt actually answer the question?
+VERIFY_SYSTEM = """Does the excerpt answer the question?
 
-Answer with exactly one word: YES or NO.
-
-YES — an owner reading only this excerpt would get a real answer.
-NO  — the excerpt is merely on a related topic, or the question is so vague that \
-almost any text would "answer" it ("우리 강아지 건강한가요?"), or the answer would \
-have to come from outside the excerpt."""
+Answer with exactly one word: YES or NO."""
 """생성한 질문을 되짚어 검증한다.
 
-**왜 생성만으로 부족한가 (실측).** 판정기를 붙여 연구용 청크를 걸러낸 뒤에도
-6개 중 3개가 쓸 수 없는 질문이었다 — "우리 강아지들 모두 건강한 건가요?",
-"아버지가 개 의사였는데 왜 아들은 다른 일을 했을까요?".
+**왜 필요한가 (실측).** 연구용 청크를 걸러낸 뒤에도 6개 중 3개가 쓸 수 없는
+질문이었다 — "우리 강아지들 모두 건강한 건가요?" 처럼 너무 막연해서 아무 문서나
+답이 되는 것, 그리고 청크에 적혀 있긴 하나 보호자에게 무의미한 것.
 
-문제가 두 종류다: **너무 막연해서** 아무 문서나 답이 되는 질문, 그리고 청크에
-적혀 있긴 하지만 **보호자에게 무의미한** 질문. 둘 다 "이 발췌로 답이 되나"를
-다시 물으면 걸러진다. 여기서도 한 호출에 한 가지만 시킨다.
+**왜 이렇게 짧은가 (2026-08-15 보정).** 원래는 NO 조건을 세 갈래로 길게 적어뒀는데,
+`scripts.eval.calibrate_judge`로 재보니 그 설명이 작은 모델을 NO 쪽으로 밀고 있었다.
+정답을 아는 쌍 80건(양성 40 + 음성 40)으로 gemma-4-e2b를 채점한 결과:
+
+    변형              양성(YES 맞춤)  음성(NO 맞춤)  균형
+    긴 설명(원래)          32%          100%       66%
+    짧게(현재)             42%          100%       71%
+    긍정형 질문            28%          100%       64%
+
+**모델이 바뀌면 판정기의 성격이 바뀐다.** 같은 프롬프트로 Gemini는 225개 중 13개
+(5.8%)만 거절했는데 gemma는 좋은 쌍의 58~88%를 거절한다.
+
+**그래서 작은 모델로 생성할 때는 `--no-verify`가 낫다.** 좋은 질문을 절반 넘게
+버리는 비용이, 공허한 질문이 몇 개 섞이는 비용보다 크기 때문이다. 짝지은 비교
+(04장)에서 공허한 질문은 어느 설정에서도 실패하므로 **불일치 쌍에 기여하지 않아
+검정력을 깎지 않는다** — 절대 점수만 낮출 뿐이다.
 """
 
 # 본문을 안 보고는 성립하지 않는 질문 — 실사용 질문이 아니므로 버린다.
@@ -159,6 +168,9 @@ class QAPair:
     """청크 앞부분. 사람이 눈으로 검수할 때 쓴다 — 라벨이 맞는지 보려면 원문이 필요하다."""
     stratum: str = "all"
     """어느 층에서 뽑았는지. 지표를 층별로 쪼개 보려면 필요하다."""
+    generator: str = ""
+    """이 문항을 만든 모델. 평가셋이 여러 모델의 산물로 섞이기 때문에 필요하다 —
+    나중에 "생성 모델별로 결과가 다른가"를 확인할 수 있어야 한다."""
 
 
 def digit_ratio(text: str) -> float:
@@ -378,7 +390,7 @@ async def run(args: argparse.Namespace) -> int:
                 rejected[reason] += 1
                 print(f"  [{i:>3}/{len(chunks)}] ✗ {reason:<16} {question[:36]}", flush=True)
                 continue
-            if not await answers_question(llm, content, question):
+            if args.verify and not await answers_question(llm, content, question):
                 rejected["검증 실패(답이 안 됨)"] += 1
                 print(f"  [{i:>3}/{len(chunks)}] ✗ 검증 실패        {question[:36]}", flush=True)
                 continue
@@ -389,6 +401,7 @@ async def run(args: argparse.Namespace) -> int:
                 document_title=title,
                 chunk_excerpt=content[:300],
                 stratum=args.stratum,
+                generator=llm.name,
             )
             pairs.append(pair)
             out_file.write(json.dumps(asdict(pair), ensure_ascii=False) + "\n")
@@ -405,6 +418,65 @@ async def run(args: argparse.Namespace) -> int:
         print("  버린 이유: " + " · ".join(f"{k} {v}" for k, v in rejected.most_common()))
     print(f"  ✓ 저장: {args.out}")
     print("\n  ⚠️ 자동 생성이라 **직접 몇 개는 읽어보세요.** --inspect 로 통계를 봅니다.")
+    return 0
+
+
+NEAR_DUPLICATE = 0.85
+"""이만큼 닮은 질문은 같은 질문으로 본다.
+
+**왜 중복 제거가 필요한가 (2026-08-15 실측).** 검증을 끄고 생성했더니 330문항 중
+**유사 질문 쌍이 58개**였고 **전부 정답 청크가 달랐다**:
+
+    "우리 강아지가 불안해 보일 때는 어떻게 해야 하나요?"   → 청크 A가 정답
+    "우리 강아지 불안할 때 어떻게 해야 하나요?"           → 청크 B가 정답
+
+**이건 공허한 질문(무익)과 다르다. 유해하다.** 같은 질문에 정답이 둘이면 검색이
+무엇을 1위로 올리든 하나는 반드시 오답으로 세어진다. 설정을 바꿔도 그 문항은
+계속 실패하거나 계속 성공하는 게 아니라 **엉뚱하게 뒤집히며 잡음을 만든다.**
+"""
+
+
+def merge_and_dedupe(paths: list[Path]) -> tuple[list[dict], int]:
+    """여러 평가셋을 합치고 유사 질문을 제거한다. (남긴 것, 버린 수)
+
+    **먼저 온 파일이 이긴다.** 품질이 높은 쪽(강한 모델이 만든 것)을 앞에 두면
+    그쪽이 살아남는다.
+    """
+    kept: list[dict] = []
+    dropped = 0
+    for path in paths:
+        for line in path.read_text(encoding="utf-8").splitlines():
+            if not line.strip():
+                continue
+            row = json.loads(line)
+            if any(
+                SequenceMatcher(None, row["question"], k["question"]).ratio() > NEAR_DUPLICATE
+                for k in kept
+            ):
+                dropped += 1
+                continue
+            kept.append(row)
+    return kept, dropped
+
+
+def merge(paths: list[Path], out: Path) -> int:
+    for path in paths:
+        if not path.is_file():
+            print(f"✗ {path} 가 없습니다", file=sys.stderr)
+            return 1
+    kept, dropped = merge_and_dedupe(paths)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    with out.open("w", encoding="utf-8") as f:
+        for row in kept:
+            f.write(json.dumps(row, ensure_ascii=False) + "\n")
+
+    by_gen = Counter(r.get("generator", "?") for r in kept)
+    print(f"\n합침: {' + '.join(p.name for p in paths)}")
+    print(f"  유사 질문 제거 {dropped}건 (임계 {NEAR_DUPLICATE})")
+    print(f"  남은 문항 {len(kept)}")
+    for gen, count in by_gen.most_common():
+        print(f"    {gen or '(미기록)'}: {count}")
+    print(f"  ✓ 저장: {out}")
     return 0
 
 
@@ -448,6 +520,13 @@ def main() -> int:
     parser.add_argument("--min-chars", type=int, default=400, help="이보다 짧은 청크는 제외")
     parser.add_argument("--max-per-doc", type=int, default=2, help="한 문서에서 뽑을 최대 청크 수")
     parser.add_argument(
+        "--no-verify",
+        dest="verify",
+        action="store_false",
+        help="검증 단계를 끈다. 작은 모델은 좋은 질문의 절반 넘게 버린다 "
+        "(VERIFY_SYSTEM 독스트링의 보정 결과 참조)",
+    )
+    parser.add_argument(
         "--exclude",
         type=Path,
         nargs="*",
@@ -461,10 +540,18 @@ def main() -> int:
         help="어느 층에서 뽑을지 (STRATA 독스트링 참조)",
     )
     parser.add_argument("--inspect", type=Path, help="생성된 파일의 품질 통계만 본다")
+    parser.add_argument(
+        "--merge",
+        type=Path,
+        nargs="*",
+        help="여러 평가셋을 합치고 유사 질문을 제거한다 (앞에 둔 파일이 이긴다)",
+    )
     args = parser.parse_args()
 
     if args.inspect:
         return inspect(args.inspect)
+    if args.merge:
+        return merge(args.merge, args.out)
     return asyncio.run(run(args))
 
 
