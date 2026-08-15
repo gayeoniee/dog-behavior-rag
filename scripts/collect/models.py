@@ -26,7 +26,7 @@ class Source(BaseModel):
     id: str
     name: str
     urls: list[str] = Field(default_factory=list)
-    fetcher: Literal["pdf", "html", "local", "pmc"]
+    fetcher: Literal["pdf", "html", "local", "pmc", "youtube"]
     language: Literal["ko", "en"]
     species: Literal["dog", "cat", "both"]
     axis: list[Axis]
@@ -49,6 +49,14 @@ class Source(BaseModel):
     query: str | None = None
     """PMC E-utilities esearch term. urls 대신 이걸로 문서를 찾는다."""
     max_records: int = 50
+
+    # ── youtube fetcher 전용 ──
+    meta: dict = Field(default_factory=dict)
+    """fetcher별 추가 설정. youtube는 `limit`(가져올 영상 수)과
+    `markers`(제목에 이게 있으면 훈련 콘텐츠로 본다)를 읽는다.
+
+    **채널 하나에 훈련 영상과 견종백과·여행 브이로그가 섞여 있어서 필요하다.**
+    다 받으면 잡음이 코퍼스에 들어온다."""
 
     @property
     def license_pending(self) -> bool:

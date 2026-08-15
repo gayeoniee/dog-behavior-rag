@@ -45,4 +45,8 @@ def get_fetcher(source: Source) -> Fetcher:
         from .fetchers.pmc import PmcFetcher
 
         return PmcFetcher()
+    if source.fetcher == "youtube":
+        from .fetchers.youtube import YoutubeFetcher
+
+        return YoutubeFetcher()
     raise ValueError(f"지원하지 않는 fetcher: {source.fetcher!r}")
