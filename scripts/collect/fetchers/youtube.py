@@ -19,6 +19,7 @@ import asyncio
 import json
 import logging
 import time
+import urllib.error
 import urllib.request
 from datetime import UTC, datetime
 
@@ -54,14 +55,39 @@ MIN_CHARS = 1500
 내용이 거의 없는 것이다 (쇼츠·예고편 등)."""
 
 
+# 자막 요청이 429를 맞았을 때 기다릴 시간. 지수적으로 늘린다.
+RETRY_DELAYS = (5.0, 15.0, 45.0)
+"""**차단은 자막 엔드포인트에만 걸린다** (2026-08-15 실측 — 메타데이터는 계속
+200이 오는데 자막만 429였다). 몇 초 기다리면 풀리는 경우가 있어 재시도한다.
+
+세 번 다 실패하면 포기한다. 그 이상 두드리는 건 차단을 길게 만들 뿐이다.
+"""
+
+
 def _extract_text(url: str) -> str:
     """json3 자막을 이어붙인다.
 
     자막은 화면 표시 단위로 쪼개져 있어서 문장 경계가 없다. 여기서는 그대로
     이어 붙이기만 하고, 문장 복원은 정제 단계에 맡긴다.
+
+    **yt-dlp를 거치지 않고 직접 받는다.** 그래서 yt-dlp가 해주는 재시도·백오프가
+    없어 여기서 직접 해야 한다.
     """
-    with urllib.request.urlopen(url, timeout=60) as response:
-        payload = json.loads(response.read().decode("utf-8"))
+    last: Exception | None = None
+    for attempt, delay in enumerate((0.0, *RETRY_DELAYS)):
+        if delay:
+            logger.info("자막 429 — %.0f초 후 재시도 (%d/%d)", delay, attempt, len(RETRY_DELAYS))
+            time.sleep(delay)
+        try:
+            with urllib.request.urlopen(url, timeout=60) as response:
+                payload = json.loads(response.read().decode("utf-8"))
+            break
+        except urllib.error.HTTPError as exc:
+            last = exc
+            if exc.code != 429:
+                raise
+    else:
+        raise last if last else RuntimeError("자막 요청 실패")
 
     parts: list[str] = []
     for event in payload.get("events") or []:
