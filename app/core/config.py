@@ -6,6 +6,7 @@
 from functools import lru_cache
 from typing import Literal
 
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 Provider = Literal["huggingface", "openai-compatible"]
@@ -157,6 +158,54 @@ class Settings(BaseSettings):
     embedding_warmup: bool = True
     """앱 기동 시 모델을 선로딩할지. 적재는 오프라인 CLI(scripts.db.load_corpus)가
     하므로, API만 띄워 검색을 안 쓸 거면 꺼서 기동을 가볍게 할 수 있다."""
+
+    embedding_truncate: bool = False
+    """모델이 내놓는 벡터를 `embedding_dim`으로 **잘라 쓸지** (MRL).
+
+    **아무 모델에나 켜면 안 된다.** 보통 임베딩은 앞부분만 잘라내면 뜻이 망가진다.
+    MRL(Matryoshka Representation Learning)로 학습된 모델만 앞부분이 그 자체로
+    쓸 만한 벡터가 되도록 훈련돼 있다 (Qwen3-Embedding 계열).
+
+    기본이 False인 이유: 켜져 있으면 차원 불일치가 **에러 대신 조용한 성능 저하**로
+    바뀐다. 명시적으로 켠 사람만 그 대가를 알고 있어야 한다.
+
+    실측 (08장, 293문항 · Qwen3-Embedding-0.6B):
+
+        1024차원  hit@5 51.2%  MRR 0.365
+         512차원  hit@5 50.5%  MRR 0.366   ← 저장 절반, 성능 유지
+         256차원  hit@5 45.7%  MRR 0.323
+         128차원  hit@5 39.2%  MRR 0.278   ← 여기부터 유의미하게 나쁘다
+    """
+    embedding_query_prefix: str = ""
+    """질의에만 붙이는 접두사. 모델마다 규약이 다르다.
+
+        bge-m3      없음
+        e5 계열     "query: "
+        Qwen3       "Instruct: <과제 설명>\\nQuery: "
+
+    **문서와 질의에 다른 처리를 하는 게 핵심이다.** 그래서 `Embedder` 프로토콜이
+    `embed`(문서)와 `embed_query`(질의)를 나눠 갖고 있다. 규약을 안 지키면 모델이
+    제 성능을 못 낸다 — e5는 접두사를 빼면 성능이 떨어진다고 모델 카드가 명시한다.
+    """
+    embedding_passage_prefix: str = ""
+    """문서에만 붙이는 접두사 (e5 계열의 `"passage: "`).
+
+    ⚠️ 이 값을 바꾸면 **전체 재적재가 필요하다.** 적재 때와 검색 때의 규약이
+    다르면 조용히 엉뚱한 순위가 나온다."""
+
+    @field_validator("embedding_query_prefix", "embedding_passage_prefix")
+    @classmethod
+    def _unescape(cls, value: str) -> str:
+        r"""`.env`에 적은 `\n`을 실제 줄바꿈으로 바꾼다.
+
+        Qwen3의 접두사는 `"Instruct: ...\nQuery: "`처럼 **줄바꿈이 의미를 갖는다.**
+        그런데 `.env`는 값을 문자 그대로 읽어서 역슬래시와 n 두 글자가 들어온다.
+        따옴표로 감싸는 방식은 dotenv 구현·셸마다 달라 믿을 수 없어서 여기서 푼다.
+
+        **틀려도 에러가 안 난다** — 접두사가 조금 이상한 채로 임베딩이 되고
+        검색 품질만 조용히 떨어진다. 그래서 설정 계층에서 확정한다.
+        """
+        return value.replace("\\n", "\n").replace("\\t", "\t")
 
     # ── 청킹 ──
     chunk_size: int = 1200

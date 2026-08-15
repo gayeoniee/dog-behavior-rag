@@ -1,0 +1,2346 @@
+[
+  {
+    "question": "우리 강아지가 왜 이렇게 계속 짖는지 어떻게 알 수 있을까요?",
+    "gold_chunk_id": 117,
+    "gold_document_id": 3,
+    "chunk_rank": 3,
+    "doc_rank": 2,
+    "top_title": "Dog Behavior--What is Normal?  | VCA Animal Hospit"
+  },
+  {
+    "question": "강아지에게 특정 장소로 가서 기다리라고 가르치려면 어떻게 해야 하나요?",
+    "gold_chunk_id": 128,
+    "gold_document_id": 3,
+    "chunk_rank": 1,
+    "doc_rank": 1,
+    "top_title": "ASPCA Common Dog Behavior Issues — barking"
+  },
+  {
+    "question": "손님만 오면 반갑다고 짖는데 어떻게 하면 차분하게 기다리게 할 수 있을까요?",
+    "gold_chunk_id": 137,
+    "gold_document_id": 3,
+    "chunk_rank": 0,
+    "doc_rank": 0,
+    "top_title": "Introduction to Desensitization and Counterconditi"
+  },
+  {
+    "question": "우리 강아지가 아무런 경고 없이 갑자기 무는데 왜 이렇게 위험한 건가요?",
+    "gold_chunk_id": 104,
+    "gold_document_id": 2,
+    "chunk_rank": 2,
+    "doc_rank": 2,
+    "top_title": "Dogs and Canines behaviour | RSPCA - RSPCA - rspca"
+  },
+  {
+    "question": "강아지가 자꾸 아무거나 물어뜯는데 어떻게 교육해야 할까요?",
+    "gold_chunk_id": 154,
+    "gold_document_id": 4,
+    "chunk_rank": 0,
+    "doc_rank": 5,
+    "top_title": "ASPCA Common Dog Behavior Issues — mouthing-nippin"
+  },
+  {
+    "question": "손님만 오면 흥분해서 자꾸 뛰어오르는데 어떻게 고칠 수 있을까요?",
+    "gold_chunk_id": 11330,
+    "gold_document_id": 292,
+    "chunk_rank": 0,
+    "doc_rank": 0,
+    "top_title": "ASPCA Common Dog Behavior Issues — mounting-mastur"
+  },
+  {
+    "question": "강아지가 자꾸 마운팅을 하는데 병원에 데려가 봐야 할까요?",
+    "gold_chunk_id": 176,
+    "gold_document_id": 6,
+    "chunk_rank": 2,
+    "doc_rank": 1,
+    "top_title": "ASPCA Common Dog Behavior Issues — mounting-mastur"
+  },
+  {
+    "question": "강아지가 사람을 만날 때 너무 흥분하는데 어떻게 진정시키나요?",
+    "gold_chunk_id": 234,
+    "gold_document_id": 9,
+    "chunk_rank": 0,
+    "doc_rank": 2,
+    "top_title": "ASPCA Common Dog Behavior Issues — mounting-mastur"
+  },
+  {
+    "question": "강아지 문제 행동을 고칠 때 혼내면서 가르쳐도 괜찮을까요?",
+    "gold_chunk_id": 260,
+    "gold_document_id": 11,
+    "chunk_rank": 0,
+    "doc_rank": 2,
+    "top_title": "A Treatment Plan for Dogs (Canis familiaris) That "
+  },
+  {
+    "question": "강아지가 낯선 사람만 보면 자꾸 올라타려고 하는데 어떻게 해야 할까요?",
+    "gold_chunk_id": 182,
+    "gold_document_id": 6,
+    "chunk_rank": 0,
+    "doc_rank": 1,
+    "top_title": "ASPCA Common Dog Behavior Issues — mounting-mastur"
+  },
+  {
+    "question": "강아지가 자꾸 공격적인 행동을 보이는데 어디가 아픈 건지 먼저 확인해 봐야 할까요?",
+    "gold_chunk_id": 11276,
+    "gold_document_id": 288,
+    "chunk_rank": 9,
+    "doc_rank": 4,
+    "top_title": "Pain and Problem Behavior in Cats and Dogs"
+  },
+  {
+    "question": "강아지가 혼자 남겨지는 걸 너무 불안해하는데 어떻게 훈련해야 할까요?",
+    "gold_chunk_id": 217,
+    "gold_document_id": 8,
+    "chunk_rank": 0,
+    "doc_rank": 1,
+    "top_title": "ASPCA Common Dog Behavior Issues — separation-anxi"
+  },
+  {
+    "question": "우리 강아지가 다른 개 짖는 소리만 들리면 같이 짖는데 왜 이러는 걸까요?",
+    "gold_chunk_id": 115,
+    "gold_document_id": 3,
+    "chunk_rank": 1,
+    "doc_rank": 1,
+    "top_title": "ASPCA Common Dog Behavior Issues — barking"
+  },
+  {
+    "question": "강아지 예방접종이 다 끝나기 전에 산책이나 외부 활동을 해도 괜찮을까요?",
+    "gold_chunk_id": 279,
+    "gold_document_id": 12,
+    "chunk_rank": 0,
+    "doc_rank": 4,
+    "top_title": "Caring For Your Puppy - 6 weeks to 12 months - RSP"
+  },
+  {
+    "question": "강아지가 기다리다가 자꾸 일어나 버리는데 어떻게 가르쳐야 할까요?",
+    "gold_chunk_id": 132,
+    "gold_document_id": 3,
+    "chunk_rank": 0,
+    "doc_rank": 1,
+    "top_title": "ASPCA Common Dog Behavior Issues — barking"
+  },
+  {
+    "question": "강아지가 아무 이유 없이 계속 짖고 빙글빙글 도는데 어떻게 해야 할까요?",
+    "gold_chunk_id": 144,
+    "gold_document_id": 3,
+    "chunk_rank": 1,
+    "doc_rank": 1,
+    "top_title": "ASPCA Common Dog Behavior Issues — barking"
+  },
+  {
+    "question": "산책할 때 강아지 목줄을 항상 매야 하나요?",
+    "gold_chunk_id": 11262,
+    "gold_document_id": 287,
+    "chunk_rank": 0,
+    "doc_rank": 2,
+    "top_title": "Comparing efficacy in reducing pulling and welfare"
+  },
+  {
+    "question": "산책하다가 갑자기 공격적인 개를 마주치면 어떻게 대처해야 하나요?",
+    "gold_chunk_id": 11295,
+    "gold_document_id": 288,
+    "chunk_rank": 1,
+    "doc_rank": 1,
+    "top_title": "Dogs and Canines behaviour | RSPCA - RSPCA - rspca"
+  },
+  {
+    "question": "손님만 오면 너무 흥분해서 낑낑거리는데 어떻게 하면 좋을까요?",
+    "gold_chunk_id": 233,
+    "gold_document_id": 9,
+    "chunk_rank": 1,
+    "doc_rank": 1,
+    "top_title": "ASPCA Common Dog Behavior Issues — whining"
+  },
+  {
+    "question": "우리 강아지가 덥지도 않은데 자꾸 헥헥거리는데 혹시 어디가 불편한 걸까요?",
+    "gold_chunk_id": 11318,
+    "gold_document_id": 291,
+    "chunk_rank": 1,
+    "doc_rank": 1,
+    "top_title": "Signs Your Dog is Stressed and How to Relieve It  "
+  },
+  {
+    "question": "강아지 문제 행동을 고칠 때 체벌을 써도 괜찮을까요?",
+    "gold_chunk_id": 278,
+    "gold_document_id": 11,
+    "chunk_rank": 7,
+    "doc_rank": 5,
+    "top_title": "AAHA Canine and Feline Behavior Management Guideli"
+  },
+  {
+    "question": "강아지에게 '손' 훈련을 시키려면 어떻게 가르쳐야 하나요?",
+    "gold_chunk_id": 235,
+    "gold_document_id": 9,
+    "chunk_rank": 2,
+    "doc_rank": 1,
+    "top_title": "ASPCA Common Dog Behavior Issues — whining"
+  },
+  {
+    "question": "우리 강아지가 특정 소리를 너무 무서워하는데 어떻게 하면 겁을 안 먹게 할 수 있을까요?",
+    "gold_chunk_id": 11325,
+    "gold_document_id": 292,
+    "chunk_rank": 0,
+    "doc_rank": 4,
+    "top_title": "Therapy and Prevention of Noise Fears in Dogs—A Re"
+  },
+  {
+    "question": "강아지가 혼자 있을 때 집을 망가뜨리는 게 분리불안 때문일까요?",
+    "gold_chunk_id": 201,
+    "gold_document_id": 8,
+    "chunk_rank": 2,
+    "doc_rank": 1,
+    "top_title": "ASPCA Common Dog Behavior Issues — separation-anxi"
+  },
+  {
+    "question": "강아지가 분리불안 때문에 힘들어하는데 혼자 있을 때 어떻게 도와주면 좋을까요?",
+    "gold_chunk_id": 210,
+    "gold_document_id": 8,
+    "chunk_rank": 0,
+    "doc_rank": 2,
+    "top_title": "Separation Anxiety in Dogs | RSPCA - RSPCA - rspca"
+  },
+  {
+    "question": "강아지가 자꾸 손이나 발을 깨무는데 어떻게 멈추게 할 수 있을까요?",
+    "gold_chunk_id": 193,
+    "gold_document_id": 7,
+    "chunk_rank": 0,
+    "doc_rank": 1,
+    "top_title": "ASPCA Common Dog Behavior Issues — mouthing-nippin"
+  },
+  {
+    "question": "강아지가 관심을 끌려고 계속 짖는데 어떻게 대처해야 할까요?",
+    "gold_chunk_id": 141,
+    "gold_document_id": 3,
+    "chunk_rank": 0,
+    "doc_rank": 1,
+    "top_title": "ASPCA Common Dog Behavior Issues — barking"
+  },
+  {
+    "question": "제가 없을 때 강아지가 자꾸 물건을 씹는데 어떻게 해야 할까요?",
+    "gold_chunk_id": 159,
+    "gold_document_id": 4,
+    "chunk_rank": 0,
+    "doc_rank": 1,
+    "top_title": "ASPCA Common Dog Behavior Issues — destructive-che"
+  },
+  {
+    "question": "우리 강아지가 갑자기 공격적으로 변하는데 왜 그러는 걸까요?",
+    "gold_chunk_id": 11269,
+    "gold_document_id": 288,
+    "chunk_rank": 2,
+    "doc_rank": 1,
+    "top_title": "Dogs and Canines behaviour | RSPCA - RSPCA - rspca"
+  },
+  {
+    "question": "강아지에게 '엎드려' 훈련은 어떻게 시키는 게 좋을까요?",
+    "gold_chunk_id": 11245,
+    "gold_document_id": 282,
+    "chunk_rank": 1,
+    "doc_rank": 1,
+    "top_title": "Train Your Dog To Lie Down | RSPCA - RSPCA - rspca"
+  },
+  {
+    "question": "강아지한테 으르렁거리거나 무는 흉내를 내면 강아지가 서열 행동으로 받아들일까요?",
+    "gold_chunk_id": 259,
+    "gold_document_id": 10,
+    "chunk_rank": 1,
+    "doc_rank": 1,
+    "top_title": "AVSAB Position Statement on the Use of Dominance T"
+  },
+  {
+    "question": "강아지가 자꾸 하울링을 하는데 어떻게 대처해야 할까요?",
+    "gold_chunk_id": 168,
+    "gold_document_id": 5,
+    "chunk_rank": 2,
+    "doc_rank": 1,
+    "top_title": "ASPCA Common Dog Behavior Issues — howling"
+  },
+  {
+    "question": "강아지가 놀다가 자꾸 세게 무는데 어떻게 하면 살살 물게 가르칠 수 있을까요?",
+    "gold_chunk_id": 190,
+    "gold_document_id": 7,
+    "chunk_rank": 0,
+    "doc_rank": 1,
+    "top_title": "ASPCA Common Dog Behavior Issues — mouthing-nippin"
+  },
+  {
+    "question": "강아지가 자꾸 물건을 씹는데 이앓이 때문일까요?",
+    "gold_chunk_id": 153,
+    "gold_document_id": 4,
+    "chunk_rank": 1,
+    "doc_rank": 1,
+    "top_title": "ASPCA Common Dog Behavior Issues — destructive-che"
+  },
+  {
+    "question": "우리 강아지가 공격적인데 전문가에게 가면 어떻게 교정해주나요?",
+    "gold_chunk_id": 11298,
+    "gold_document_id": 288,
+    "chunk_rank": 1,
+    "doc_rank": 1,
+    "top_title": "Dogs and Canines behaviour | RSPCA - RSPCA - rspca"
+  },
+  {
+    "question": "강아지 훈련할 때 절대 쓰면 안 되는 도구나 방법이 있을까요?",
+    "gold_chunk_id": 266,
+    "gold_document_id": 11,
+    "chunk_rank": 1,
+    "doc_rank": 1,
+    "top_title": "AVSAB Humane Dog Training Position Statement"
+  },
+  {
+    "question": "손님이 올 때마다 강아지가 너무 흥분하는데 어떻게 진정시키나요?",
+    "gold_chunk_id": 136,
+    "gold_document_id": 3,
+    "chunk_rank": 1,
+    "doc_rank": 1,
+    "top_title": "ASPCA Common Dog Behavior Issues — barking"
+  },
+  {
+    "question": "강아지 훈련은 어떤 방식으로 하는 게 가장 좋을까요?",
+    "gold_chunk_id": 11249,
+    "gold_document_id": 284,
+    "chunk_rank": 2,
+    "doc_rank": 2,
+    "top_title": "An Investigation into the Impact of Pre-Adolescent"
+  },
+  {
+    "question": "강아지 훈련소를 고를 때 어떤 점을 주의 깊게 살펴봐야 할까요?",
+    "gold_chunk_id": 11250,
+    "gold_document_id": 284,
+    "chunk_rank": 1,
+    "doc_rank": 1,
+    "top_title": "How To Find the Right Dog Trainer - RSPCA - rspca."
+  },
+  {
+    "question": "강아지 훈련할 때 목줄을 세게 당기거나 혼내는 방식은 왜 안 좋은 건가요?",
+    "gold_chunk_id": 267,
+    "gold_document_id": 11,
+    "chunk_rank": 0,
+    "doc_rank": 1,
+    "top_title": "AVSAB Humane Dog Training Position Statement"
+  },
+  {
+    "question": "강아지가 자꾸 점프하고 말을 안 듣는데 제가 서열에서 밀려서 그런 건가요?",
+    "gold_chunk_id": 251,
+    "gold_document_id": 10,
+    "chunk_rank": 0,
+    "doc_rank": 5,
+    "top_title": "ASPCA Common Dog Behavior Issues — mounting-mastur"
+  },
+  {
+    "question": "강아지가 생식기를 계속 핥고 마운팅을 하는데 어디 아픈 걸까요?",
+    "gold_chunk_id": 175,
+    "gold_document_id": 6,
+    "chunk_rank": 1,
+    "doc_rank": 1,
+    "top_title": "ASPCA Common Dog Behavior Issues — mounting-mastur"
+  },
+  {
+    "question": "강아지가 혼자 있을 때 분리불안을 겪고 있는지 어떻게 알 수 있나요?",
+    "gold_chunk_id": 11226,
+    "gold_document_id": 277,
+    "chunk_rank": 0,
+    "doc_rank": 2,
+    "top_title": "ASPCA Common Dog Behavior Issues — separation-anxi"
+  },
+  {
+    "question": "강아지 문제 행동을 고치려면 어떤 훈련사를 찾아야 하나요?",
+    "gold_chunk_id": 246,
+    "gold_document_id": 10,
+    "chunk_rank": 10,
+    "doc_rank": 10,
+    "top_title": "ASPCA Common Dog Behavior Issues — howling"
+  },
+  {
+    "question": "강아지 분리불안이 훈련으로도 나아지지 않으면 어떻게 해야 하나요?",
+    "gold_chunk_id": 11231,
+    "gold_document_id": 277,
+    "chunk_rank": 1,
+    "doc_rank": 1,
+    "top_title": "Separation Anxiety in Dogs | RSPCA - RSPCA - rspca"
+  },
+  {
+    "question": "강아지가 제자리에 가서 앉게 하려면 어떻게 훈련해야 하나요?",
+    "gold_chunk_id": 129,
+    "gold_document_id": 3,
+    "chunk_rank": 3,
+    "doc_rank": 2,
+    "top_title": "Learn How To Train Your Dog To Sit - RSPCA - rspca"
+  },
+  {
+    "question": "수컷 강아지가 암컷보다 공격적인 성향이 더 강한가요?",
+    "gold_chunk_id": 11278,
+    "gold_document_id": 288,
+    "chunk_rank": 2,
+    "doc_rank": 2,
+    "top_title": "Variations in Canine Behavioural Characteristics a"
+  },
+  {
+    "question": "강아지가 공격적인 행동을 보일 때 혼내서 가르쳐도 될까요?",
+    "gold_chunk_id": 11277,
+    "gold_document_id": 288,
+    "chunk_rank": 0,
+    "doc_rank": 2,
+    "top_title": "AAHA Canine and Feline Behavior Management Guideli"
+  },
+  {
+    "question": "손님이 올 때마다 강아지가 너무 짖는데 어떻게 훈련해야 할까요?",
+    "gold_chunk_id": 127,
+    "gold_document_id": 3,
+    "chunk_rank": 0,
+    "doc_rank": 1,
+    "top_title": "ASPCA Common Dog Behavior Issues — barking"
+  },
+  {
+    "question": "강아지가 자꾸 문제 행동을 하는데 어떻게 하면 올바른 행동을 가르칠 수 있을까요?",
+    "gold_chunk_id": 11340,
+    "gold_document_id": 293,
+    "chunk_rank": 0,
+    "doc_rank": 0,
+    "top_title": "An Investigation into the Impact of Pre-Adolescent"
+  },
+  {
+    "question": "강아지가 실수를 했을 때 혼내면 오히려 안 좋은가요?",
+    "gold_chunk_id": 11235,
+    "gold_document_id": 278,
+    "chunk_rank": 0,
+    "doc_rank": 4,
+    "top_title": "AVSAB Position Statement on the Use of Dominance T"
+  },
+  {
+    "question": "강아지가 자꾸 마운팅을 하는데 중성화 수술을 하면 좀 나아질까요?",
+    "gold_chunk_id": 178,
+    "gold_document_id": 6,
+    "chunk_rank": 3,
+    "doc_rank": 2,
+    "top_title": "An Investigation into the Impact of Pre-Adolescent"
+  },
+  {
+    "question": "산책할 때 다른 사람이나 강아지를 보고 짖는데 어떻게 훈련해야 할까요?",
+    "gold_chunk_id": 125,
+    "gold_document_id": 3,
+    "chunk_rank": 1,
+    "doc_rank": 1,
+    "top_title": "ASPCA Common Dog Behavior Issues — barking"
+  },
+  {
+    "question": "강아지가 '기다려' 훈련을 자꾸 실패하는데 어떻게 가르쳐야 할까요?",
+    "gold_chunk_id": 11248,
+    "gold_document_id": 283,
+    "chunk_rank": 6,
+    "doc_rank": 2,
+    "top_title": "ASPCA Common Dog Behavior Issues — barking"
+  },
+  {
+    "question": "우리 강아지가 흥분하면 자꾸 다른 강아지나 사람 다리에 올라타는데 왜 이러는 걸까요?",
+    "gold_chunk_id": 174,
+    "gold_document_id": 6,
+    "chunk_rank": 1,
+    "doc_rank": 1,
+    "top_title": "ASPCA Common Dog Behavior Issues — mounting-mastur"
+  },
+  {
+    "question": "창밖 소리에 짖을 때 같이 창문을 내다봐주면 안 되나요?",
+    "gold_chunk_id": 150,
+    "gold_document_id": 3,
+    "chunk_rank": 2,
+    "doc_rank": 1,
+    "top_title": "ASPCA Common Dog Behavior Issues — barking"
+  },
+  {
+    "question": "낯선 사람이 다가올 때 강아지가 무서워하는데 어떻게 인사시키면 좋을까요?",
+    "gold_chunk_id": 237,
+    "gold_document_id": 9,
+    "chunk_rank": 1,
+    "doc_rank": 1,
+    "top_title": "ASPCA Common Dog Behavior Issues — whining"
+  },
+  {
+    "question": "강아지가 혼자 있을 때만 물건을 다 뜯어놓는데 왜 그러는 걸까요?",
+    "gold_chunk_id": 151,
+    "gold_document_id": 4,
+    "chunk_rank": 1,
+    "doc_rank": 1,
+    "top_title": "ASPCA Common Dog Behavior Issues — destructive-che"
+  },
+  {
+    "question": "강아지가 무서워할 때 어떻게 하면 차분하게 진정시킬 수 있을까요?",
+    "gold_chunk_id": 11327,
+    "gold_document_id": 292,
+    "chunk_rank": 0,
+    "doc_rank": 5,
+    "top_title": "Overcoming Fears with Desensitization and Counterc"
+  },
+  {
+    "question": "우리 강아지가 갑자기 사람을 무는데, 물기 전에 미리 보내는 경고 신호가 있을까요?",
+    "gold_chunk_id": 82,
+    "gold_document_id": 2,
+    "chunk_rank": 1,
+    "doc_rank": 1,
+    "top_title": "ASPCA Common Dog Behavior Issues — aggression"
+  },
+  {
+    "question": "상담받으러 갈 때 강아지를 꼭 데려가야 하나요?",
+    "gold_chunk_id": 11348,
+    "gold_document_id": 294,
+    "chunk_rank": 1,
+    "doc_rank": 1,
+    "top_title": "Behavior Counseling - Behavior Consultations - See"
+  },
+  {
+    "question": "아기가 집에 오기 전에 강아지가 미리 적응하게 하려면 어떻게 해야 하나요?",
+    "gold_chunk_id": 11286,
+    "gold_document_id": 288,
+    "chunk_rank": 1,
+    "doc_rank": 1,
+    "top_title": "Dogs and Canines behaviour | RSPCA - RSPCA - rspca"
+  },
+  {
+    "question": "강아지가 가족들에게 공격적인 모습을 보이는데 왜 이러는 걸까요?",
+    "gold_chunk_id": 92,
+    "gold_document_id": 2,
+    "chunk_rank": 3,
+    "doc_rank": 1,
+    "top_title": "ASPCA Common Dog Behavior Issues — aggression"
+  },
+  {
+    "question": "우리 강아지가 특정 사람만 보면 공격적으로 변하는데 어떻게 해야 할까요?",
+    "gold_chunk_id": 102,
+    "gold_document_id": 2,
+    "chunk_rank": 1,
+    "doc_rank": 1,
+    "top_title": "ASPCA Common Dog Behavior Issues — aggression"
+  },
+  {
+    "question": "외출할 때 강아지가 덜 불안해하게 하려면 어떻게 해야 하나요?",
+    "gold_chunk_id": 218,
+    "gold_document_id": 8,
+    "chunk_rank": 0,
+    "doc_rank": 1,
+    "top_title": "ASPCA Common Dog Behavior Issues — separation-anxi"
+  },
+  {
+    "question": "강아지가 무서워하는 상황을 어떻게 하면 덜 불안하게 바꿀 수 있을까요?",
+    "gold_chunk_id": 11342,
+    "gold_document_id": 293,
+    "chunk_rank": 0,
+    "doc_rank": 5,
+    "top_title": "Introduction to Desensitization and Counterconditi"
+  },
+  {
+    "question": "강아지에게 힘으로 복종을 가르치면 왜 오히려 공격적으로 변하는 건가요?",
+    "gold_chunk_id": 247,
+    "gold_document_id": 10,
+    "chunk_rank": 0,
+    "doc_rank": 5,
+    "top_title": "Cross-Sectional Age Differences in Canine Personal"
+  },
+  {
+    "question": "강아지가 자꾸 집안 물건을 씹어대는데 어떻게 고쳐야 할까요?",
+    "gold_chunk_id": 11310,
+    "gold_document_id": 290,
+    "chunk_rank": 3,
+    "doc_rank": 3,
+    "top_title": "ASPCA Common Dog Behavior Issues — destructive-che"
+  },
+  {
+    "question": "강아지가 공격적인 행동을 보이는데 어디서 상담을 받아야 할까요?",
+    "gold_chunk_id": 11346,
+    "gold_document_id": 294,
+    "chunk_rank": 4,
+    "doc_rank": 4,
+    "top_title": "ASPCA Common Dog Behavior Issues — mouthing-nippin"
+  },
+  {
+    "question": "우리 강아지가 공격적인데, 나이가 어리면 훈련으로 고칠 수 있을까요?",
+    "gold_chunk_id": 103,
+    "gold_document_id": 2,
+    "chunk_rank": 0,
+    "doc_rank": 6,
+    "top_title": "An Investigation into the Impact of Pre-Adolescent"
+  },
+  {
+    "question": "우리 강아지가 자꾸 자전거를 쫓아가는데 왜 이런 행동을 하는 건가요?",
+    "gold_chunk_id": 11345,
+    "gold_document_id": 294,
+    "chunk_rank": 0,
+    "doc_rank": 0,
+    "top_title": "The Influence of Breed, Sex, Origin and Housing Co"
+  },
+  {
+    "question": "겁 많은 강아지의 두려움을 없애려면 어떻게 훈련해야 하나요?",
+    "gold_chunk_id": 11338,
+    "gold_document_id": 293,
+    "chunk_rank": 0,
+    "doc_rank": 5,
+    "top_title": "Effect of a Standardized Four-Week Desensitization"
+  },
+  {
+    "question": "강아지가 빗질이나 안는 걸 너무 무서워하는데 어떻게 하면 좋을까요?",
+    "gold_chunk_id": 11343,
+    "gold_document_id": 293,
+    "chunk_rank": 0,
+    "doc_rank": 5,
+    "top_title": "ASPCA Common Dog Behavior Issues — mounting-mastur"
+  },
+  {
+    "question": "우리 강아지가 자꾸 인형이나 사람 다리에 올라타서 허리를 흔드는데 왜 이러는 걸까요?",
+    "gold_chunk_id": 172,
+    "gold_document_id": 6,
+    "chunk_rank": 0,
+    "doc_rank": 2,
+    "top_title": "ASPCA Common Dog Behavior Issues — destructive-che"
+  },
+  {
+    "question": "보상 기반 훈련을 하면 강아지가 제멋대로 행동하게 되나요?",
+    "gold_chunk_id": 265,
+    "gold_document_id": 11,
+    "chunk_rank": 0,
+    "doc_rank": 9,
+    "top_title": "Influence of gender, neuter status, and training m"
+  },
+  {
+    "question": "우리 강아지가 공격적인 성향을 타고난 것 같은데, 나중에 성격이 바뀔 수 있을까요?",
+    "gold_chunk_id": 11270,
+    "gold_document_id": 288,
+    "chunk_rank": 0,
+    "doc_rank": 3,
+    "top_title": "ASPCA Common Dog Behavior Issues — aggression"
+  },
+  {
+    "question": "강아지가 자꾸 마당을 파헤치는데 어떻게 고쳐야 할까요?",
+    "gold_chunk_id": 11311,
+    "gold_document_id": 290,
+    "chunk_rank": 1,
+    "doc_rank": 1,
+    "top_title": "Dog Behavior--What is Normal?  | VCA Animal Hospit"
+  },
+  {
+    "question": "강아지를 훈련소에 보내서 교육받게 하는 게 더 낫지 않을까요?",
+    "gold_chunk_id": 11351,
+    "gold_document_id": 294,
+    "chunk_rank": 4,
+    "doc_rank": 4,
+    "top_title": "Participation in a Short-Term Socialization and Tr"
+  },
+  {
+    "question": "강아지가 특정 소리를 무서워하는데 어떻게 하면 안심시켜 줄 수 있을까요?",
+    "gold_chunk_id": 11326,
+    "gold_document_id": 292,
+    "chunk_rank": 3,
+    "doc_rank": 3,
+    "top_title": "Therapy and Prevention of Noise Fears in Dogs—A Re"
+  },
+  {
+    "question": "강아지가 왜 자꾸 집 안 곳곳에 소변을 조금씩 뿌리고 다니는 걸까요?",
+    "gold_chunk_id": 209,
+    "gold_document_id": 8,
+    "chunk_rank": 0,
+    "doc_rank": 1,
+    "top_title": "ASPCA Common Dog Behavior Issues — separation-anxi"
+  },
+  {
+    "question": "우리 강아지가 다른 강아지나 사람에게 자꾸 올라타서 붕가붕가를 하는데 왜 이러는 걸까요?",
+    "gold_chunk_id": 173,
+    "gold_document_id": 6,
+    "chunk_rank": 0,
+    "doc_rank": 1,
+    "top_title": "ASPCA Common Dog Behavior Issues — mounting-mastur"
+  },
+  {
+    "question": "강아지가 혼자 있을 때 불안해하는데 어떻게 하면 덜 힘들어할까요?",
+    "gold_chunk_id": 225,
+    "gold_document_id": 8,
+    "chunk_rank": 0,
+    "doc_rank": 1,
+    "top_title": "ASPCA Common Dog Behavior Issues — separation-anxi"
+  },
+  {
+    "question": "강아지가 입질을 도통 멈추지 않는데 마지막 수단으로 쓸 수 있는 방법이 있을까요?",
+    "gold_chunk_id": 198,
+    "gold_document_id": 7,
+    "chunk_rank": 1,
+    "doc_rank": 1,
+    "top_title": "ASPCA Common Dog Behavior Issues — mouthing-nippin"
+  },
+  {
+    "question": "강아지가 사람을 자꾸 무는데 어떻게 하면 고칠 수 있을까요?",
+    "gold_chunk_id": 11313,
+    "gold_document_id": 290,
+    "chunk_rank": 0,
+    "doc_rank": 3,
+    "top_title": "ASPCA Common Dog Behavior Issues — mouthing-nippin"
+  },
+  {
+    "question": "강아지가 자꾸 짖는데 혼내지 않고 어떻게 고칠 수 있을까요?",
+    "gold_chunk_id": 11339,
+    "gold_document_id": 293,
+    "chunk_rank": 0,
+    "doc_rank": 0,
+    "top_title": "ASPCA Common Dog Behavior Issues — barking"
+  },
+  {
+    "question": "강아지가 자꾸 실수를 하는데 행동 교정 전에 병원에 꼭 가봐야 할까요?",
+    "gold_chunk_id": 207,
+    "gold_document_id": 8,
+    "chunk_rank": 0,
+    "doc_rank": 0,
+    "top_title": "AAHA Canine and Feline Behavior Management Guideli"
+  },
+  {
+    "question": "강아지 훈련할 때 보상 기반 방식이 전기 충격기보다 더 좋은 점이 있나요?",
+    "gold_chunk_id": 271,
+    "gold_document_id": 11,
+    "chunk_rank": 0,
+    "doc_rank": 3,
+    "top_title": "The use of electronic collars for training domesti"
+  },
+  {
+    "question": "우리 강아지가 병원에서 자꾸 몸을 터는데 스트레스를 받아서 그런 걸까요?",
+    "gold_chunk_id": 11317,
+    "gold_document_id": 291,
+    "chunk_rank": 0,
+    "doc_rank": 1,
+    "top_title": "Signs Your Dog is Stressed and How to Relieve It  "
+  },
+  {
+    "question": "강아지 문제 행동을 고치려고 전문가를 찾을 때 무엇을 확인해야 하나요?",
+    "gold_chunk_id": 11299,
+    "gold_document_id": 288,
+    "chunk_rank": 1,
+    "doc_rank": 1,
+    "top_title": "Dogs and Canines behaviour | RSPCA - RSPCA - rspca"
+  },
+  {
+    "question": "강아지가 분리불안을 겪지 않게 하려면 어떻게 훈련해야 하나요?",
+    "gold_chunk_id": 11302,
+    "gold_document_id": 289,
+    "chunk_rank": 0,
+    "doc_rank": 0,
+    "top_title": "ASPCA Common Dog Behavior Issues — separation-anxi"
+  },
+  {
+    "question": "평소엔 순한데 왜 특정 가족에게만 공격적으로 변하는 걸까요?",
+    "gold_chunk_id": 93,
+    "gold_document_id": 2,
+    "chunk_rank": 1,
+    "doc_rank": 1,
+    "top_title": "ASPCA Common Dog Behavior Issues — aggression"
+  },
+  {
+    "question": "강아지가 혼자 있을 때 너무 힘들어하는데 어떻게 하면 좋을까요?",
+    "gold_chunk_id": 227,
+    "gold_document_id": 8,
+    "chunk_rank": 0,
+    "doc_rank": 1,
+    "top_title": "ASPCA Common Dog Behavior Issues — separation-anxi"
+  },
+  {
+    "question": "강아지 훈련할 때 서열 잡는다고 강압적으로 대하면 안 되나요?",
+    "gold_chunk_id": 248,
+    "gold_document_id": 10,
+    "chunk_rank": 0,
+    "doc_rank": 1,
+    "top_title": "AVSAB Position Statement on the Use of Dominance T"
+  },
+  {
+    "question": "강아지가 자꾸 나쁜 행동을 하는데 어떻게 하면 고칠 수 있을까요?",
+    "gold_chunk_id": 250,
+    "gold_document_id": 10,
+    "chunk_rank": 0,
+    "doc_rank": 0,
+    "top_title": "A Treatment Plan for Dogs (Canis familiaris) That "
+  },
+  {
+    "question": "강아지가 혼자 있을 때 불안해하는데 외출 시간을 어떻게 늘려야 할까요?",
+    "gold_chunk_id": 220,
+    "gold_document_id": 8,
+    "chunk_rank": 1,
+    "doc_rank": 1,
+    "top_title": "ASPCA Common Dog Behavior Issues — separation-anxi"
+  },
+  {
+    "question": "겁 많은 강아지가 왜 갑자기 공격적으로 변하는 건가요?",
+    "gold_chunk_id": 89,
+    "gold_document_id": 2,
+    "chunk_rank": 1,
+    "doc_rank": 1,
+    "top_title": "ASPCA Common Dog Behavior Issues — aggression"
+  },
+  {
+    "question": "중성화 수술을 하면 우리 강아지의 공격성이 좀 나아질까요?",
+    "gold_chunk_id": 11280,
+    "gold_document_id": 288,
+    "chunk_rank": 3,
+    "doc_rank": 3,
+    "top_title": "Variations in Canine Behavioural Characteristics a"
+  },
+  {
+    "question": "강아지가 스트레스를 받을 때 어디로 피하게 해주는 게 좋을까요?",
+    "gold_chunk_id": 11322,
+    "gold_document_id": 291,
+    "chunk_rank": 1,
+    "doc_rank": 1,
+    "top_title": "Signs Your Dog is Stressed and How to Relieve It  "
+  },
+  {
+    "question": "분리불안 훈련을 하는 동안에는 강아지를 절대 혼자 두면 안 되나요?",
+    "gold_chunk_id": 221,
+    "gold_document_id": 8,
+    "chunk_rank": 1,
+    "doc_rank": 1,
+    "top_title": "ASPCA Common Dog Behavior Issues — separation-anxi"
+  },
+  {
+    "question": "강아지가 훈련을 더 잘 따라오게 하려면 어떤 보상을 주는 게 좋을까요?",
+    "gold_chunk_id": 11241,
+    "gold_document_id": 280,
+    "chunk_rank": 1,
+    "doc_rank": 1,
+    "top_title": "How to Train Your Dog & Top Training Tips - RSPCA "
+  },
+  {
+    "question": "강아지가 저한테 너무 집착하는데 어떻게 하면 좋을까요?",
+    "gold_chunk_id": 284,
+    "gold_document_id": 12,
+    "chunk_rank": 0,
+    "doc_rank": 0,
+    "top_title": "Influence of Owners’ Attachment Style and Personal"
+  },
+  {
+    "question": "강아지가 자꾸 집 안에 실수를 하는데 혹시 먹는 약 때문일 수도 있나요?",
+    "gold_chunk_id": 208,
+    "gold_document_id": 8,
+    "chunk_rank": 2,
+    "doc_rank": 1,
+    "top_title": "ASPCA Common Dog Behavior Issues — separation-anxi"
+  },
+  {
+    "question": "강아지가 너무 공격적인데 전문가의 도움을 어디서 받을 수 있을까요?",
+    "gold_chunk_id": 11242,
+    "gold_document_id": 280,
+    "chunk_rank": 0,
+    "doc_rank": 0,
+    "top_title": "Dogs and Canines behaviour | RSPCA - RSPCA - rspca"
+  },
+  {
+    "question": "강아지 훈련할 때 보상 기반 방식이 강압적인 방식보다 더 좋은 이유가 뭔가요?",
+    "gold_chunk_id": 272,
+    "gold_document_id": 11,
+    "chunk_rank": 0,
+    "doc_rank": 2,
+    "top_title": "Professional dog trainers’ perspectives on trainin"
+  },
+  {
+    "question": "강아지가 자꾸 사람에게 마운팅을 하는데 어떻게 멈추게 할 수 있을까요?",
+    "gold_chunk_id": 180,
+    "gold_document_id": 6,
+    "chunk_rank": 0,
+    "doc_rank": 1,
+    "top_title": "ASPCA Common Dog Behavior Issues — mounting-mastur"
+  },
+  {
+    "question": "강아지 배변 훈련을 할 때 몇 번이나 밖으로 데리고 나가야 하나요?",
+    "gold_chunk_id": 11232,
+    "gold_document_id": 278,
+    "chunk_rank": 1,
+    "doc_rank": 1,
+    "top_title": "How To Toilet Train Your Puppy or Dog - RSPCA - rs"
+  },
+  {
+    "question": "강아지가 자꾸 손을 무는데 전문가의 도움을 받는 게 좋을까요?",
+    "gold_chunk_id": 199,
+    "gold_document_id": 7,
+    "chunk_rank": 0,
+    "doc_rank": 1,
+    "top_title": "ASPCA Common Dog Behavior Issues — mouthing-nippin"
+  },
+  {
+    "question": "우리 강아지가 무서워하면서도 갑자기 달려들어 짖는데 왜 이러는 걸까요?",
+    "gold_chunk_id": 91,
+    "gold_document_id": 2,
+    "chunk_rank": 0,
+    "doc_rank": 3,
+    "top_title": "Signs Your Dog is Stressed and How to Relieve It  "
+  },
+  {
+    "question": "우리 강아지의 공격성을 완전히 고칠 수 있을까요?",
+    "gold_chunk_id": 110,
+    "gold_document_id": 2,
+    "chunk_rank": 1,
+    "doc_rank": 1,
+    "top_title": "ASPCA Common Dog Behavior Issues — aggression"
+  },
+  {
+    "question": "강아지가 자꾸 낑낑거리는데 어떻게 하면 자신감을 키워줄 수 있을까요?",
+    "gold_chunk_id": 232,
+    "gold_document_id": 9,
+    "chunk_rank": 1,
+    "doc_rank": 1,
+    "top_title": "ASPCA Common Dog Behavior Issues — whining"
+  },
+  {
+    "question": "우리 강아지가 왜 갑자기 저를 보면 으르렁거리며 공격성을 보일까요?",
+    "gold_chunk_id": 94,
+    "gold_document_id": 2,
+    "chunk_rank": 0,
+    "doc_rank": 1,
+    "top_title": "ASPCA Common Dog Behavior Issues — aggression"
+  },
+  {
+    "question": "강아지 훈련할 때 혼내는 방식보다 보상 위주로 가르치는 게 정말 더 좋은가요?",
+    "gold_chunk_id": 262,
+    "gold_document_id": 11,
+    "chunk_rank": 0,
+    "doc_rank": 0,
+    "top_title": "The use of electronic collars for training domesti"
+  },
+  {
+    "question": "강아지 문제 행동을 고칠 때 혼내는 것보다 더 좋은 방법이 있을까요?",
+    "gold_chunk_id": 261,
+    "gold_document_id": 11,
+    "chunk_rank": 5,
+    "doc_rank": 5,
+    "top_title": "A Treatment Plan for Dogs (Canis familiaris) That "
+  },
+  {
+    "question": "강아지가 자꾸 사람을 무는데 왜 이러는 걸까요?",
+    "gold_chunk_id": 11312,
+    "gold_document_id": 290,
+    "chunk_rank": 0,
+    "doc_rank": 0,
+    "top_title": "Aggression toward Familiar People, Strangers, and "
+  },
+  {
+    "question": "손님이 오면 자꾸 짖는데 어떻게 훈련해야 할까요?",
+    "gold_chunk_id": 11331,
+    "gold_document_id": 292,
+    "chunk_rank": 6,
+    "doc_rank": 6,
+    "top_title": "ASPCA Common Dog Behavior Issues — barking"
+  },
+  {
+    "question": "강아지가 너무 불안해하는데 행동 교정 훈련과 약물 치료를 병행해도 될까요?",
+    "gold_chunk_id": 11335,
+    "gold_document_id": 292,
+    "chunk_rank": 2,
+    "doc_rank": 2,
+    "top_title": "ASPCA Common Dog Behavior Issues — separation-anxi"
+  },
+  {
+    "question": "강아지가 자꾸 신발이나 속옷을 물어뜯는데 어떻게 고쳐야 할까요?",
+    "gold_chunk_id": 160,
+    "gold_document_id": 4,
+    "chunk_rank": 1,
+    "doc_rank": 1,
+    "top_title": "ASPCA Common Dog Behavior Issues — destructive-che"
+  },
+  {
+    "question": "강아지 사회성을 길러주려면 평소에 어떤 경험들을 시켜주는 게 좋을까요?",
+    "gold_chunk_id": 282,
+    "gold_document_id": 12,
+    "chunk_rank": 1,
+    "doc_rank": 1,
+    "top_title": "AVSAB Position Statement on Puppy Socialization"
+  },
+  {
+    "question": "우리 강아지 공격적인 행동은 어떻게 치료해야 하나요?",
+    "gold_chunk_id": 11350,
+    "gold_document_id": 294,
+    "chunk_rank": 0,
+    "doc_rank": 0,
+    "top_title": "ASPCA Common Dog Behavior Issues — aggression"
+  },
+  {
+    "question": "강아지가 혼자 있을 때 자꾸 하울링을 하는데 어떻게 하면 좋을까요?",
+    "gold_chunk_id": 171,
+    "gold_document_id": 5,
+    "chunk_rank": 1,
+    "doc_rank": 1,
+    "top_title": "ASPCA Common Dog Behavior Issues — howling"
+  },
+  {
+    "question": "강아지가 혼자 있을 때 불안해하지 않게 하려면 어떻게 해야 하나요?",
+    "gold_chunk_id": 11228,
+    "gold_document_id": 277,
+    "chunk_rank": 0,
+    "doc_rank": 3,
+    "top_title": "ASPCA Common Dog Behavior Issues — separation-anxi"
+  },
+  {
+    "question": "강아지가 청소기를 너무 무서워하는데 어떻게 적응시켜야 할까요?",
+    "gold_chunk_id": 11329,
+    "gold_document_id": 292,
+    "chunk_rank": 0,
+    "doc_rank": 2,
+    "top_title": "Overcoming Fears with Desensitization and Counterc"
+  },
+  {
+    "question": "우리 강아지가 갑자기 하품을 하거나 입술을 핥는데 왜 이러는 걸까요?",
+    "gold_chunk_id": 11223,
+    "gold_document_id": 276,
+    "chunk_rank": 0,
+    "doc_rank": 0,
+    "top_title": "Signs Your Dog is Stressed and How to Relieve It  "
+  },
+  {
+    "question": "강아지가 평소엔 배변을 잘 가리는데 혼자 있을 때만 실수를 하는 이유가 뭘까요?",
+    "gold_chunk_id": 11236,
+    "gold_document_id": 278,
+    "chunk_rank": 1,
+    "doc_rank": 1,
+    "top_title": "How To Toilet Train Your Puppy or Dog - RSPCA - rs"
+  },
+  {
+    "question": "관심을 끌려고 계속 하울링하는 강아지는 어떻게 훈육해야 할까요?",
+    "gold_chunk_id": 169,
+    "gold_document_id": 5,
+    "chunk_rank": 0,
+    "doc_rank": 1,
+    "top_title": "ASPCA Common Dog Behavior Issues — howling"
+  },
+  {
+    "question": "강아지 훈련 효과가 나타나기까지 보통 얼마나 걸리나요?",
+    "gold_chunk_id": 11328,
+    "gold_document_id": 292,
+    "chunk_rank": 0,
+    "doc_rank": 7,
+    "top_title": "Improving dog training methods: Efficacy and effic"
+  },
+  {
+    "question": "우리 강아지가 자꾸 낑낑거리는데 왜 그러는 걸까요?",
+    "gold_chunk_id": 230,
+    "gold_document_id": 9,
+    "chunk_rank": 1,
+    "doc_rank": 1,
+    "top_title": "ASPCA Common Dog Behavior Issues — whining"
+  },
+  {
+    "question": "강아지가 자꾸 손을 무는데 어떻게 훈육해야 할까요?",
+    "gold_chunk_id": 195,
+    "gold_document_id": 7,
+    "chunk_rank": 0,
+    "doc_rank": 1,
+    "top_title": "ASPCA Common Dog Behavior Issues — mouthing-nippin"
+  },
+  {
+    "question": "강아지가 간식을 먹다가 목에 걸릴까 봐 걱정되는데 어떻게 해야 할까요?",
+    "gold_chunk_id": 156,
+    "gold_document_id": 4,
+    "chunk_rank": 1,
+    "doc_rank": 1,
+    "top_title": "ASPCA Common Dog Behavior Issues — destructive-che"
+  },
+  {
+    "question": "강아지가 자꾸 짖고 말을 안 듣는데 어떻게 하면 좋을까요?",
+    "gold_chunk_id": 243,
+    "gold_document_id": 10,
+    "chunk_rank": 0,
+    "doc_rank": 0,
+    "top_title": "ASPCA Common Dog Behavior Issues — barking"
+  },
+  {
+    "question": "강아지가 스트레스를 받으면 어떤 행동을 보이나요?",
+    "gold_chunk_id": 11316,
+    "gold_document_id": 291,
+    "chunk_rank": 0,
+    "doc_rank": 1,
+    "top_title": "Signs Your Dog is Stressed and How to Relieve It  "
+  },
+  {
+    "question": "산책할 때 강아지에게 꼭 목줄을 채워야 하나요?",
+    "gold_chunk_id": 11263,
+    "gold_document_id": 287,
+    "chunk_rank": 0,
+    "doc_rank": 4,
+    "top_title": "Train Your Dog to Stop Pulling On The Lead - RSPCA"
+  },
+  {
+    "question": "강아지가 배변하고 싶어 한다는 걸 어떻게 알 수 있나요?",
+    "gold_chunk_id": 11233,
+    "gold_document_id": 278,
+    "chunk_rank": 1,
+    "doc_rank": 1,
+    "top_title": "How To Toilet Train Your Puppy or Dog - RSPCA - rs"
+  },
+  {
+    "question": "집에 돌아와서 사고 친 걸 발견했을 때 강아지를 혼내면 안 되나요?",
+    "gold_chunk_id": 11230,
+    "gold_document_id": 277,
+    "chunk_rank": 4,
+    "doc_rank": 4,
+    "top_title": "ASPCA Common Dog Behavior Issues — destructive-che"
+  },
+  {
+    "question": "보호자가 떠날 준비를 할 때 강아지가 불안해하는 신호는 무엇인가요?",
+    "gold_chunk_id": 214,
+    "gold_document_id": 8,
+    "chunk_rank": 1,
+    "doc_rank": 1,
+    "top_title": "ASPCA Common Dog Behavior Issues — separation-anxi"
+  },
+  {
+    "question": "병원에 어떻게 예약하나요?",
+    "gold_chunk_id": 11344,
+    "gold_document_id": 293,
+    "chunk_rank": 1,
+    "doc_rank": 1,
+    "top_title": "Overcoming Fears with Desensitization and Counterc"
+  },
+  {
+    "question": "우리 강아지가 다른 개에게 공격적일 때 어떻게 다스려야 하나요?",
+    "gold_chunk_id": 105,
+    "gold_document_id": 2,
+    "chunk_rank": 0,
+    "doc_rank": 6,
+    "top_title": "AVSAB Position Statement on the Use of Dominance T"
+  },
+  {
+    "question": "강아지가 하는 행동 중에 정말 문제 되는 건 뭔가요?",
+    "gold_chunk_id": 11307,
+    "gold_document_id": 290,
+    "chunk_rank": 0,
+    "doc_rank": 1,
+    "top_title": "Dog Behavior--What is Normal?  | VCA Animal Hospit"
+  },
+  {
+    "question": "강아지에게 '기다려' 명령을 가르치려면 어떻게 해야 하나요?",
+    "gold_chunk_id": 11247,
+    "gold_document_id": 283,
+    "chunk_rank": 1,
+    "doc_rank": 1,
+    "top_title": "Train Your Dog To Stay | RSPCA - RSPCA - rspca.org"
+  },
+  {
+    "question": "새 강아지가 공격적으로 되지 않게 하려면 어떻게 해야 하나요?",
+    "gold_chunk_id": 11283,
+    "gold_document_id": 288,
+    "chunk_rank": 1,
+    "doc_rank": 1,
+    "top_title": "Dogs and Canines behaviour | RSPCA - RSPCA - rspca"
+  },
+  {
+    "question": "보상 기반 훈련이 왜 더 효과적인가요?",
+    "gold_chunk_id": 264,
+    "gold_document_id": 11,
+    "chunk_rank": 0,
+    "doc_rank": 0,
+    "top_title": "A Comparative Analysis of International Dog Owner "
+  },
+  {
+    "question": "우리 강아지가 왜 나쁜 행동을 하는 건가요?",
+    "gold_chunk_id": 245,
+    "gold_document_id": 10,
+    "chunk_rank": 0,
+    "doc_rank": 0,
+    "top_title": "Dog Behavior--What is Normal?  | VCA Animal Hospit"
+  },
+  {
+    "question": "우리 강아지가 너무 심하게 짖는 건 왜 그런가요?",
+    "gold_chunk_id": 11308,
+    "gold_document_id": 290,
+    "chunk_rank": 0,
+    "doc_rank": 1,
+    "top_title": "Dog Behavior--What is Normal?  | VCA Animal Hospit"
+  },
+  {
+    "question": "집을 옮기면 불안해하나요?",
+    "gold_chunk_id": 206,
+    "gold_document_id": 8,
+    "chunk_rank": 1,
+    "doc_rank": 1,
+    "top_title": "ASPCA Common Dog Behavior Issues — separation-anxi"
+  },
+  {
+    "question": "강아지가 스트레스 받을 때 어떻게 해야 하나요?",
+    "gold_chunk_id": 11320,
+    "gold_document_id": 291,
+    "chunk_rank": 1,
+    "doc_rank": 1,
+    "top_title": "Signs Your Dog is Stressed and How to Relieve It  "
+  },
+  {
+    "question": "강아지가 아플 때도 공격적으로 변할 수 있나요?",
+    "gold_chunk_id": 97,
+    "gold_document_id": 2,
+    "chunk_rank": 0,
+    "doc_rank": 2,
+    "top_title": "Dogs and Canines behaviour | RSPCA - RSPCA - rspca"
+  },
+  {
+    "question": "우리 강아지가 왜 짖는지 어떻게 알 수 있나요?",
+    "gold_chunk_id": 113,
+    "gold_document_id": 3,
+    "chunk_rank": 0,
+    "doc_rank": 1,
+    "top_title": "ASPCA Common Dog Behavior Issues — barking"
+  },
+  {
+    "question": "우리 강아지가 왜 이렇게 공격적인가요?",
+    "gold_chunk_id": 11275,
+    "gold_document_id": 288,
+    "chunk_rank": 0,
+    "doc_rank": 2,
+    "top_title": "\"Reactivity to Stimuli” Is a Temperamental Factor "
+  },
+  {
+    "question": "다른 개들이 있을 때 우리 강아지가 왜 짖는지 어떻게 해야 하나요?",
+    "gold_chunk_id": 146,
+    "gold_document_id": 3,
+    "chunk_rank": 0,
+    "doc_rank": 1,
+    "top_title": "ASPCA Common Dog Behavior Issues — barking"
+  },
+  {
+    "question": "강아지 훈련을 하면 뭐가 좋은가요?",
+    "gold_chunk_id": 11240,
+    "gold_document_id": 280,
+    "chunk_rank": 1,
+    "doc_rank": 1,
+    "top_title": "How to Train Your Dog & Top Training Tips - RSPCA "
+  },
+  {
+    "question": "강아지가 왜 낑낑거리는 건가요?",
+    "gold_chunk_id": 231,
+    "gold_document_id": 9,
+    "chunk_rank": 2,
+    "doc_rank": 1,
+    "top_title": "ASPCA Common Dog Behavior Issues — whining"
+  },
+  {
+    "question": "우리 강아지가 왜 자꾸 소리를 지르는 건가요?",
+    "gold_chunk_id": 242,
+    "gold_document_id": 10,
+    "chunk_rank": 0,
+    "doc_rank": 0,
+    "top_title": "ASPCA Common Dog Behavior Issues — whining"
+  },
+  {
+    "question": "긍정적 강화 훈련이 왜 중요한가요?",
+    "gold_chunk_id": 276,
+    "gold_document_id": 11,
+    "chunk_rank": 0,
+    "doc_rank": 0,
+    "top_title": "Professional dog trainers’ perspectives on trainin"
+  },
+  {
+    "question": "강아지 배변을 밖에 두면 안 되나요?",
+    "gold_chunk_id": 11257,
+    "gold_document_id": 287,
+    "chunk_rank": 0,
+    "doc_rank": 1,
+    "top_title": "Walking your dog safely and responsibly in the UK "
+  },
+  {
+    "question": "강아지가 공격할 때 어떻게 해야 하나요?",
+    "gold_chunk_id": 11287,
+    "gold_document_id": 288,
+    "chunk_rank": 2,
+    "doc_rank": 1,
+    "top_title": "Dogs and Canines behaviour | RSPCA - RSPCA - rspca"
+  },
+  {
+    "question": "강아지가 위협을 느낄 때 어떻게 표현하는 건가요?",
+    "gold_chunk_id": 11274,
+    "gold_document_id": 288,
+    "chunk_rank": 2,
+    "doc_rank": 2,
+    "top_title": "ASPCA Common Dog Behavior Issues — aggression"
+  },
+  {
+    "question": "강아지에게 어떻게 잘 훈련해야 하나요?",
+    "gold_chunk_id": 249,
+    "gold_document_id": 10,
+    "chunk_rank": 0,
+    "doc_rank": 0,
+    "top_title": "An Investigation into the Impact of Pre-Adolescent"
+  },
+  {
+    "question": "중성화 수술이 공격성을 줄여주나요?",
+    "gold_chunk_id": 11279,
+    "gold_document_id": 288,
+    "chunk_rank": 0,
+    "doc_rank": 3,
+    "top_title": "The Welfare of Fighting Dogs: Wounds, Neurobiology"
+  },
+  {
+    "question": "낯선 사람이나 동물을 보지 못하게 하려면 어떻게 해야 하나요?",
+    "gold_chunk_id": 120,
+    "gold_document_id": 3,
+    "chunk_rank": 1,
+    "doc_rank": 1,
+    "top_title": "ASPCA Common Dog Behavior Issues — barking"
+  },
+  {
+    "question": "짖음을 줄이는 목줄은 어떻게 작동하나요?",
+    "gold_chunk_id": 148,
+    "gold_document_id": 3,
+    "chunk_rank": 1,
+    "doc_rank": 1,
+    "top_title": "ASPCA Common Dog Behavior Issues — barking"
+  },
+  {
+    "question": "강아지가 흥분해서 접근하지 못할 때 공격성을 보이면 어떻게 해야 하나요?",
+    "gold_chunk_id": 95,
+    "gold_document_id": 2,
+    "chunk_rank": 0,
+    "doc_rank": 1,
+    "top_title": "ASPCA Common Dog Behavior Issues — aggression"
+  },
+  {
+    "question": "집에서 어떻게 훈련을 시작해야 하나요?",
+    "gold_chunk_id": 11353,
+    "gold_document_id": 294,
+    "chunk_rank": 1,
+    "doc_rank": 1,
+    "top_title": "Behavior Counseling - Behavior Consultations - See"
+  },
+  {
+    "question": "강아지가 혼자 있을 때 불안해하는 건 왜 그런가요?",
+    "gold_chunk_id": 229,
+    "gold_document_id": 8,
+    "chunk_rank": 0,
+    "doc_rank": 3,
+    "top_title": "How To Toilet Train Your Puppy or Dog - RSPCA - rs"
+  },
+  {
+    "question": "자전거를 무서워하는 강아지에게 어떻게 훈련해야 하나요?",
+    "gold_chunk_id": 11332,
+    "gold_document_id": 292,
+    "chunk_rank": 2,
+    "doc_rank": 1,
+    "top_title": "Introduction to Desensitization and Counterconditi"
+  },
+  {
+    "question": "어른 강아지가 사람을 물거나 입으로 만지는 행동은 왜 그럴까요?",
+    "gold_chunk_id": 185,
+    "gold_document_id": 7,
+    "chunk_rank": 1,
+    "doc_rank": 1,
+    "top_title": "ASPCA Common Dog Behavior Issues — mouthing-nippin"
+  },
+  {
+    "question": "강아지가 나를 쫓지 않게 하려면 어떻게 해야 하나요?",
+    "gold_chunk_id": 11294,
+    "gold_document_id": 288,
+    "chunk_rank": 7,
+    "doc_rank": 5,
+    "top_title": "ASPCA Common Dog Behavior Issues — mouthing-nippin"
+  },
+  {
+    "question": "강아지가 흥미를 느끼는 행동으로 관심을 돌리려면 어떻게 해야 하나요?",
+    "gold_chunk_id": 184,
+    "gold_document_id": 6,
+    "chunk_rank": 0,
+    "doc_rank": 6,
+    "top_title": "ASPCA Common Dog Behavior Issues — barking"
+  },
+  {
+    "question": "강아지가 자전거에 대해 두려워할 때 어떻게 해야 하나요?",
+    "gold_chunk_id": 11333,
+    "gold_document_id": 292,
+    "chunk_rank": 1,
+    "doc_rank": 1,
+    "top_title": "Introduction to Desensitization and Counterconditi"
+  },
+  {
+    "question": "강아지가 먹을 때 다른 것이 가까이 오면 왜 공격적으로 반응하나요?",
+    "gold_chunk_id": 88,
+    "gold_document_id": 2,
+    "chunk_rank": 1,
+    "doc_rank": 1,
+    "top_title": "ASPCA Common Dog Behavior Issues — aggression"
+  },
+  {
+    "question": "강아지가 왜 복종하도록 훈련해야 하나요?",
+    "gold_chunk_id": 241,
+    "gold_document_id": 10,
+    "chunk_rank": 0,
+    "doc_rank": 0,
+    "top_title": "How to Train Your Dog & Top Training Tips - RSPCA "
+  },
+  {
+    "question": "강아지가 스트레스받고 있다는 신호는 무엇인가요?",
+    "gold_chunk_id": 11258,
+    "gold_document_id": 287,
+    "chunk_rank": 0,
+    "doc_rank": 0,
+    "top_title": "Signs Your Dog is Stressed and How to Relieve It  "
+  },
+  {
+    "question": "강아지가 다른 사람을 지키려고 공격하면 왜 그런가요?",
+    "gold_chunk_id": 86,
+    "gold_document_id": 2,
+    "chunk_rank": 3,
+    "doc_rank": 1,
+    "top_title": "ASPCA Common Dog Behavior Issues — aggression"
+  },
+  {
+    "question": "우리 강아지가 씹는 것을 막으려면 어떻게 해야 하나요?",
+    "gold_chunk_id": 163,
+    "gold_document_id": 4,
+    "chunk_rank": 0,
+    "doc_rank": 1,
+    "top_title": "ASPCA Common Dog Behavior Issues — destructive-che"
+  },
+  {
+    "question": "낯선 소리나 광경에 짖는 건 왜 그런가요?",
+    "gold_chunk_id": 121,
+    "gold_document_id": 3,
+    "chunk_rank": 1,
+    "doc_rank": 1,
+    "top_title": "ASPCA Common Dog Behavior Issues — barking"
+  },
+  {
+    "question": "다른 개나 다람쥐를 쫓을 때 어떻게 해야 하나요?",
+    "gold_chunk_id": 147,
+    "gold_document_id": 3,
+    "chunk_rank": 3,
+    "doc_rank": 3,
+    "top_title": "ASPCA Common Dog Behavior Issues — destructive-che"
+  },
+  {
+    "question": "우리 강아지가 다른 남자 강아지랑 싸우는 건 왜인가요?",
+    "gold_chunk_id": 99,
+    "gold_document_id": 2,
+    "chunk_rank": 1,
+    "doc_rank": 1,
+    "top_title": "ASPCA Common Dog Behavior Issues — aggression"
+  },
+  {
+    "question": "강아지가 불안해할 때 어떤 신호를 봐야 하나요?",
+    "gold_chunk_id": 219,
+    "gold_document_id": 8,
+    "chunk_rank": 0,
+    "doc_rank": 10,
+    "top_title": "Signs Your Dog is Stressed and How to Relieve It  "
+  },
+  {
+    "question": "아기가 생기면 우리 강아지가 공격적으로 변할까요?",
+    "gold_chunk_id": 11284,
+    "gold_document_id": 288,
+    "chunk_rank": 1,
+    "doc_rank": 1,
+    "top_title": "Dogs and Canines behaviour | RSPCA - RSPCA - rspca"
+  },
+  {
+    "question": "강아지가 나를 부르면 왜 돌아오게 해야 하나요?",
+    "gold_chunk_id": 11237,
+    "gold_document_id": 279,
+    "chunk_rank": 2,
+    "doc_rank": 1,
+    "top_title": "Train Your Dog To Come When Called - RSPCA - rspca"
+  },
+  {
+    "question": "짖음을 멈추게 하려면 어떻게 해야 하나요?",
+    "gold_chunk_id": 124,
+    "gold_document_id": 3,
+    "chunk_rank": 0,
+    "doc_rank": 1,
+    "top_title": "ASPCA Common Dog Behavior Issues — barking"
+  },
+  {
+    "question": "강아지가 혼자 있을 때 발톱이 다치고 씹는 행동을 하는 건 왜인가요?",
+    "gold_chunk_id": 204,
+    "gold_document_id": 8,
+    "chunk_rank": 1,
+    "doc_rank": 1,
+    "top_title": "ASPCA Common Dog Behavior Issues — separation-anxi"
+  },
+  {
+    "question": "강아지가 너무 세게 물 때 어떻게 해야 하나요?",
+    "gold_chunk_id": 191,
+    "gold_document_id": 7,
+    "chunk_rank": 4,
+    "doc_rank": 2,
+    "top_title": "ASPCA Common Dog Behavior Issues — destructive-che"
+  },
+  {
+    "question": "강아지가 억지로 막혔을 때 왜 공격적으로 변하나요?",
+    "gold_chunk_id": 96,
+    "gold_document_id": 2,
+    "chunk_rank": 1,
+    "doc_rank": 1,
+    "top_title": "ASPCA Common Dog Behavior Issues — aggression"
+  },
+  {
+    "question": "강아지가 줄 당기지 않고 잘 걷게 어떻게 훈련해야 하나요?",
+    "gold_chunk_id": 11239,
+    "gold_document_id": 279,
+    "chunk_rank": 2,
+    "doc_rank": 2,
+    "top_title": "Train Your Dog to Stop Pulling On The Lead - RSPCA"
+  },
+  {
+    "question": "우리 강아지가 공격적인데 제가 굴복해야 하나요?",
+    "gold_chunk_id": 11281,
+    "gold_document_id": 288,
+    "chunk_rank": 0,
+    "doc_rank": 1,
+    "top_title": "Dogs and Canines behaviour | RSPCA - RSPCA - rspca"
+  },
+  {
+    "question": "우리 강아지가 스트레스를 받을 때 어떤 신호를 보이나요?",
+    "gold_chunk_id": 11345,
+    "gold_document_id": 294,
+    "chunk_rank": 0,
+    "doc_rank": 0,
+    "top_title": "Signs Your Dog is Stressed and How to Relieve It  "
+  },
+  {
+    "question": "우리 강아지가 불안해 보일 때는 어떻게 해야 하나요?",
+    "gold_chunk_id": 11222,
+    "gold_document_id": 276,
+    "chunk_rank": 0,
+    "doc_rank": 0,
+    "top_title": "ASPCA Common Dog Behavior Issues — whining"
+  },
+  {
+    "question": "강아지가 다른 개가 짖을 때도 짖는 건 왜 그런가요?",
+    "gold_chunk_id": 145,
+    "gold_document_id": 3,
+    "chunk_rank": 4,
+    "doc_rank": 1,
+    "top_title": "ASPCA Common Dog Behavior Issues — barking"
+  },
+  {
+    "question": "산책할 때 다른 개나 사람을 만나도 짖지 않게 어떻게 해야 하나요?",
+    "gold_chunk_id": 139,
+    "gold_document_id": 3,
+    "chunk_rank": 1,
+    "doc_rank": 1,
+    "top_title": "ASPCA Common Dog Behavior Issues — barking"
+  },
+  {
+    "question": "강아지가 물어뜯는 행동을 어떻게 고쳐야 하나요?",
+    "gold_chunk_id": 158,
+    "gold_document_id": 4,
+    "chunk_rank": 1,
+    "doc_rank": 1,
+    "top_title": "ASPCA Common Dog Behavior Issues — destructive-che"
+  },
+  {
+    "question": "강아지 훈련을 집에서 어떻게 해야 하나요?",
+    "gold_chunk_id": 11352,
+    "gold_document_id": 294,
+    "chunk_rank": 0,
+    "doc_rank": 5,
+    "top_title": "Train Your Dog To Stay | RSPCA - RSPCA - rspca.org"
+  },
+  {
+    "question": "강아지가 사람을 물거나 깨무는 행동을 어떻게 고쳐야 하나요?",
+    "gold_chunk_id": 188,
+    "gold_document_id": 7,
+    "chunk_rank": 1,
+    "doc_rank": 1,
+    "top_title": "ASPCA Common Dog Behavior Issues — mouthing-nippin"
+  },
+  {
+    "question": "밤에 산책할 때 목줄을 해야 하나요?",
+    "gold_chunk_id": 11259,
+    "gold_document_id": 287,
+    "chunk_rank": 1,
+    "doc_rank": 1,
+    "top_title": "Walking your dog safely and responsibly in the UK "
+  },
+  {
+    "question": "우리 강아지가 공격적인 행동을 보일 때 어떻게 해야 하나요?",
+    "gold_chunk_id": 111,
+    "gold_document_id": 2,
+    "chunk_rank": 0,
+    "doc_rank": 1,
+    "top_title": "ASPCA Common Dog Behavior Issues — aggression"
+  },
+  {
+    "question": "강아지가 혼자 있을 때 다른 이상 행동을 보이면 어떻게 해야 하나요?",
+    "gold_chunk_id": 11225,
+    "gold_document_id": 277,
+    "chunk_rank": 0,
+    "doc_rank": 2,
+    "top_title": "How To Toilet Train Your Puppy or Dog - RSPCA - rs"
+  },
+  {
+    "question": "집에 있을 때만 짖는데 어떻게 해야 하나요?",
+    "gold_chunk_id": 126,
+    "gold_document_id": 3,
+    "chunk_rank": 1,
+    "doc_rank": 1,
+    "top_title": "ASPCA Common Dog Behavior Issues — barking"
+  },
+  {
+    "question": "우리 강아지가 물려고 할 때 어떤 신호를 보내는지 어떻게 알 수 있나요?",
+    "gold_chunk_id": 11289,
+    "gold_document_id": 288,
+    "chunk_rank": 0,
+    "doc_rank": 0,
+    "top_title": "How To Toilet Train Your Puppy or Dog - RSPCA - rs"
+  },
+  {
+    "question": "강아지가 불편할 때 몸으로 어떻게 표현하는 건가요?",
+    "gold_chunk_id": 11273,
+    "gold_document_id": 288,
+    "chunk_rank": 4,
+    "doc_rank": 4,
+    "top_title": "Understanding Your Dog's Body Language - RSPCA - r"
+  },
+  {
+    "question": "우리 강아지가 무서워할 때 어떻게 해야 하나요?",
+    "gold_chunk_id": 11345,
+    "gold_document_id": 294,
+    "chunk_rank": 0,
+    "doc_rank": 0,
+    "top_title": "Effect of a Standardized Four-Week Desensitization"
+  },
+  {
+    "question": "간식을 줄 때 어떻게 해야 하나요?",
+    "gold_chunk_id": 11255,
+    "gold_document_id": 286,
+    "chunk_rank": 0,
+    "doc_rank": 0,
+    "top_title": "How to Train Your Dog & Top Training Tips - RSPCA "
+  },
+  {
+    "question": "강아지에게 혼내면 불안해지나요?",
+    "gold_chunk_id": 244,
+    "gold_document_id": 10,
+    "chunk_rank": 0,
+    "doc_rank": 0,
+    "top_title": "ASPCA Common Dog Behavior Issues — separation-anxi"
+  },
+  {
+    "question": "보호자가 떠날 때 강아지가 왜 그렇게 불안해하고 짖는 건가요?",
+    "gold_chunk_id": 202,
+    "gold_document_id": 8,
+    "chunk_rank": 0,
+    "doc_rank": 1,
+    "top_title": "ASPCA Common Dog Behavior Issues — separation-anxi"
+  },
+  {
+    "question": "강아지와 저의 소통을 어떻게 알아볼 수 있나요?",
+    "gold_chunk_id": 11349,
+    "gold_document_id": 294,
+    "chunk_rank": 0,
+    "doc_rank": 0,
+    "top_title": "Dogs and Canines behaviour | RSPCA - RSPCA - rspca"
+  },
+  {
+    "question": "강아지가 사람을 물 때 너무 세게 물지 않도록 어떻게 해야 하나요?",
+    "gold_chunk_id": 189,
+    "gold_document_id": 7,
+    "chunk_rank": 1,
+    "doc_rank": 1,
+    "top_title": "ASPCA Common Dog Behavior Issues — mouthing-nippin"
+  },
+  {
+    "question": "강아지가 혼자 있을 때 어떻게 해야 하나요?",
+    "gold_chunk_id": 133,
+    "gold_document_id": 3,
+    "chunk_rank": 0,
+    "doc_rank": 0,
+    "top_title": "ASPCA Common Dog Behavior Issues — separation-anxi"
+  },
+  {
+    "question": "배변 실수했을 때 어떻게 해야 하나요?",
+    "gold_chunk_id": 11234,
+    "gold_document_id": 278,
+    "chunk_rank": 1,
+    "doc_rank": 1,
+    "top_title": "How To Toilet Train Your Puppy or Dog - RSPCA - rs"
+  },
+  {
+    "question": "산책할 때 어떻게 하면 강아지가 줄을 잘 따르게 할 수 있나요?",
+    "gold_chunk_id": 11238,
+    "gold_document_id": 279,
+    "chunk_rank": 0,
+    "doc_rank": 3,
+    "top_title": "Train Your Dog to Stop Pulling On The Lead - RSPCA"
+  },
+  {
+    "question": "강아지를 다룰 때 어떤 행동이 공격성을 유발하나요?",
+    "gold_chunk_id": 255,
+    "gold_document_id": 10,
+    "chunk_rank": 2,
+    "doc_rank": 2,
+    "top_title": "Dogs and Canines behaviour | RSPCA - RSPCA - rspca"
+  },
+  {
+    "question": "강아지가 물건을 가지고 놀 때 혼자 있게 하려면 어떻게 해야 하나요?",
+    "gold_chunk_id": 11254,
+    "gold_document_id": 286,
+    "chunk_rank": 7,
+    "doc_rank": 7,
+    "top_title": "ASPCA Common Dog Behavior Issues — destructive-che"
+  },
+  {
+    "question": "강아지가 혼자 있을 때 소변이나 배변을 하는 건 왜 그런가요?",
+    "gold_chunk_id": 203,
+    "gold_document_id": 8,
+    "chunk_rank": 3,
+    "doc_rank": 2,
+    "top_title": "How To Toilet Train Your Puppy or Dog - RSPCA - rs"
+  },
+  {
+    "question": "과거 행동을 알면 미래에 공격할 확률을 예측할 수 있나요?",
+    "gold_chunk_id": 11288,
+    "gold_document_id": 288,
+    "chunk_rank": 1,
+    "doc_rank": 1,
+    "top_title": "Dogs and Canines behaviour | RSPCA - RSPCA - rspca"
+  },
+  {
+    "question": "병원 예약은 어떻게 하나요?",
+    "gold_chunk_id": 11336,
+    "gold_document_id": 292,
+    "chunk_rank": 4,
+    "doc_rank": 4,
+    "top_title": "Signs Your Dog is Stressed and How to Relieve It  "
+  },
+  {
+    "question": "문 앞에 사람이 올 때 짖는 것을 어떻게 해야 하나요?",
+    "gold_chunk_id": 122,
+    "gold_document_id": 3,
+    "chunk_rank": 0,
+    "doc_rank": 1,
+    "top_title": "ASPCA Common Dog Behavior Issues — barking"
+  },
+  {
+    "question": "짖는 소리가 목줄을 작동시키나요?",
+    "gold_chunk_id": 149,
+    "gold_document_id": 3,
+    "chunk_rank": 0,
+    "doc_rank": 1,
+    "top_title": "ASPCA Common Dog Behavior Issues — barking"
+  },
+  {
+    "question": "강아지가 특정 자극에 대해 편안함을 느끼게 하려면 어떻게 해야 하나요?",
+    "gold_chunk_id": 11345,
+    "gold_document_id": 294,
+    "chunk_rank": 0,
+    "doc_rank": 0,
+    "top_title": "Introduction to Desensitization and Counterconditi"
+  },
+  {
+    "question": "강아지가 장난치는 것과 공격적인 물기 중 무엇인지 어떻게 알 수 있나요?",
+    "gold_chunk_id": 186,
+    "gold_document_id": 7,
+    "chunk_rank": 1,
+    "doc_rank": 1,
+    "top_title": "ASPCA Common Dog Behavior Issues — mouthing-nippin"
+  },
+  {
+    "question": "손님이 올 때 짖는 건 왜 그런가요?",
+    "gold_chunk_id": 138,
+    "gold_document_id": 3,
+    "chunk_rank": 2,
+    "doc_rank": 1,
+    "top_title": "ASPCA Common Dog Behavior Issues — barking"
+  },
+  {
+    "question": "강아지가 흥분해서 몸을 비비거나 올라타는 행동을 할 때 어떻게 해야 하나요?",
+    "gold_chunk_id": 177,
+    "gold_document_id": 6,
+    "chunk_rank": 0,
+    "doc_rank": 1,
+    "top_title": "ASPCA Common Dog Behavior Issues — mounting-mastur"
+  },
+  {
+    "question": "다른 사람들이 지나갈 때 강아지가 짖는 건 무슨 뜻인가요?",
+    "gold_chunk_id": 119,
+    "gold_document_id": 3,
+    "chunk_rank": 1,
+    "doc_rank": 1,
+    "top_title": "ASPCA Common Dog Behavior Issues — barking"
+  },
+  {
+    "question": "강아지가 왜 자꾸 나를 쫓아다니나요?",
+    "gold_chunk_id": 252,
+    "gold_document_id": 10,
+    "chunk_rank": 0,
+    "doc_rank": 0,
+    "top_title": "A Treatment Plan for Dogs (Canis familiaris) That "
+  },
+  {
+    "question": "새로운 가족에게 갔을 때 분리불안이 생기나요?",
+    "gold_chunk_id": 205,
+    "gold_document_id": 8,
+    "chunk_rank": 2,
+    "doc_rank": 1,
+    "top_title": "ASPCA Common Dog Behavior Issues — separation-anxi"
+  },
+  {
+    "question": "우리 강아지가 공격적인 행동을 할 때 이유가 뭔가요?",
+    "gold_chunk_id": 83,
+    "gold_document_id": 2,
+    "chunk_rank": 0,
+    "doc_rank": 1,
+    "top_title": "ASPCA Common Dog Behavior Issues — aggression"
+  },
+  {
+    "question": "어떤 훈련 방법이 강아지에게 더 좋을까요?",
+    "gold_chunk_id": 275,
+    "gold_document_id": 11,
+    "chunk_rank": 5,
+    "doc_rank": 3,
+    "top_title": "Impacts of Puppy Early Life Experiences, Puppy-Pur"
+  },
+  {
+    "question": "강아지가 조용해지면 어떻게 해야 관심을 줄 수 있나요?",
+    "gold_chunk_id": 170,
+    "gold_document_id": 5,
+    "chunk_rank": 1,
+    "doc_rank": 1,
+    "top_title": "ASPCA Common Dog Behavior Issues — howling"
+  },
+  {
+    "question": "강아지가 자리를 지키는 훈련을 어떻게 해야 하나요?",
+    "gold_chunk_id": 135,
+    "gold_document_id": 3,
+    "chunk_rank": 0,
+    "doc_rank": 1,
+    "top_title": "ASPCA Common Dog Behavior Issues — barking"
+  },
+  {
+    "question": "강아지의 불안을 줄이려면 어떻게 해야 하나요?",
+    "gold_chunk_id": 277,
+    "gold_document_id": 11,
+    "chunk_rank": 10,
+    "doc_rank": 10,
+    "top_title": "ASPCA Common Dog Behavior Issues — separation-anxi"
+  },
+  {
+    "question": "강아지에게 훈련이 끝났다는 것을 어떻게 알려줘야 하나요?",
+    "gold_chunk_id": 11244,
+    "gold_document_id": 281,
+    "chunk_rank": 1,
+    "doc_rank": 1,
+    "top_title": "Learn How To Train Your Dog To Sit - RSPCA - rspca"
+  },
+  {
+    "question": "강아지가 다른 사람들을 위협으로 여기는 건 왜 그런가요?",
+    "gold_chunk_id": 87,
+    "gold_document_id": 2,
+    "chunk_rank": 0,
+    "doc_rank": 2,
+    "top_title": "Dogs and Canines behaviour | RSPCA - RSPCA - rspca"
+  },
+  {
+    "question": "강아지가 짖거나 으르렁거릴 때 어떻게 해야 하나요?",
+    "gold_chunk_id": 11293,
+    "gold_document_id": 288,
+    "chunk_rank": 0,
+    "doc_rank": 0,
+    "top_title": "Signs Your Dog is Stressed and How to Relieve It  "
+  },
+  {
+    "question": "아기가 생기면 우리 강아지가 예민해질 수 있나요?",
+    "gold_chunk_id": 11285,
+    "gold_document_id": 288,
+    "chunk_rank": 4,
+    "doc_rank": 4,
+    "top_title": "Management and behavioral factors associated with "
+  },
+  {
+    "question": "우리 강아지 공격적인 행동이 병 때문일까요?",
+    "gold_chunk_id": 108,
+    "gold_document_id": 2,
+    "chunk_rank": 1,
+    "doc_rank": 1,
+    "top_title": "ASPCA Common Dog Behavior Issues — aggression"
+  },
+  {
+    "question": "우리 강아지가 낑낑거릴 때 관심을 구하는 건가요?",
+    "gold_chunk_id": 238,
+    "gold_document_id": 9,
+    "chunk_rank": 2,
+    "doc_rank": 1,
+    "top_title": "ASPCA Common Dog Behavior Issues — whining"
+  },
+  {
+    "question": "강아지가 공격하는 이유는 무엇인가요?",
+    "gold_chunk_id": 11291,
+    "gold_document_id": 288,
+    "chunk_rank": 0,
+    "doc_rank": 3,
+    "top_title": "ASPCA Common Dog Behavior Issues — aggression"
+  },
+  {
+    "question": "불안한 행동을 어떻게 고쳐야 하나요?",
+    "gold_chunk_id": 11334,
+    "gold_document_id": 292,
+    "chunk_rank": 2,
+    "doc_rank": 2,
+    "top_title": "ASPCA Common Dog Behavior Issues — separation-anxi"
+  },
+  {
+    "question": "강아지가 다른 개를 보거나 쫓고 싶을 때 물건을 물어뜯는 건 왜 그런가요?",
+    "gold_chunk_id": 162,
+    "gold_document_id": 4,
+    "chunk_rank": 1,
+    "doc_rank": 1,
+    "top_title": "ASPCA Common Dog Behavior Issues — destructive-che"
+  },
+  {
+    "question": "강아지가 위협할 때 이빨을 보거나 으르렁거리는 건 왜 그런가요?",
+    "gold_chunk_id": 90,
+    "gold_document_id": 2,
+    "chunk_rank": 3,
+    "doc_rank": 3,
+    "top_title": "Veterinary students’ proximity to and interpretati"
+  },
+  {
+    "question": "우리 강아지가 다른 물건을 쫓는 행동을 하는 건 왜인가요?",
+    "gold_chunk_id": 100,
+    "gold_document_id": 2,
+    "chunk_rank": 9,
+    "doc_rank": 7,
+    "top_title": "ASPCA Common Dog Behavior Issues — destructive-che"
+  },
+  {
+    "question": "강아지 훈련 시 벌을 써도 괜찮은가요?",
+    "gold_chunk_id": 257,
+    "gold_document_id": 10,
+    "chunk_rank": 0,
+    "doc_rank": 0,
+    "top_title": "AAHA Canine and Feline Behavior Management Guideli"
+  },
+  {
+    "question": "강아지의 으르렁거림은 무슨 뜻인가요?",
+    "gold_chunk_id": 11268,
+    "gold_document_id": 288,
+    "chunk_rank": 3,
+    "doc_rank": 3,
+    "top_title": "ASPCA Common Dog Behavior Issues — whining"
+  },
+  {
+    "question": "강아지가 왜 그렇게 짖는지 알 수 있을까요?",
+    "gold_chunk_id": 140,
+    "gold_document_id": 3,
+    "chunk_rank": 0,
+    "doc_rank": 2,
+    "top_title": "Dog Behavior--What is Normal?  | VCA Animal Hospit"
+  },
+  {
+    "question": "강아지가 짖을 때 어떻게 조용히 하게 할 수 있나요?",
+    "gold_chunk_id": 123,
+    "gold_document_id": 3,
+    "chunk_rank": 1,
+    "doc_rank": 1,
+    "top_title": "ASPCA Common Dog Behavior Issues — barking"
+  },
+  {
+    "question": "우리 강아지가 공격적인 성향을 가질 수 있나요?",
+    "gold_chunk_id": 11271,
+    "gold_document_id": 288,
+    "chunk_rank": 0,
+    "doc_rank": 1,
+    "top_title": "Dogs and Canines behaviour | RSPCA - RSPCA - rspca"
+  },
+  {
+    "question": "우리 강아지가 왜 다른 동물이나 사람을 공격하나요?",
+    "gold_chunk_id": 85,
+    "gold_document_id": 2,
+    "chunk_rank": 0,
+    "doc_rank": 1,
+    "top_title": "ASPCA Common Dog Behavior Issues — aggression"
+  },
+  {
+    "question": "강아지가 가족을 물 때 어떤 상황이 원인인가요?",
+    "gold_chunk_id": 106,
+    "gold_document_id": 2,
+    "chunk_rank": 2,
+    "doc_rank": 2,
+    "top_title": "Assessment of owner-directed aggressive behavioura"
+  },
+  {
+    "question": "보호자가 어떻게 훈련해야 강아지가 잘 따를 수 있나요?",
+    "gold_chunk_id": 130,
+    "gold_document_id": 3,
+    "chunk_rank": 2,
+    "doc_rank": 2,
+    "top_title": "Cross-Sectional Age Differences in Canine Personal"
+  },
+  {
+    "question": "강아지가 사람들과 있을 때 엉덩이를 드는 행동을 멈추게 하려면 어떻게 해야 하나요?",
+    "gold_chunk_id": 181,
+    "gold_document_id": 6,
+    "chunk_rank": 1,
+    "doc_rank": 1,
+    "top_title": "ASPCA Common Dog Behavior Issues — mounting-mastur"
+  },
+  {
+    "question": "우리 강아지가 짖는 이유가 뭘까요?",
+    "gold_chunk_id": 112,
+    "gold_document_id": 3,
+    "chunk_rank": 2,
+    "doc_rank": 2,
+    "top_title": "Dog Behavior--What is Normal?  | VCA Animal Hospit"
+  },
+  {
+    "question": "강아지가 장난감을 씹는 것을 어떻게 막아야 하나요?",
+    "gold_chunk_id": 157,
+    "gold_document_id": 4,
+    "chunk_rank": 1,
+    "doc_rank": 1,
+    "top_title": "ASPCA Common Dog Behavior Issues — destructive-che"
+  },
+  {
+    "question": "강아지를 더위 속에서 어떻게 보호해야 하나요?",
+    "gold_chunk_id": 11260,
+    "gold_document_id": 287,
+    "chunk_rank": 3,
+    "doc_rank": 3,
+    "top_title": "ASPCA Common Dog Behavior Issues — separation-anxi"
+  },
+  {
+    "question": "개가 공격하면 어떻게 해야 안전한가요?",
+    "gold_chunk_id": 11292,
+    "gold_document_id": 288,
+    "chunk_rank": 0,
+    "doc_rank": 1,
+    "top_title": "Dogs and Canines behaviour | RSPCA - RSPCA - rspca"
+  },
+  {
+    "question": "친구를 시켜서 연습할 때 강아지가 어떻게 해야 하나요?",
+    "gold_chunk_id": 134,
+    "gold_document_id": 3,
+    "chunk_rank": 2,
+    "doc_rank": 2,
+    "top_title": "ASPCA Common Dog Behavior Issues — whining"
+  },
+  {
+    "question": "우리 강아지 행동에 영향을 주는 다른 가족들은 어떻게 해야 하나요?",
+    "gold_chunk_id": 11347,
+    "gold_document_id": 294,
+    "chunk_rank": 0,
+    "doc_rank": 1,
+    "top_title": "Behavior Counseling - Behavior Consultations - See"
+  },
+  {
+    "question": "우리 강아지가 왜 저렇게 으르렁거리는 건가요?",
+    "gold_chunk_id": 11224,
+    "gold_document_id": 276,
+    "chunk_rank": 0,
+    "doc_rank": 0,
+    "top_title": "ASPCA Common Dog Behavior Issues — whining"
+  },
+  {
+    "question": "짖는 것을 줄이려면 어떻게 해야 하나요?",
+    "gold_chunk_id": 11341,
+    "gold_document_id": 293,
+    "chunk_rank": 0,
+    "doc_rank": 0,
+    "top_title": "ASPCA Common Dog Behavior Issues — barking"
+  },
+  {
+    "question": "혼자 있을 때 지루해하지 않게 어떻게 해야 하나요?",
+    "gold_chunk_id": 226,
+    "gold_document_id": 8,
+    "chunk_rank": 0,
+    "doc_rank": 1,
+    "top_title": "ASPCA Common Dog Behavior Issues — separation-anxi"
+  },
+  {
+    "question": "우리 강아지 공격성이 심한데 어떻게 해야 하나요?",
+    "gold_chunk_id": 109,
+    "gold_document_id": 2,
+    "chunk_rank": 0,
+    "doc_rank": 3,
+    "top_title": "Dogs and Canines behaviour | RSPCA - RSPCA - rspca"
+  },
+  {
+    "question": "우리 강아지가 왜 자꾸 짖고 파헤치는 걸까요?",
+    "gold_chunk_id": 11306,
+    "gold_document_id": 290,
+    "chunk_rank": 0,
+    "doc_rank": 1,
+    "top_title": "Dog Behavior--What is Normal?  | VCA Animal Hospit"
+  },
+  {
+    "question": "주인이 외출 준비를 할 때 불안해하는 건 왜 그런가요?",
+    "gold_chunk_id": 215,
+    "gold_document_id": 8,
+    "chunk_rank": 2,
+    "doc_rank": 1,
+    "top_title": "ASPCA Common Dog Behavior Issues — separation-anxi"
+  },
+  {
+    "question": "낯선 사람이나 다른 동물에게 공격적인 행동을 하는 건 왜 그런가요?",
+    "gold_chunk_id": 101,
+    "gold_document_id": 2,
+    "chunk_rank": 2,
+    "doc_rank": 2,
+    "top_title": "The Influence of Breed, Sex, Origin and Housing Co"
+  },
+  {
+    "question": "강아지가 왜 짖는지 어떻게 알아야 하나요?",
+    "gold_chunk_id": 11309,
+    "gold_document_id": 290,
+    "chunk_rank": 2,
+    "doc_rank": 2,
+    "top_title": "ASPCA Common Dog Behavior Issues — barking"
+  },
+  {
+    "question": "혼자 있을 때 강아지가 불안해하면 어떻게 해야 하나요?",
+    "gold_chunk_id": 224,
+    "gold_document_id": 8,
+    "chunk_rank": 0,
+    "doc_rank": 2,
+    "top_title": "Separation Anxiety in Dogs | RSPCA - RSPCA - rspca"
+  },
+  {
+    "question": "강아지가 으르렁거리거나 물려고 할 때 어떻게 해야 하나요?",
+    "gold_chunk_id": 258,
+    "gold_document_id": 10,
+    "chunk_rank": 0,
+    "doc_rank": 2,
+    "top_title": "ASPCA Common Dog Behavior Issues — mouthing-nippin"
+  },
+  {
+    "question": "우리 강아지가 공격하기 전에 어떤 신호를 보일까요?",
+    "gold_chunk_id": 11296,
+    "gold_document_id": 288,
+    "chunk_rank": 0,
+    "doc_rank": 2,
+    "top_title": "ASPCA Common Dog Behavior Issues — aggression"
+  },
+  {
+    "question": "강아지를 집에 데려오기 전에 뭘 준비해야 하나요?",
+    "gold_chunk_id": 11301,
+    "gold_document_id": 289,
+    "chunk_rank": 1,
+    "doc_rank": 1,
+    "top_title": "Caring For Your Puppy - 6 weeks to 12 months - RSP"
+  },
+  {
+    "question": "강아지가 독을 먹었는지 어떻게 알 수 있나요?",
+    "gold_chunk_id": 11265,
+    "gold_document_id": 287,
+    "chunk_rank": 7,
+    "doc_rank": 3,
+    "top_title": "Marijuana intoxication in a cat"
+  },
+  {
+    "question": "친구들이랑 같이 훈련하면 어떻게 되나요?",
+    "gold_chunk_id": 236,
+    "gold_document_id": 9,
+    "chunk_rank": 0,
+    "doc_rank": 0,
+    "top_title": "Does Play After Training Improve a Canine Good Cit"
+  },
+  {
+    "question": "강아지가 왜 갑자기 물려고 하는 건가요?",
+    "gold_chunk_id": 11290,
+    "gold_document_id": 288,
+    "chunk_rank": 1,
+    "doc_rank": 1,
+    "top_title": "Dogs and Canines behaviour | RSPCA - RSPCA - rspca"
+  },
+  {
+    "question": "강아지를 목줄에 매야 하는 이유는 무엇인가요?",
+    "gold_chunk_id": 11261,
+    "gold_document_id": 287,
+    "chunk_rank": 0,
+    "doc_rank": 0,
+    "top_title": "Comparing efficacy in reducing pulling and welfare"
+  },
+  {
+    "question": "산책할 때 강아지가 위험한 상황에 처하면 어떻게 해야 하나요?",
+    "gold_chunk_id": 11264,
+    "gold_document_id": 287,
+    "chunk_rank": 1,
+    "doc_rank": 1,
+    "top_title": "Walking your dog safely and responsibly in the UK "
+  },
+  {
+    "question": "강아지가 줄을 당기면 어떻게 해야 하나요?",
+    "gold_chunk_id": 11253,
+    "gold_document_id": 285,
+    "chunk_rank": 9,
+    "doc_rank": 1,
+    "top_title": "Train Your Dog to Stop Pulling On The Lead - RSPCA"
+  },
+  {
+    "question": "새로운 환자인데 첫 검사는 어떻게 예약하나요?",
+    "gold_chunk_id": 11314,
+    "gold_document_id": 290,
+    "chunk_rank": 5,
+    "doc_rank": 5,
+    "top_title": "Behavior Counseling - Behavior Consultations - See"
+  },
+  {
+    "question": "분리불안에 약을 써도 되나요?",
+    "gold_chunk_id": 228,
+    "gold_document_id": 8,
+    "chunk_rank": 1,
+    "doc_rank": 1,
+    "top_title": "ASPCA Common Dog Behavior Issues — separation-anxi"
+  },
+  {
+    "question": "수의사는 행동 문제에 어떻게 도움을 줄 수 있나요?",
+    "gold_chunk_id": 269,
+    "gold_document_id": 11,
+    "chunk_rank": 3,
+    "doc_rank": 3,
+    "top_title": "AAHA Canine and Feline Behavior Management Guideli"
+  },
+  {
+    "question": "강아지가 가지고 놀 만한 안전한 장난감은 무엇인가요?",
+    "gold_chunk_id": 155,
+    "gold_document_id": 4,
+    "chunk_rank": 2,
+    "doc_rank": 2,
+    "top_title": "ASPCA Common Dog Behavior Issues — separation-anxi"
+  },
+  {
+    "question": "집에 왔을 때 강아지가 진정하는 데 얼마나 걸릴까요?",
+    "gold_chunk_id": 223,
+    "gold_document_id": 8,
+    "chunk_rank": 2,
+    "doc_rank": 2,
+    "top_title": "ASPCA Common Dog Behavior Issues — barking"
+  },
+  {
+    "question": "강아지 예방접종은 언제 해야 하나요?",
+    "gold_chunk_id": 281,
+    "gold_document_id": 12,
+    "chunk_rank": 1,
+    "doc_rank": 1,
+    "top_title": "AVSAB Position Statement on Puppy Socialization"
+  },
+  {
+    "question": "강아지가 공격적인 행동을 보일 때 어떤 상황에서 그런지 알 수 있을까요?",
+    "gold_chunk_id": 81,
+    "gold_document_id": 2,
+    "chunk_rank": 1,
+    "doc_rank": 1,
+    "top_title": "ASPCA Common Dog Behavior Issues — aggression"
+  },
+  {
+    "question": "훈련 방법이 강아지 복지에 어떤 영향을 주나요?",
+    "gold_chunk_id": 273,
+    "gold_document_id": 11,
+    "chunk_rank": 1,
+    "doc_rank": 1,
+    "top_title": "AVSAB Humane Dog Training Position Statement"
+  },
+  {
+    "question": "우리 강아지가 왜 자꾸 물건을 핥고 깨물까요?",
+    "gold_chunk_id": 152,
+    "gold_document_id": 4,
+    "chunk_rank": 1,
+    "doc_rank": 1,
+    "top_title": "ASPCA Common Dog Behavior Issues — destructive-che"
+  },
+  {
+    "question": "우리 강아지가 왜 자꾸 물건을 씹나요?",
+    "gold_chunk_id": 161,
+    "gold_document_id": 4,
+    "chunk_rank": 0,
+    "doc_rank": 1,
+    "top_title": "ASPCA Common Dog Behavior Issues — destructive-che"
+  },
+  {
+    "question": "강아지 사회화를 언제 시작해야 하나요?",
+    "gold_chunk_id": 280,
+    "gold_document_id": 12,
+    "chunk_rank": 0,
+    "doc_rank": 1,
+    "top_title": "AVSAB Position Statement on Puppy Socialization"
+  },
+  {
+    "question": "강아지에게 간식을 주면 왜 말을 안 듣나요?",
+    "gold_chunk_id": 256,
+    "gold_document_id": 10,
+    "chunk_rank": 0,
+    "doc_rank": 0,
+    "top_title": "Therapy and Prevention of Noise Fears in Dogs—A Re"
+  },
+  {
+    "question": "강아지가 누워 있을 때 간식을 주면 더 잘 누워 있나요?",
+    "gold_chunk_id": 11246,
+    "gold_document_id": 282,
+    "chunk_rank": 1,
+    "doc_rank": 1,
+    "top_title": "Train Your Dog To Lie Down | RSPCA - RSPCA - rspca"
+  },
+  {
+    "question": "혼자 있을 때 차에 두어도 괜찮은가요?",
+    "gold_chunk_id": 222,
+    "gold_document_id": 8,
+    "chunk_rank": 1,
+    "doc_rank": 1,
+    "top_title": "ASPCA Common Dog Behavior Issues — separation-anxi"
+  },
+  {
+    "question": "수의사는 행동 치료에 어떤 역할을 하나요?",
+    "gold_chunk_id": 268,
+    "gold_document_id": 11,
+    "chunk_rank": 0,
+    "doc_rank": 1,
+    "top_title": "AVSAB Humane Dog Training Position Statement"
+  },
+  {
+    "question": "강아지가 멈춰 있을 때 얼마나 오래 버텨야 하나요?",
+    "gold_chunk_id": 131,
+    "gold_document_id": 3,
+    "chunk_rank": 0,
+    "doc_rank": 1,
+    "top_title": "ASPCA Common Dog Behavior Issues — barking"
+  },
+  {
+    "question": "강아지가 사회성을 갖추려면 어떻게 해야 하나요?",
+    "gold_chunk_id": 283,
+    "gold_document_id": 12,
+    "chunk_rank": 0,
+    "doc_rank": 1,
+    "top_title": "AVSAB Position Statement on Puppy Socialization"
+  },
+  {
+    "question": "분리불안 치료를 어떻게 해야 하나요?",
+    "gold_chunk_id": 213,
+    "gold_document_id": 8,
+    "chunk_rank": 0,
+    "doc_rank": 3,
+    "top_title": "AAHA Canine and Feline Behavior Management Guideli"
+  },
+  {
+    "question": "전자식 목줄 훈련이 보상 훈련보다 효과적인가요?",
+    "gold_chunk_id": 274,
+    "gold_document_id": 11,
+    "chunk_rank": 1,
+    "doc_rank": 1,
+    "top_title": "AVSAB Humane Dog Training Position Statement"
+  },
+  {
+    "question": "보상 기반 훈련이 문제 행동을 줄이는 데 더 효과적인가요?",
+    "gold_chunk_id": 263,
+    "gold_document_id": 11,
+    "chunk_rank": 8,
+    "doc_rank": 8,
+    "top_title": "A Comparative Analysis of International Dog Owner "
+  },
+  {
+    "question": "강아지가 공격적인 행동을 보일 때는 어떤 신호를 봐야 하나요?",
+    "gold_chunk_id": 11272,
+    "gold_document_id": 288,
+    "chunk_rank": 0,
+    "doc_rank": 2,
+    "top_title": "ASPCA Common Dog Behavior Issues — aggression"
+  },
+  {
+    "question": "강아지가 전화 통화할 때 짖는데 어떻게 해야 하나요?",
+    "gold_chunk_id": 143,
+    "gold_document_id": 3,
+    "chunk_rank": 1,
+    "doc_rank": 1,
+    "top_title": "ASPCA Common Dog Behavior Issues — barking"
+  },
+  {
+    "question": "우리 강아지가 왜 이렇게 심하게 짖나요?",
+    "gold_chunk_id": 114,
+    "gold_document_id": 3,
+    "chunk_rank": 0,
+    "doc_rank": 2,
+    "top_title": "Dog Behavior--What is Normal?  | VCA Animal Hospit"
+  }
+]

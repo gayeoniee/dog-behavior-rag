@@ -25,6 +25,9 @@ class HuggingFaceEmbedder:
         self._batch_size = settings.embedding_batch_size
         self._max_seq_length = settings.embedding_max_seq_length
         self._device = settings.embedding_device
+        self._truncate = settings.embedding_truncate
+        self._query_prefix = settings.embedding_query_prefix
+        self._passage_prefix = settings.embedding_passage_prefix
         self._model: Any | None = None
 
     @property
@@ -60,25 +63,49 @@ class HuggingFaceEmbedder:
             self._model_name,
             self._device,
         )
-        model = SentenceTransformer(self._model_name, device=device)
+        # truncate_dim을 넘기면 sentence-transformers가 자르고 **다시 정규화**까지
+        # 해준다. 직접 자르면 길이가 1이 아니게 되어 내적이 코사인 유사도가 아니게 된다.
+        model = SentenceTransformer(
+            self._model_name,
+            device=device,
+            truncate_dim=self._dimension if self._truncate else None,
+        )
 
         # sentence-transformers 5.x에서 get_sentence_embedding_dimension이
         # get_embedding_dimension으로 개명됐다. 둘 다 지원해 버전에 안 묶이게 한다.
         read_dim = getattr(model, "get_embedding_dimension", None) or (
             model.get_sentence_embedding_dimension
         )
-        actual = read_dim()
+        self._check_dimension(read_dim())
+
+        model.max_seq_length = self._max_seq_length
+        self._model = model
+
+    def _check_dimension(self, actual: int) -> None:
+        """모델이 내놓는 차원이 설정과 맞는가.
+
+        모델 로딩에서 떼어냈다 — 이 판단은 순수 규칙이라 수 GB짜리 모델을 받지 않고도
+        검증할 수 있어야 한다.
+        """
+        if self._truncate:
+            # 자르기를 켰으면 모델이 설정보다 **크기만** 하면 된다. 작으면 못 늘린다.
+            if actual < self._dimension:
+                raise EmbeddingUnavailableError(
+                    f"자를 수 없습니다: EMBEDDING_DIM={self._dimension}인데 "
+                    f"모델 {self._model_name}는 {actual}차원입니다. "
+                    "EMBEDDING_TRUNCATE는 모델 차원보다 작게 줄일 때만 씁니다."
+                )
+            logger.info("MRL 자르기: %d → %d차원", actual, self._dimension)
+            return
         if actual != self._dimension:
             # 여기서 죽어야 한다. 통과시키면 훨씬 나중에 pgvector INSERT에서
             # 훨씬 불친절한 에러로 터지고, 원인을 차원 불일치로 되짚기 어렵다.
             raise EmbeddingUnavailableError(
                 f"임베딩 차원 불일치: EMBEDDING_DIM={self._dimension}, "
                 f"모델 {self._model_name}={actual}. "
-                "설정을 고치고 `scripts.db.init --drop`으로 테이블을 다시 만드세요."
+                "설정을 고치고 `scripts.db.init --drop`으로 테이블을 다시 만드세요. "
+                "MRL 지원 모델을 잘라 쓰려면 EMBEDDING_TRUNCATE=true."
             )
-
-        model.max_seq_length = self._max_seq_length
-        self._model = model
 
     async def embed(self, texts: list[str]) -> list[list[float]]:
         if self._model is None:
@@ -87,7 +114,8 @@ class HuggingFaceEmbedder:
             )
         if not texts:
             return []
-        return await asyncio.to_thread(self._encode, texts)
+        prefixed = [self._passage_prefix + t for t in texts] if self._passage_prefix else texts
+        return await asyncio.to_thread(self._encode, prefixed)
 
     def _encode(self, texts: list[str]) -> list[list[float]]:
         vectors = self._model.encode(  # type: ignore[union-attr]
@@ -101,6 +129,15 @@ class HuggingFaceEmbedder:
         return [v.tolist() for v in vectors]
 
     async def embed_query(self, text: str) -> list[float]:
-        # bge-m3는 질의 프리픽스를 붙이지 않는다 (base.py의 embed_query 독스트링 참조).
-        vectors = await self.embed([text])
+        """질의 임베딩. **문서와 다른 접두사를 쓴다** (config의 주석 참조).
+
+        `embed`를 재사용하지 않는 이유: `embed`는 문서용 접두사를 붙인다.
+        질의에 그걸 붙이면 모델이 질의를 문서로 착각한다 — e5의 query:/passage:
+        구분이 정확히 그것 때문에 있다.
+        """
+        if self._model is None:
+            raise EmbeddingUnavailableError(
+                "임베딩 모델이 로딩되지 않았습니다 (warmup 미실행 또는 실패)"
+            )
+        vectors = await asyncio.to_thread(self._encode, [self._query_prefix + text])
         return vectors[0]

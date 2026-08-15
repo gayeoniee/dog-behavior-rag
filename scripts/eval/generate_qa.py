@@ -459,6 +459,65 @@ def merge_and_dedupe(paths: list[Path]) -> tuple[list[dict], int]:
     return kept, dropped
 
 
+async def remap(path: Path) -> int:
+    """정답 라벨을 **지금 DB의 chunk_id로 다시 맞춘다.**
+
+    **왜 필요한가 (2026-08-15에 크게 데였다).** 평가셋은 정답을 `chunk_id`로 저장하는데
+    그건 DB의 serial 값이다. 임베딩 모델을 바꾸느라 `init --drop` + 재적재를 하자
+    **id가 전부 새로 매겨져 라벨이 엉뚱한 청크를 가리켰다.** 그 상태로 지표를 재니
+    hit@5가 49.5% → 0.7%로 나왔고, 하마터면 **모델이 망가진 줄 알 뻔했다.**
+
+    다시 맞추는 열쇠는 `chunk_excerpt`(청크 앞 300자)다. 본문은 재적재해도 그대로다.
+
+    그리고 **재발을 막으려고 `doc_hash` + `ordinal`을 같이 적어둔다.** 둘 다 재적재와
+    무관하게 안정적이라(문서 내용 해시 + 문서 내 순번), 다음부터는 본문 검색 없이
+    바로 되찾을 수 있다.
+    """
+    rows = [json.loads(x) for x in path.read_text(encoding="utf-8").splitlines() if x.strip()]
+    settings = get_settings()
+    engine = create_engine(settings.database_url)
+    factory = create_session_factory(engine)
+    try:
+        async with factory() as session:
+            chunks = (
+                await session.execute(
+                    select(Chunk.id, Chunk.document_id, Chunk.ordinal, Chunk.content,
+                           Document.content_hash, Document.title)
+                    .join(Document, Chunk.document_id == Document.id)
+                )
+            ).all()
+    finally:
+        await engine.dispose()
+
+    by_prefix = {c.content[:120]: c for c in chunks}
+    fixed = unchanged = lost = 0
+    for row in rows:
+        key = row["chunk_excerpt"][:120]
+        found = by_prefix.get(key)
+        if found is None:
+            lost += 1
+            continue
+        if found.id != row["chunk_id"]:
+            fixed += 1
+        else:
+            unchanged += 1
+        row["chunk_id"] = found.id
+        row["document_id"] = found.document_id
+        row["document_title"] = found.title
+        row["doc_hash"] = found.content_hash
+        row["ordinal"] = found.ordinal
+
+    path.write_text(
+        "\n".join(json.dumps(r, ensure_ascii=False) for r in rows) + "\n", encoding="utf-8"
+    )
+    print(f"\n{path} — {len(rows)}문항")
+    print(f"  id가 바뀌어 고침 {fixed} · 그대로 {unchanged} · **못 찾음 {lost}**")
+    if lost:
+        print("  ⚠️ 못 찾은 문항은 라벨이 여전히 틀렸다. 코퍼스나 청킹이 바뀌었는지 확인할 것")
+    print("  ✓ doc_hash + ordinal 을 함께 기록했다 (다음 재적재부터는 이걸로 되찾는다)")
+    return 0
+
+
 def merge(paths: list[Path], out: Path) -> int:
     for path in paths:
         if not path.is_file():
@@ -541,6 +600,11 @@ def main() -> int:
     )
     parser.add_argument("--inspect", type=Path, help="생성된 파일의 품질 통계만 본다")
     parser.add_argument(
+        "--remap",
+        type=Path,
+        help="정답 chunk_id를 지금 DB에 다시 맞춘다 (재적재 후 필수)",
+    )
+    parser.add_argument(
         "--merge",
         type=Path,
         nargs="*",
@@ -550,6 +614,8 @@ def main() -> int:
 
     if args.inspect:
         return inspect(args.inspect)
+    if args.remap:
+        return asyncio.run(remap(args.remap))
     if args.merge:
         return merge(args.merge, args.out)
     return asyncio.run(run(args))
