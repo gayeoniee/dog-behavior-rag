@@ -162,12 +162,47 @@ async def run(args: argparse.Namespace) -> int:
         print(f"    hit@5 {r['hit@5']:.1%} · MRR {r['mrr']:.3f}", flush=True)
         _save(results, args, len(golds))
 
+        # MRL(마트료시카) 확인 — 앞부분만 잘라 쓴 벡터도 쓸 만한가.
+        # 임베딩은 한 번만 하고 자르기만 하므로 거의 공짜다.
+        for dim in args.mrl_dims:
+            if dim >= embedder.dimension:
+                continue
+            sub = score(
+                golds,
+                passages,
+                _truncate(qv, dim),
+                _truncate(pv, dim),
+                args.top_k,
+                args.threshold,
+            )
+            sub["model"] = cand.model
+            sub["dimension"] = dim
+            results[f"{key}@{dim}"] = sub
+            print(
+                f"      {dim:>4}차원  hit@5 {sub['hit@5']:.1%} · MRR {sub['mrr']:.3f}",
+                flush=True,
+            )
+            _save(results, args, len(golds))
+
     if not results:
         print("✗ 성공한 후보가 없습니다", file=sys.stderr)
         return 1
     _report(results, golds, args.baseline)
     print(f"\n✓ 저장: {RESULT_PATH}")
     return 0
+
+
+def _truncate(vectors: list[list[float]], dim: int) -> list[list[float]]:
+    """앞 `dim`개만 남기고 다시 정규화한다.
+
+    **정규화를 다시 해야 한다.** 원래 벡터는 길이가 1이지만 앞부분만 자르면 1이
+    아니게 되고, 그러면 내적이 코사인 유사도가 아니게 된다.
+    """
+    import numpy as np
+
+    arr = np.asarray(vectors, dtype="float32")[:, :dim]
+    norms = np.linalg.norm(arr, axis=1, keepdims=True)
+    return (arr / np.maximum(norms, 1e-12)).tolist()
 
 
 def load_previous(args: argparse.Namespace, questions: int) -> dict[str, dict]:
@@ -257,6 +292,13 @@ def main() -> int:
     parser.add_argument("--top-k", type=int, default=10)
     parser.add_argument("--threshold", type=float, default=0.5)
     parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument(
+        "--mrl-dims",
+        type=int,
+        nargs="*",
+        default=[],
+        help="벡터를 이 차원들로 잘라서도 재본다 (MRL 지원 모델용). 예: 512 256 128 64",
+    )
     args = parser.parse_args()
     return asyncio.run(run(args))
 
