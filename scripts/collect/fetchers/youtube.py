@@ -54,12 +54,27 @@ VIDEO_DELAY_SECONDS = REQUEST_DELAY_SECONDS
     메타데이터 요청        정상 200   ← 차단은 자막 엔드포인트에만 걸린다
     백오프 재시도 65초     여전히 429
     yt-dlp 자체 다운로드   여전히 429  ← **구현 방식 탓이 아니다**
+    Node JS 런타임 켜기    여전히 429
+    하루 가까이 경과       여전히 429
 
 마지막 줄이 중요하다. 처음엔 "urllib로 직접 받아서 yt-dlp의 위장·쿠키를 우회한
 탓"이라고 의심했는데, yt-dlp에게 시켜도 똑같이 막혔다. **IP 단위 차단이고 시간이
 지나야 풀린다.** 코드를 고쳐서 뚫을 수 있는 게 아니므로 시도하지 말 것.
 
 그래서 진짜 대책은 **처음부터 천천히 받는 것**이다. 이 지연값을 줄이지 말 것.
+"""
+
+JS_RUNTIMES: dict[str, dict] = {"node": {}}
+"""yt-dlp가 쓸 자바스크립트 런타임.
+
+yt-dlp는 기본적으로 deno만 켠다. 이 PC에는 Next.js 화면 때문에 **Node가 이미
+깔려 있으므로** 그걸 쓰게 한다. 안 켜면 실행마다 이런 경고가 뜬다:
+
+    No supported JavaScript runtime could be found.
+    YouTube extraction without a JS runtime has been deprecated.
+
+⚠️ **이걸 켜도 429는 안 풀린다** (2026-08-16 실측). 차단과는 무관하고,
+앞으로 yt-dlp가 JS 런타임을 필수로 요구할 때를 대비하는 것이다.
 """
 
 MIN_CHARS = 1500
@@ -137,6 +152,7 @@ class YoutubeFetcher:
             "extract_flat": True,
             "skip_download": True,
             "playlistend": limit if curated_urls else limit * 4,
+            "js_runtimes": JS_RUNTIMES,
         }
         entries: list[dict] = []
         with yt_dlp.YoutubeDL(flat) as ydl:
@@ -167,7 +183,7 @@ class YoutubeFetcher:
             logger.info("이미 받은 %d편은 건너뛰고 결과에 합친다", len(already))
 
         docs: list[RawDoc] = list(previous)
-        detail = {"quiet": True, "skip_download": True}
+        detail = {"quiet": True, "skip_download": True, "js_runtimes": JS_RUNTIMES}
         with yt_dlp.YoutubeDL(detail) as ydl:
             for entry in picked[:limit]:
                 video_id = entry.get("id")
