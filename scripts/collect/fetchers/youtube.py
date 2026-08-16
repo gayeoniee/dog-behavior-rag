@@ -23,8 +23,9 @@ import time
 import urllib.error
 import urllib.request
 from datetime import UTC, datetime
+from typing import NamedTuple
 
-from ..models import RawDoc, Source
+from ..models import RawDoc, Source, save_raw
 from .base import ensure_license_checked
 
 logger = logging.getLogger(__name__)
@@ -75,6 +76,20 @@ yt-dlp의 `sleep_interval_requests`가 요청 사이를 벌려주므로 이건 �
 지나야 풀린다.** 코드를 고쳐서 뚫을 수 있는 게 아니므로 시도하지 말 것.
 
 그래서 진짜 대책은 **처음부터 천천히 받는 것**이다. 이 지연값을 줄이지 말 것.
+
+**우회로도 다 막혀 있다 (2026-08-16 실측). 아래는 시도하지 말 것:**
+
+    자막 android 클라이언트   429   ← 쿼터는 클라이언트가 아니라 IP 단위다
+    자막 ios / tv 클라이언트  포맷 자체를 못 받음
+    오디오 다운로드(STT 우회) 403   ← n challenge / SABR / PO Token이 또 필요
+    오디오 + EJS 해석기       403   여전히
+
+세 번째 줄이 뼈아프다. **자막이 막히면 STT로 우회하면 된다고 설계했는데 그 길도
+막혀 있다.** 오디오 스트림은 timedtext와 다른 호스트(googlevideo)인데도 그렇다.
+
+정리하면 **막힌 것은 엔드포인트가 아니라 "로그인하지 않은 우리 IP"다.** 그래서
+남은 지렛대는 지연값이 아니라 **신원**뿐이다 — `Http`와 `meta.cookies_from_browser`
+참조. 지연을 더 늘리는 여덟 번째 시도는 하지 말 것.
 """
 
 THROTTLE: dict[str, object] = {
@@ -137,6 +152,35 @@ RETRY_DELAYS = (5.0, 15.0, 45.0)
 """
 
 
+class Http(NamedTuple):
+    """자막을 받을 때 쓸 신원.
+
+    **자막 요청이 메타데이터 요청과 다른 신원으로 나가고 있었다.** 메타데이터는
+    yt-dlp가 브라우저 헤더·쿠키를 달아 보내는데, 자막은 우리가 맨 urllib으로
+    받으면서 `User-Agent: Python-urllib/3.12`를 스스로 광고하고 쿠키도 없었다.
+
+    같은 세션에서 **메타데이터는 200, 자막만 429**가 나오는 상태를 오래 봤는데,
+    그 둘이 서버 눈에 다른 클라이언트였던 것이다. yt-dlp가 쓰는 것을 그대로
+    쓰게 한다.
+    """
+
+    opener: urllib.request.OpenerDirector
+    headers: dict[str, str]
+
+
+def _http_from(ydl: object) -> Http:
+    jar = getattr(ydl, "cookiejar", None)
+    opener = (
+        urllib.request.build_opener(urllib.request.HTTPCookieProcessor(jar))
+        if jar is not None
+        else urllib.request.build_opener()
+    )
+    params = getattr(ydl, "params", {}) or {}
+    headers = dict(params.get("http_headers") or {})
+    headers.setdefault("Accept-Language", "ko-KR,ko;q=0.9,en-US;q=0.8")
+    return Http(opener, headers)
+
+
 def _sleep_before_subtitle() -> None:
     """자막 요청 전 무작위 대기.
 
@@ -146,7 +190,7 @@ def _sleep_before_subtitle() -> None:
     time.sleep(random.uniform(*SUBTITLE_DELAY_RANGE))
 
 
-def _extract_text(url: str) -> str:
+def _extract_text(url: str, http: Http | None = None) -> str:
     """json3 자막을 이어붙인다.
 
     자막은 화면 표시 단위로 쪼개져 있어서 문장 경계가 없다. 여기서는 그대로
@@ -156,13 +200,15 @@ def _extract_text(url: str) -> str:
     없어 여기서 직접 해야 한다.
     """
     _sleep_before_subtitle()
+    opener = http.opener if http else urllib.request.build_opener()
+    request = urllib.request.Request(url, headers=dict(http.headers) if http else {})
     last: Exception | None = None
     for attempt, delay in enumerate((0.0, *RETRY_DELAYS)):
         if delay:
             logger.info("자막 429 — %.0f초 후 재시도 (%d/%d)", delay, attempt, len(RETRY_DELAYS))
             time.sleep(delay)
         try:
-            with urllib.request.urlopen(url, timeout=60) as response:
+            with opener.open(request, timeout=60) as response:
                 payload = json.loads(response.read().decode("utf-8"))
             break
         except urllib.error.HTTPError as exc:
@@ -201,6 +247,12 @@ class YoutubeFetcher:
         limit = int(meta.get("limit", 30))
         markers = tuple(meta.get("markers") or TRAINING_MARKERS)
         min_chars = int(meta.get("min_chars", MIN_CHARS))
+
+        # 로그인 상태로 받게 한다 — 익명 요청의 쿼터는 IP 단위로 공유되지만
+        # 로그인 요청은 계정 단위로 잡히고 한도가 훨씬 넉넉하다.
+        # `meta.cookies_from_browser: chrome` 처럼 지정한다. **아직 검증 안 됨.**
+        browser = meta.get("cookies_from_browser")
+        cookies = {"cookiesfrombrowser": (str(browser),)} if browser else {}
 
         # 재생목록은 통째로 받고, 채널은 제목 필터로 걸러야 하므로 넉넉히 훑는다.
         curated_urls = any("list=" in u for u in source.urls)
@@ -246,8 +298,10 @@ class YoutubeFetcher:
             "skip_download": True,
             "js_runtimes": JS_RUNTIMES,
             **THROTTLE,
+            **cookies,
         }
         with yt_dlp.YoutubeDL(detail) as ydl:
+            http = _http_from(ydl)
             for entry in picked[:limit]:
                 video_id = entry.get("id")
                 if f"{source.id}-{video_id}" in already:
@@ -261,7 +315,7 @@ class YoutubeFetcher:
                     continue
 
                 try:
-                    text = self._transcript(info)
+                    text = self._transcript(info, http)
                 except Exception as exc:  # noqa: BLE001 — 429 하나가 전체를 죽이면 안 된다
                     logger.warning("영상 %s 자막 실패: %s", video_id, exc)
                     if "429" in str(exc):
@@ -287,6 +341,11 @@ class YoutubeFetcher:
                         meta={"published_at": (info.get("upload_date") or "")[:4]},
                     )
                 )
+                # **한 편 받을 때마다 저장한다.** 마지막에 한 번만 저장하면
+                # Ctrl+C나 터미널 종료로 그때까지 받은 게 전부 사라진다.
+                # 그러면 다시 돌릴 때 1번부터 요청해서, 이미 받았던 영상에
+                # IP 쿼터를 또 쓴다 — 429를 스스로 부르는 셈이다.
+                save_raw(source.id, docs)
                 logger.info("✓ %s (%d자) %s", video_id, len(text), info.get("title", "")[:40])
                 time.sleep(random.uniform(*VIDEO_DELAY_RANGE))
         return docs
@@ -310,7 +369,7 @@ class YoutubeFetcher:
             logger.warning("기존 %s 를 읽지 못해 처음부터 받는다", path.name)
             return []
 
-    def _transcript(self, info: dict) -> str:
+    def _transcript(self, info: dict, http: Http | None = None) -> str:
         """자막 → (없으면) STT. **자막이 있으면 STT를 부르지 않는다.**"""
         captions = info.get("subtitles") or {}
         auto = info.get("automatic_captions") or {}
@@ -319,7 +378,7 @@ class YoutubeFetcher:
                 formats = pool.get(lang) or []
                 chosen = next((f for f in formats if f.get("ext") == "json3"), None)
                 if chosen:
-                    return _extract_text(chosen["url"])
+                    return _extract_text(chosen["url"], http)
         logger.info("자막이 없어 STT로 넘어간다: %s", info.get("id"))
         return self._speech_to_text(info)
 

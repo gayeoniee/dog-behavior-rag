@@ -1,5 +1,6 @@
 """수집 파이프라인 공통 모델."""
 
+import json
 from datetime import date
 from pathlib import Path
 from typing import Literal
@@ -79,3 +80,23 @@ class RawDoc(BaseModel):
     다르기 때문에 필요하다. normalize가 source 값 위에 이걸 덮어쓴다.
     pdf/html/local fetcher는 채우지 않으므로 기존 동작은 그대로다.
     """
+
+
+def save_raw(source_id: str, docs: list[RawDoc]) -> Path:
+    """수집 결과를 `data/raw/<source_id>.json`에 쓴다.
+
+    **`fetch._save`와 fetcher가 같은 함수를 쓰게 하려고 여기에 뒀다.** fetcher가
+    중간 저장을 하려면 파일 형식이 최종 저장과 한 글자도 달라선 안 된다 —
+    다르면 이어받기가 자기가 쓴 파일을 못 읽는다.
+
+    임시 파일에 쓰고 바꿔치기한다. 214편을 받는 도중 매 편마다 덮어쓰는데,
+    쓰는 중에 죽으면 파일이 깨져서 **그때까지 받은 걸 전부 잃기 때문**이다.
+    이어받기를 만들어놓고 그 이어받기가 데이터를 파괴하면 의미가 없다.
+    """
+    RAW_DIR.mkdir(parents=True, exist_ok=True)
+    out = RAW_DIR / f"{source_id}.json"
+    tmp = out.with_suffix(".json.tmp")
+    payload = [doc.model_dump() for doc in docs]
+    tmp.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+    tmp.replace(out)
+    return out

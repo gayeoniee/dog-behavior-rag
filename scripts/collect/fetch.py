@@ -12,23 +12,18 @@
 
 import argparse
 import asyncio
-import json
 import logging
 import sys
 
 from .fetchers.base import LicensePendingError, RobotsDisallowedError
-from .models import RAW_DIR, RawDoc, Source
+from .models import RawDoc, Source, save_raw
 from .registry import get_fetcher, get_source, load_sources
 
 logger = logging.getLogger(__name__)
 
 
 def _save(source: Source, docs: list[RawDoc]) -> None:
-    RAW_DIR.mkdir(parents=True, exist_ok=True)
-    out = RAW_DIR / f"{source.id}.json"
-    payload = [doc.model_dump() for doc in docs]
-    out.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
-    logger.info("저장: %s (%d건)", out, len(docs))
+    logger.info("저장: %s (%d건)", save_raw(source.id, docs), len(docs))
 
 
 async def fetch_one(source: Source) -> int:
