@@ -152,7 +152,8 @@ uv run python -m scripts.db.serve --stop
 |---|---|
 | `uv sync` | API 서버만 (수 초) |
 | `uv sync --extra hf` | 실제 임베딩 (sentence-transformers, torch — 수 GB) |
-| `uv sync --extra collect` | 데이터 수집 파이프라인 |
+| `uv sync --extra collect` | 데이터 수집 파이프라인 (유튜브 자막 포함) |
+| `uv sync --extra stt` | 자막 없는 영상을 STT로 (무겁다. 자막이 있으면 불필요) |
 | `uv sync --extra pgdev` | 내장 Postgres+pgvector (Docker 없는 머신) |
 | `uv sync --extra demo` | Streamlit 데모 |
 

@@ -34,6 +34,15 @@ collect = [
     "pypdf>=5.1",
     "selectolax>=0.3.27",
     "pyyaml>=6.0",
+    # 유튜브 자막 수집 (fetchers/youtube.py). 자막만 받으면 이걸로 충분하고
+    # ffmpeg도 필요 없다 — 실측상 대상 채널은 전 영상에 한국어 자동자막이 있었다.
+    "yt-dlp>=2026.7",
+]
+# 자막이 없는 영상을 STT로 옮길 때만 (fetchers/youtube.py의 _speech_to_text).
+# 무겁다 — ctranslate2·onnxruntime이 딸려온다. PyAV로 디코딩하므로 시스템 ffmpeg은
+# 필요 없다(관리자 권한 없는 PC 대비).
+stt = [
+    "faster-whisper>=1.2",
 ]
 # Docker나 관리자 권한이 없는 머신용 내장 Postgres+pgvector (개발 전용).
 # 팀 규칙상 DB는 각자 쓰므로 서버 구성 방법은 자유다 — Docker가 되는 머신은 이게 필요 없다.
