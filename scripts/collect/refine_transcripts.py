@@ -91,6 +91,58 @@ async def refine_one(llm: LLMClient, text: str) -> str:
     return "\n\n".join(parts)
 
 
+def inspect(source: str, limit: int) -> int:
+    """정제 결과를 **사람이 읽으라고** 출력한다.
+
+    자동 정제는 초안이다. 여기서 봐야 하는 건 통계가 아니라 두 가지다:
+
+      1. LLM이 **원본에 없는 조언을 지어냈는가** — 프롬프트로 금지해도 일어난다
+      2. 말이 되는 문장이 됐는가 (오탈자·화자 뒤섞임이 정리됐는가)
+
+    1번을 보려면 정제본만 봐서는 안 된다. **그럴듯하게 읽히는 게 지어낸 것의
+    특징**이기 때문이다. 그래서 원본 발췌를 위에 같이 찍는다.
+    """
+    target = RAW_DIR / f"{source}.refined.json"
+    if not target.is_file():
+        print(f"✗ {target} 가 없습니다 — 먼저 정제를 실행하세요", file=sys.stderr)
+        return 1
+
+    docs = json.loads(target.read_text(encoding="utf-8"))
+    raw_path = RAW_DIR / f"{source}.json"
+    originals: dict[str, str] = {}
+    if raw_path.is_file():
+        originals = {d["source_id"]: d["text"] for d in json.loads(raw_path.read_text("utf-8"))}
+
+    lengths = sorted(len(d["text"]) for d in docs)
+    total = sum(lengths)
+    print(f"{target.name} — {len(docs)}건 · 총 {total:,}자")
+    if lengths:
+        mid = lengths[len(lengths) // 2]
+        print(f"  길이: 최소 {lengths[0]} · 중앙값 {mid} · 최대 {lengths[-1]}")
+    if originals:
+        before = sum(len(originals.get(d["source_id"], "")) for d in docs)
+        if before:
+            print(f"  원본 {before:,}자 → 정제 {total:,}자 ({total / before:.0%})")
+    print()
+
+    for doc in docs[:limit]:
+        print("─" * 72)
+        print(doc["title"][:68])
+        print(f"  {doc['url']}")
+        original = originals.get(doc["source_id"], "")
+        if original:
+            print("\n  [원본 자막 앞 300자]")
+            print("  " + original[:300].replace("\n", " "))
+        print("\n  [정제 결과]")
+        for line in doc["text"].split("\n"):
+            print("  " + line if line else "")
+        print()
+
+    if len(docs) > limit:
+        print(f"… 외 {len(docs) - limit}건 (--limit 로 더 보기)")
+    return 0
+
+
 async def run(args: argparse.Namespace) -> int:
     raw_path = RAW_DIR / f"{args.source}.json"
     if not raw_path.is_file():
@@ -153,6 +205,12 @@ def main() -> int:
     parser.add_argument("--limit", type=int, default=0, help="앞에서 N건만")
     parser.add_argument("--dry-run", action="store_true", help="저장하지 않고 결과만 본다")
     parser.add_argument(
+        "--inspect",
+        action="store_true",
+        help="정제된 결과를 원본과 나란히 출력한다 (LLM 호출 없음). "
+        "지어낸 내용이 없는지 사람이 확인하는 용도다",
+    )
+    parser.add_argument(
         "--min-chars",
         type=int,
         default=150,
@@ -160,6 +218,9 @@ def main() -> int:
         "200~300자라 기본값이 낮다 (긴 상담 영상은 600~900자)",
     )
     args = parser.parse_args()
+    # 읽기 전용이라 LLM도 설정도 필요 없다 — 다른 기기에서 결과만 검수할 수 있게.
+    if args.inspect:
+        return inspect(args.source, args.limit or 5)
     return asyncio.run(run(args))
 
 
