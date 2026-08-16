@@ -115,9 +115,17 @@ yt-dlp는 기본적으로 deno만 켠다. 이 PC에는 Next.js 화면 때문에 
 앞으로 yt-dlp가 JS 런타임을 필수로 요구할 때를 대비하는 것이다.
 """
 
-MIN_CHARS = 1500
-"""이보다 짧은 자막은 버린다. 8분 상담 영상이 약 4,000자였으니 1,500자 미만은
-내용이 거의 없는 것이다 (쇼츠·예고편 등)."""
+MIN_CHARS = 400
+"""이보다 짧은 자막은 버린다. `meta.min_chars`로 소스마다 덮어쓸 수 있다.
+
+**처음에 1,500으로 잡았다가 원하는 콘텐츠를 거의 다 걸렀다.** 8분짜리 상담 영상
+(약 4,000자)을 기준으로 정한 값인데, "소소한 Q&A" 재생목록은 **편당 2~3분**이라
+자막이 700~900자가 정상이다. 실행 로그가 "자막이 짧아 제외"로 도배됐다.
+
+**임계값은 콘텐츠 형식마다 다르다.** 한 소스에서 정한 값을 다른 소스에 그대로
+쓰면 안 된다 — 03장에서 논문 문단(506자)과 가이드 문단(87자)이 5.8배 달랐던 것과
+같은 이야기다.
+"""
 
 
 # 자막 요청이 429를 맞았을 때 기다릴 시간. 지수적으로 늘린다.
@@ -192,6 +200,7 @@ class YoutubeFetcher:
         meta = source.meta if isinstance(getattr(source, "meta", None), dict) else {}
         limit = int(meta.get("limit", 30))
         markers = tuple(meta.get("markers") or TRAINING_MARKERS)
+        min_chars = int(meta.get("min_chars", MIN_CHARS))
 
         # 재생목록은 통째로 받고, 채널은 제목 필터로 걸러야 하므로 넉넉히 훑는다.
         curated_urls = any("list=" in u for u in source.urls)
@@ -264,7 +273,7 @@ class YoutubeFetcher:
                         break
                     continue
 
-                if len(text) < MIN_CHARS:
+                if len(text) < min_chars:
                     logger.info("영상 %s 자막이 짧아 제외 (%d자)", video_id, len(text))
                     continue
 

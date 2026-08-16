@@ -123,7 +123,7 @@ async def run(args: argparse.Namespace) -> int:
             f"({ratio:.0%})  {doc['title'][:34]}",
             flush=True,
         )
-        if len(refined) < 300:
+        if len(refined) < args.min_chars:
             print("      ⚠️ 너무 짧아 제외", flush=True)
             continue
         out.append({**doc, "text": refined})
@@ -152,6 +152,13 @@ def main() -> int:
     parser.add_argument("--source", required=True, help="sources.yaml의 소스 id")
     parser.add_argument("--limit", type=int, default=0, help="앞에서 N건만")
     parser.add_argument("--dry-run", action="store_true", help="저장하지 않고 결과만 본다")
+    parser.add_argument(
+        "--min-chars",
+        type=int,
+        default=150,
+        help="정제 결과가 이보다 짧으면 버린다. 2~3분짜리 Q&A 영상은 정제하면 "
+        "200~300자라 기본값이 낮다 (긴 상담 영상은 600~900자)",
+    )
     args = parser.parse_args()
     return asyncio.run(run(args))
 
