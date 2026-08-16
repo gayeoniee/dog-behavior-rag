@@ -80,8 +80,18 @@ def main() -> int:
             logger.warning("sources.yaml에 없는 raw 파일, 건너뜀: %s", path.name)
             continue
 
+        # **문서 단위로 빼는 장치.** 소스 하나가 수백 편을 내는데 그중 몇 편만
+        # 기존 코퍼스와 충돌할 수 있다. 소스를 통째로 격리하면 멀쩡한 나머지를
+        # 다 버리게 되고, 통째로 들이면 자기모순이 들어온다.
+        # 왜 뺐는지는 sources.yaml에 문장을 인용해 적어둔다 — 근거 없이 빠진
+        # 문서가 있으면 나중에 아무도 되돌릴 수 없다.
+        excluded = tuple(source.meta.get("exclude_ids") or ())
+
         for item in json.loads(path.read_text(encoding="utf-8")):
             doc = RawDoc.model_validate(item)
+            if any(doc.source_id.endswith(bad) for bad in excluded):
+                logger.info("제외 목록에 있어 건너뜀: %s", doc.title[:40])
+                continue
             text = clean_text(doc.text)
 
             if len(text) < MIN_TEXT_CHARS:
@@ -140,6 +150,12 @@ def main() -> int:
             "corpus_blogs.jsonl 생성: %d건 (관찰용 — 답변 근거로 검색되지 않는다)",
             len(observation),
         )
+    elif BLOG_CORPUS_PATH.is_file():
+        # **관찰용 소스가 없어졌으면 파일도 지운다.** 안 지우면 낡은 내용이
+        # 그대로 남아서, 승격된 문서가 여전히 관찰용인 것처럼 보인다.
+        # 출력 파일은 매 실행마다 입력 상태를 그대로 반영해야 한다.
+        BLOG_CORPUS_PATH.unlink()
+        logger.info("관찰용 소스가 없어 corpus_blogs.jsonl 을 지웠다")
     return 0
 
 
