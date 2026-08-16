@@ -136,3 +136,41 @@ def test_rawdoc_roundtrip() -> None:
         fetched_at=datetime.now(UTC).isoformat(),
     )
     assert RawDoc.model_validate(doc.model_dump()) == doc
+
+
+class TestRawFileSelection:
+    """정제본이 있으면 그쪽을 쓴다.
+
+    정제한 자막이 통째로 버려지고 있었다. `bodeum-tv.refined.json`은 stem이
+    `bodeum-tv.refined`라 sources.yaml에서 안 잡혀 건너뛰고, 옆에 있는
+    오탈자투성이 원본이 대신 코퍼스로 들어갔다. **다듬어 놓고 안 다듬은 걸 썼다.**
+    """
+
+    def test_정제본이_원본을_이긴다(self, monkeypatch, tmp_path):
+        from scripts.collect import normalize
+
+        monkeypatch.setattr(normalize, "RAW_DIR", tmp_path)
+        (tmp_path / "bodeum-tv.json").write_text("[]", encoding="utf-8")
+        (tmp_path / "bodeum-tv.refined.json").write_text("[]", encoding="utf-8")
+
+        chosen = normalize.raw_files()
+        assert set(chosen) == {"bodeum-tv"}, "정제본이 별도 소스로 잡히면 안 된다"
+        assert chosen["bodeum-tv"].name == "bodeum-tv.refined.json"
+
+    def test_정제본만_있어도_소스로_잡힌다(self, monkeypatch, tmp_path):
+        """다른 기기에는 정제본만 간다 — 저장소에 원본은 안 실려 있다."""
+        from scripts.collect import normalize
+
+        monkeypatch.setattr(normalize, "RAW_DIR", tmp_path)
+        (tmp_path / "bodeum-tv.refined.json").write_text("[]", encoding="utf-8")
+
+        assert normalize.raw_files()["bodeum-tv"].name == "bodeum-tv.refined.json"
+
+    def test_정제본이_없으면_원본을_쓴다(self, monkeypatch, tmp_path):
+        from scripts.collect import normalize
+
+        monkeypatch.setattr(normalize, "RAW_DIR", tmp_path)
+        (tmp_path / "rspca-dog-behaviour.json").write_text("[]", encoding="utf-8")
+
+        chosen = normalize.raw_files()
+        assert chosen["rspca-dog-behaviour"].name == "rspca-dog-behaviour.json"

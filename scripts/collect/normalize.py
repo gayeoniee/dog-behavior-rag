@@ -12,6 +12,7 @@ import logging
 import re
 import sys
 import unicodedata
+from pathlib import Path
 
 from .models import BLOG_CORPUS_PATH, CORPUS_PATH, PROCESSED_DIR, RAW_DIR, RawDoc
 from .registry import load_sources
@@ -33,6 +34,33 @@ def content_hash(text: str) -> str:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()[:16]
 
 
+REFINED_SUFFIX = ".refined"
+
+
+def raw_files() -> dict[str, Path]:
+    """소스 id → 정규화에 쓸 파일. **정제본이 있으면 그쪽을 쓴다.**
+
+    **정제한 자막이 통째로 버려지고 있었다.** 예전에는 `RAW_DIR.glob("*.json")`을
+    돌면서 파일명으로 소스를 찾았는데, `bodeum-tv.refined.json`은 stem이
+    `bodeum-tv.refined`라 sources.yaml에서 안 잡혀 "없는 raw 파일"로 건너뛰었다.
+    그리고 옆에 있는 `bodeum-tv.json`(오탈자투성이 원본 자막)이 대신 들어갔다.
+
+    **LLM으로 다듬어 놓고 정작 안 쓰고, 안 다듬은 쪽을 쓰고 있었다.** 다른 기기로
+    옮겨간 경우엔 더 나쁘다 — 저장소에는 정제본만 실려 있어서(`.gitignore` 예외)
+    거기서는 유튜브 문서가 0건이 된다.
+
+    파일명 규칙 하나가 조용히 파이프라인을 갈랐다. `.refined.json`이 `.json`으로
+    끝나서 glob에는 걸리는데 stem은 안 맞는, 딱 눈에 안 띄는 형태였다.
+    """
+    chosen: dict[str, Path] = {}
+    for path in sorted(RAW_DIR.glob("*.json")):
+        if path.stem.endswith(REFINED_SUFFIX):
+            chosen[path.stem[: -len(REFINED_SUFFIX)]] = path  # 정제본이 항상 이긴다
+        else:
+            chosen.setdefault(path.stem, path)
+    return chosen
+
+
 def main() -> int:
     logging.basicConfig(level=logging.INFO, format="%(levelname)-7s %(message)s")
 
@@ -46,8 +74,8 @@ def main() -> int:
     skipped_short = 0
     skipped_dupe = 0
 
-    for path in sorted(RAW_DIR.glob("*.json")):
-        source = sources.get(path.stem)
+    for source_id, path in raw_files().items():
+        source = sources.get(source_id)
         if source is None:
             logger.warning("sources.yaml에 없는 raw 파일, 건너뜀: %s", path.name)
             continue
