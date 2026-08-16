@@ -23,6 +23,11 @@ htmlcov/
 # 수집 데이터 (저작물 원본·산출물은 커밋하지 않는다.
 #  sources.yaml / coverage_questions.yaml 은 커밋 대상)
 data/raw/
+# 예외: LLM 정제 결과는 커밋한다.
+#   원본 자막과 달리 이건 **재생성에 API 할당량이 드는 파생물**이다.
+#   기기를 옮길 때(학원 PC ↔ 집 PC) 이게 없으면 Gemini 할당량을 다시 써야 하고,
+#   할당량은 하루 단위라 그날 작업이 막힌다. 분량도 작다(24편에 52KB).
+!data/raw/*.refined.json
 data/processed/
 models/
 .cache/
