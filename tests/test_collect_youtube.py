@@ -81,7 +81,7 @@ def fake_yt(monkeypatch, tmp_path):
 def stub_subtitles(monkeypatch, texts: dict[str, str], fail_on: str | None = None):
     """`_extract_text`를 영상별 고정 문자열로 대체한다."""
 
-    def fake(url, http=None):
+    def fake(url, http=None, delay=None):
         vid = url
         if fail_on and vid == fail_on:
             raise RuntimeError("HTTP Error 429: Too Many Requests")
@@ -135,7 +135,7 @@ async def test_다시_돌리면_이미_받은_편은_건너뛰고_합쳐진다(f
 
     requested: list[str] = []
 
-    def fake(url, http=None):
+    def fake(url, http=None, delay=None):
         requested.append(url)
         return "나" * 500
 
