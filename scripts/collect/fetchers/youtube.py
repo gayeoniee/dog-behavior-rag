@@ -90,6 +90,22 @@ yt-dlp의 `sleep_interval_requests`가 요청 사이를 벌려주므로 이건 �
 정리하면 **막힌 것은 엔드포인트가 아니라 "로그인하지 않은 우리 IP"다.** 그래서
 남은 지렛대는 지연값이 아니라 **신원**뿐이다 — `Http`와 `meta.cookies_from_browser`
 참조. 지연을 더 늘리는 여덟 번째 시도는 하지 말 것.
+
+**클라우드 세션(`claude --cloud`)으로는 IP를 바꿀 수 없다 (2026-08-16 확인).**
+차단당한 집 PC 대신 다른 IP를 쓰려고 클라우드에서 `probe_youtube`를 돌렸는데
+유튜브가 아니라 **egress 프록시가 CONNECT에 403**을 돌려줬다:
+
+    connect_rejected — gateway answered 403 to CONNECT
+    host: www.youtube.com:443
+
+요청이 유튜브에 닿지도 않았으므로 이건 429와 **다른 실패**다. 조직 네트워크
+정책이라 코드로 우회할 수 있는 게 아니고 우회해서도 안 된다
+(`/root/.ccr/README.md`: "Do not retry or route around it"). 클라우드에서
+수집을 시도하지 말 것 — 정책을 열더라도 데이터센터 IP라 유튜브 봇 검사에
+또 걸린다.
+
+**IP를 진짜로 바꾸려면 회선을 바꿔야 한다** — 예: PC를 휴대폰 테더링에 물리면
+통신사 IP로 나간다. 수집은 어느 쪽이든 로컬에서 돈다.
 """
 
 THROTTLE: dict[str, object] = {
