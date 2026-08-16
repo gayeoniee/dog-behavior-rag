@@ -18,6 +18,7 @@
 import asyncio
 import json
 import logging
+import random
 import time
 import urllib.error
 import urllib.request
@@ -25,7 +26,6 @@ from datetime import UTC, datetime
 
 from ..models import RawDoc, Source
 from .base import ensure_license_checked
-from .http import REQUEST_DELAY_SECONDS
 
 logger = logging.getLogger(__name__)
 
@@ -41,10 +41,21 @@ TRAINING_MARKERS = (
     "퍼피교육", "문제행동", "훈련", "교육", "상담", "행동교정",
 )
 
-VIDEO_DELAY_SECONDS = REQUEST_DELAY_SECONDS
-"""영상 하나를 처리한 뒤 **추가로** 쉬는 시간.
+SUBTITLE_DELAY_RANGE = (3.0, 7.0)
+"""자막을 받기 전 대기 시간의 범위 (초).
 
-yt-dlp의 `THROTTLE`이 요청 사이를 이미 벌려주므로 이건 보조다.
+**yt-dlp의 `sleep_interval_subtitles`가 우리 경로에서는 발동하지 않으므로**
+직접 한다. 차단이 자막(timedtext) 엔드포인트에만 걸렸으니 여기가 가장 중요하다.
+
+**범위로 두는 이유:** 고정 간격은 봇의 일정한 심박으로 읽힌다. 사람이 브라우저로
+볼 때 요청 간격이 일정할 리가 없다.
+"""
+
+VIDEO_DELAY_RANGE = (1.0, 3.0)
+"""영상 하나를 처리한 뒤 **추가로** 쉬는 시간의 범위.
+
+yt-dlp의 `sleep_interval_requests`가 요청 사이를 벌려주므로 이건 보조다.
+여기도 고정값이 아니라 범위다 — 같은 이유.
 
 **214편을 연속으로 요청했다가 429(Too Many Requests)로 차단당했다.** 영상마다
 메타데이터 1회 + 자막 1회, 총 400회 넘는 요청이 순식간에 나간다.
@@ -67,16 +78,10 @@ yt-dlp의 `THROTTLE`이 요청 사이를 이미 벌려주므로 이건 보조다
 """
 
 THROTTLE: dict[str, object] = {
-    # yt-dlp가 **자기 내부 요청 사이**에 쉬는 시간. 우리 time.sleep은 영상 사이만
-    # 막아줬는데, 영상 하나에도 요청이 여러 번 나간다.
+    # **이 경로에서 실제로 발동하는 유일한 sleep 옵션이다.**
+    # extractor/common.py `_request_webpage`가 매 요청 전에 잠든다 —
+    # 메타데이터 조회를 포함한 yt-dlp의 모든 웹 요청에 걸린다.
     "sleep_interval_requests": 2,
-    # 영상마다 3~7초 무작위 대기. **고정 간격보다 무작위가 낫다** — 일정한 주기는
-    # 자동화로 식별되기 쉽다.
-    "sleep_interval": 3,
-    "max_sleep_interval": 7,
-    # **자막 요청 전 별도 대기.** 차단이 자막(timedtext) 엔드포인트에만 걸렸으므로
-    # 여기가 가장 중요하다.
-    "sleep_interval_subtitles": 3,
     "retries": 3,
     "extractor_retries": 2,
 }
@@ -85,8 +90,16 @@ THROTTLE: dict[str, object] = {
 처음엔 영상 사이에 `time.sleep(1)`만 뒀는데, **영상 하나를 처리할 때 yt-dlp가
 내부적으로 여러 번 요청한다.** 214편이면 순식간에 400회가 넘어간다.
 
-yt-dlp에는 이걸 위한 옵션이 이미 있었다 (`--sleep-requests`, `--sleep-subtitles`,
-`--sleep-interval`). **직접 구현하기 전에 도구가 뭘 제공하는지 봤어야 했다.**
+**⚠️ 넣어봐야 소용없는 옵션들 (2026-08-16 소스 확인):**
+
+    sleep_interval / max_sleep_interval   다운로드 **직전**에만 발동
+                                          → skip_download라 안 걸린다
+    sleep_interval_subtitles              yt-dlp가 자막을 받을 때만 발동
+                                          → 우린 urllib로 직접 받으므로 안 걸린다
+
+처음엔 이 셋을 다 넣고 "3~7초 무작위 대기가 걸린다"고 적었는데 **거짓이었다.**
+옵션 이름만 보고 넣었지 **언제 발동하는지 확인하지 않았다.** 대신 자막 요청 전
+대기는 `_sleep_before_subtitle`이 직접 한다.
 """
 
 JS_RUNTIMES: dict[str, dict] = {"node": {}}
@@ -116,6 +129,15 @@ RETRY_DELAYS = (5.0, 15.0, 45.0)
 """
 
 
+def _sleep_before_subtitle() -> None:
+    """자막 요청 전 무작위 대기.
+
+    yt-dlp의 `sleep_interval_subtitles`는 yt-dlp가 자막을 내려받을 때만 발동하는데
+    우리는 URL만 받아 urllib로 직접 가져오므로 안 걸린다. 그래서 직접 한다.
+    """
+    time.sleep(random.uniform(*SUBTITLE_DELAY_RANGE))
+
+
 def _extract_text(url: str) -> str:
     """json3 자막을 이어붙인다.
 
@@ -125,6 +147,7 @@ def _extract_text(url: str) -> str:
     **yt-dlp를 거치지 않고 직접 받는다.** 그래서 yt-dlp가 해주는 재시도·백오프가
     없어 여기서 직접 해야 한다.
     """
+    _sleep_before_subtitle()
     last: Exception | None = None
     for attempt, delay in enumerate((0.0, *RETRY_DELAYS)):
         if delay:
@@ -256,7 +279,7 @@ class YoutubeFetcher:
                     )
                 )
                 logger.info("✓ %s (%d자) %s", video_id, len(text), info.get("title", "")[:40])
-                time.sleep(VIDEO_DELAY_SECONDS)
+                time.sleep(random.uniform(*VIDEO_DELAY_RANGE))
         return docs
 
     def _existing_docs(self, source: Source) -> list[RawDoc]:
