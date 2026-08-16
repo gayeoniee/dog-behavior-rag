@@ -42,7 +42,9 @@ TRAINING_MARKERS = (
 )
 
 VIDEO_DELAY_SECONDS = REQUEST_DELAY_SECONDS
-"""영상 하나를 처리할 때마다 쉬는 시간.
+"""영상 하나를 처리한 뒤 **추가로** 쉬는 시간.
+
+yt-dlp의 `THROTTLE`이 요청 사이를 이미 벌려주므로 이건 보조다.
 
 **214편을 연속으로 요청했다가 429(Too Many Requests)로 차단당했다.** 영상마다
 메타데이터 1회 + 자막 1회, 총 400회 넘는 요청이 순식간에 나간다.
@@ -62,6 +64,29 @@ VIDEO_DELAY_SECONDS = REQUEST_DELAY_SECONDS
 지나야 풀린다.** 코드를 고쳐서 뚫을 수 있는 게 아니므로 시도하지 말 것.
 
 그래서 진짜 대책은 **처음부터 천천히 받는 것**이다. 이 지연값을 줄이지 말 것.
+"""
+
+THROTTLE: dict[str, object] = {
+    # yt-dlp가 **자기 내부 요청 사이**에 쉬는 시간. 우리 time.sleep은 영상 사이만
+    # 막아줬는데, 영상 하나에도 요청이 여러 번 나간다.
+    "sleep_interval_requests": 2,
+    # 영상마다 3~7초 무작위 대기. **고정 간격보다 무작위가 낫다** — 일정한 주기는
+    # 자동화로 식별되기 쉽다.
+    "sleep_interval": 3,
+    "max_sleep_interval": 7,
+    # **자막 요청 전 별도 대기.** 차단이 자막(timedtext) 엔드포인트에만 걸렸으므로
+    # 여기가 가장 중요하다.
+    "sleep_interval_subtitles": 3,
+    "retries": 3,
+    "extractor_retries": 2,
+}
+"""요청 속도 제한. **이게 없어서 429를 맞았다.**
+
+처음엔 영상 사이에 `time.sleep(1)`만 뒀는데, **영상 하나를 처리할 때 yt-dlp가
+내부적으로 여러 번 요청한다.** 214편이면 순식간에 400회가 넘어간다.
+
+yt-dlp에는 이걸 위한 옵션이 이미 있었다 (`--sleep-requests`, `--sleep-subtitles`,
+`--sleep-interval`). **직접 구현하기 전에 도구가 뭘 제공하는지 봤어야 했다.**
 """
 
 JS_RUNTIMES: dict[str, dict] = {"node": {}}
@@ -153,6 +178,7 @@ class YoutubeFetcher:
             "skip_download": True,
             "playlistend": limit if curated_urls else limit * 4,
             "js_runtimes": JS_RUNTIMES,
+            **THROTTLE,
         }
         entries: list[dict] = []
         with yt_dlp.YoutubeDL(flat) as ydl:
@@ -183,7 +209,12 @@ class YoutubeFetcher:
             logger.info("이미 받은 %d편은 건너뛰고 결과에 합친다", len(already))
 
         docs: list[RawDoc] = list(previous)
-        detail = {"quiet": True, "skip_download": True, "js_runtimes": JS_RUNTIMES}
+        detail = {
+            "quiet": True,
+            "skip_download": True,
+            "js_runtimes": JS_RUNTIMES,
+            **THROTTLE,
+        }
         with yt_dlp.YoutubeDL(detail) as ydl:
             for entry in picked[:limit]:
                 video_id = entry.get("id")
