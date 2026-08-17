@@ -68,6 +68,9 @@ packages = ["app"]
 [tool.ruff]
 line-length = 100
 target-version = "py312"
+# 외부 스킬(kargnas/skills)은 남의 코드다. 우리 린트 규칙을 적용할 이유가 없고,
+# 고치면 원본과 어긋나서 다음에 갱신할 때 충돌한다.
+exclude = [".claude/skills"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "SIM"]
