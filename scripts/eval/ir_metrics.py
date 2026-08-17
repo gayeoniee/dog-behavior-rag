@@ -116,7 +116,7 @@ async def run(args: argparse.Namespace) -> int:
                 session,
                 authority_boost=settings.authority_boost,
                 guide_boost=settings.guide_boost,
-                max_per_document=settings.max_chunks_per_document,
+                max_per_document=args.max_per_doc or settings.max_chunks_per_document,
                 candidate_multiplier=settings.candidate_multiplier,
             )
             for i, qa in enumerate(pairs, 1):
@@ -223,6 +223,13 @@ def main() -> int:
     parser.add_argument("--top-k", type=int, default=10, help="이만큼 받아와 순위를 본다")
     parser.add_argument("--save", metavar="NAME")
     parser.add_argument("--compare", metavar="NAME")
+    parser.add_argument(
+        "--max-per-doc",
+        type=int,
+        default=0,
+        help="문서당 청크 상한을 덮어쓴다(0이면 설정값). 상한이 정답 청크를 "
+        "막고 있는지 보려면 크게 준다",
+    )
     parser.add_argument(
         "--no-rewrite",
         dest="rewrite",
