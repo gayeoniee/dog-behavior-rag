@@ -327,15 +327,16 @@ uv run python -m scripts.collect.normalize
 uv run python -m scripts.collect.report   # 네 축 + 커버리지 8개 PASS면 정상
 ```
 
-외부 스킬은 `.agents/skills/`로 커밋돼 있지만 **에이전트가 읽는 심볼릭 링크는
-기기마다 다시 만들어야 한다** (이 저장소는 `core.symlinks=false`):
+외부 스킬(`kargnas/skills`)은 `.claude/skills/`에 **실제 파일로 커밋돼 있다.**
+`git pull`만 하면 어느 기기에서든 바로 쓸 수 있고, 따로 설치할 게 없다.
 
-```bash
-npx -y skills add kargnas/skills --skill git-lore --skill humanizer-kill-gpt --skill skill-manager --skill skill-prompter --skill vscode-ready
-```
+처음엔 `npx skills add`가 만든 정션(junction)을 그대로 뒀는데, 그건 **설치한
+기기에만 생긴다.** 저장소에는 원본만 오고 링크는 안 와서 다른 기기에서 스킬을
+못 찾았다. 링크를 없애고 파일을 직접 커밋하는 쪽이 단순하다 (380KB).
 
-**`--skill '*'` 를 쓰지 말 것.** `ai-ready`가 딸려 오는데 "불필요한 환경변수면
-`.env`를 제거하라"는 지시가 있고, 이 프로젝트의 `.env`는 git에 없어 되돌릴 수 없다.
+`ai-ready`는 일부러 뺐다 — "불필요한 환경변수면 `.env`를 제거하라"는 지시가 있고
+이 프로젝트의 `.env`는 git에 없어 되돌릴 수 없다. **스킬을 다시 받을 때
+`--skill '*'`를 쓰지 말 것.**
 
 **`uv sync`를 extra 없이 다시 돌리면 이전 extra가 제거된다.** 검색까지 쓰려면
 항상 `uv sync --extra hf --extra collect`처럼 전부 나열할 것. 이걸로 두 번 헤맸다.
