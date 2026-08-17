@@ -16,10 +16,12 @@ from .base import SearchHit
 
 __all__ = ["Candidate", "rank"]
 
-def _boosted(cand: "Candidate", authority_boost: float, guide_boost: float) -> float:
+def _boosted(
+    cand: "Candidate", authority_boost: float, guide_boost: float, background_weight: float = 1.0
+) -> float:
     return (
         (1.0 - cand.distance)
-        - cand.background
+        - cand.background * background_weight
         + authority_boost * (3 - cand.authority_tier) / 2
         + (guide_boost if cand.doc_type == "guide" else 0.0)
     )
@@ -54,6 +56,7 @@ def rank(
     authority_boost: float = 0.02,
     guide_boost: float = 0.03,
     max_per_document: int = 2,
+    background_weight: float = 1.0,
 ) -> list[SearchHit]:
     """권위·문서종류 부스팅 + 문서 다양성 상한을 적용해 상위 top_k를 고른다.
 
@@ -96,7 +99,7 @@ def rank(
     """
     ordered = sorted(
         candidates,
-        key=lambda c: _boosted(c, authority_boost, guide_boost),
+        key=lambda c: _boosted(c, authority_boost, guide_boost, background_weight),
         reverse=True,
     )
 

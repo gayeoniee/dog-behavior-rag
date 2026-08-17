@@ -47,9 +47,11 @@ class PgVectorStore:
         max_per_document: int = 2,
         candidate_multiplier: int = 4,
         ef_search: int = 400,
+        background_weight: float = 1.0,
     ) -> None:
         self._session = session
         self._ef_search = ef_search
+        self._background_weight = background_weight
         self._authority_boost = authority_boost
         self._guide_boost = guide_boost
         self._max_per_document = max_per_document
@@ -103,6 +105,7 @@ class PgVectorStore:
             authority_boost=self._authority_boost,
             guide_boost=self._guide_boost,
             max_per_document=self._max_per_document,
+            background_weight=self._background_weight,
         )
 
     async def _background(self, embedding: list[float]) -> dict[str, float]:

@@ -134,6 +134,7 @@ async def run(save: str | None, compare: str | None) -> int:
                 max_per_document=settings.max_chunks_per_document,
                 candidate_multiplier=settings.candidate_multiplier,
                 ef_search=settings.hnsw_ef_search,
+                background_weight=settings.language_background_weight,
             )
             for i, entry in enumerate(entries, 1):
                 q = entry["question"]
