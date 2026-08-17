@@ -90,9 +90,16 @@
   expect: covered
   keywords: [house training, toilet, housetraining, elimination, schedule, '배변 훈련', '배변 패드', '실외 배변', '화장실']
 
+# 2026-08-17 보듬TV 자막 추가로 uncovered → covered 승격.
+#   `uncovered`는 관찰이 아니라 **주장**이다 — "이 주제는 코퍼스에 없다".
+#   실제로 재보니 관련 자료가 원점수 2·5·8위에 있었다:
+#     2위 "보호자가 귀가할 때 반려견이 흥분하여 반기며…"  ← 질문과 같은 상황
+#     5위 "산책 중 보호자에게 달려들거나 점프하는 행동은…"
+#   **라벨이 틀렸으면 라벨을 고친다.** 시험을 통과시키려고 자료를 더 넣는 건
+#   순서가 거꾸로고, 그러면 평가셋이 존재할 이유가 없어진다.
 - question: "집에 들어오면 너무 흥분해서 막 뛰어올라요"
   topic: jumping-up
-  expect: uncovered
+  expect: covered
   keywords: [jumping up, jump, four on the floor, greeting, '뛰어오르', '점프', '달려들어']
 
 # 2026-08-12 RSPCA walknicely 추가로 승격
@@ -153,6 +160,12 @@
 # (35청크), 반대 패턴인 "혼자 있을 때 참고 안 한다"(억제된 배변)는 자료가 없다.
 # 억제·참기로 검색해도 잡히는 5건이 전부 "hold your hand" 오탐이었다.
 # 그러니 정답은 거절이나 되묻기다. 근거를 붙여 답하면 지어낸 것이다.
+# 2026-08-17 재확인 — uncovered 유지. 보듬TV 332편을 넣고 다시 뒤졌는데
+#   `배변을 참`이 4건 나오지만 전부 곁가지 언급이다:
+#     "실내 배변을 참지 못하거나"(종치기 훈련) · "보호자 앞에서는 배변을 참게
+#     되며"(체벌 부작용) · "비 오는 날 배변을 참는"(원인이 다름)
+#   영어 `holding it` 3건은 전부 오탐(손을 잡는다·기기를 대고 있는다).
+#   **"혼자 있을 때 하루 종일 안 본다"를 다루는 문서는 여전히 없다.**
 - question: "혼자 있을 때는 하루 종일 대변을 안 봐요 보호자가 있을 때만 봐요"
   topic: inhibited-elimination
   expect: uncovered
