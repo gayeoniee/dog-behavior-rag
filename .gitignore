@@ -50,9 +50,16 @@ web/out/
 .idea/
 .DS_Store
 
-# 외부 스킬 (npx skills add kargnas/skills)
+# 외부 스킬 (kargnas/skills)
 #   .agents/skills/ 는 실제 파일이라 커밋한다 — 기기를 옮겨도 따라온다.
 #   .claude/skills/ 는 거기를 가리키는 심볼릭 링크인데, 이 저장소는
 #   core.symlinks=false 라 **커밋하면 경로가 적힌 텍스트 파일로 깨진다.**
-#   새 기기에서는 같은 npx 명령을 한 번 더 돌려 링크만 다시 만든다.
+#   새 기기에서는 아래 명령으로 링크만 다시 만든다.
+#
+#   ⚠️ `--skill '*'` 를 쓰지 말 것. ai-ready가 딸려 오는데, 그 SKILL.md에
+#      "불필요한 환경변수면 .env를 제거하라"는 지시가 있다. 이 프로젝트의
+#      .env에는 Gemini 키와 DATABASE_URL이 있고 git에 없어서 되돌릴 수 없다.
+#      쓸 스킬을 이름으로 지정한다:
+#
+#   npx -y skills add kargnas/skills --skill git-lore --skill humanizer-kill-gpt --skill skill-manager --skill skill-prompter --skill vscode-ready
 .claude/skills/

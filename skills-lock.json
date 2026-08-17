@@ -1,12 +1,6 @@
 {
   "version": 1,
   "skills": {
-    "ai-ready": {
-      "source": "kargnas/skills",
-      "sourceType": "github",
-      "skillPath": "skills/ai-ready/SKILL.md",
-      "computedHash": "200fe135fd1bf5098dc90a226406808590df1355968fb5158b1f42fab0b09734"
-    },
     "git-lore": {
       "source": "kargnas/skills",
       "sourceType": "github",
