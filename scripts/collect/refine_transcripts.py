@@ -232,13 +232,21 @@ async def run(args: argparse.Namespace) -> int:
     print(f"{raw_path.name} — {len(docs)}건 정제 · LLM={llm.name}\n", flush=True)
 
     out: list[dict] = list(done.values())
+    blocked = 0
     for i, doc in enumerate(docs, 1):
         before = len(doc["text"])
         try:
             refined = await refine_one(llm, doc["text"])
         except LLMUnavailableError as exc:
-            # **할당량이 끊기면 멈춘다.** 계속 돌아봐야 한 건도 못 만들고,
-            # 남은 문서가 전부 "너무 짧아 제외"로 찍혀 진짜 이유를 가린다.
+            # **한 편이 막힌 것과 LLM 자체를 못 쓰는 것은 다르다.**
+            # 콘텐츠 필터는 그 문서 하나만의 문제이므로 건너뛰고 계속한다.
+            # 자동자막은 오인식이 많아 멀쩡한 상담이 걸리기도 한다.
+            if "content_filter" in str(exc):
+                print(f"      ⚠️ 콘텐츠 필터에 막혀 건너뜀: {doc['title'][:40]}", flush=True)
+                blocked += 1
+                continue
+            # 할당량이 끊긴 경우다. 계속 돌아봐야 한 건도 못 만들고, 남은 문서가
+            # 전부 "너무 짧아 제외"로 찍혀 진짜 이유를 가린다.
             print(f"\n✗ LLM을 쓸 수 없어 {i - 1}편에서 멈춘다: {str(exc)[:120]}", file=sys.stderr)
             print(f"  여기까지 {len(out)}편은 저장돼 있다 — 다시 실행하면 이어서 받는다")
             print("  Gemini 무료 티어는 하루 단위로 초기화된다. LM Studio로 마저 하려면")
