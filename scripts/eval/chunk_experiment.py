@@ -42,7 +42,13 @@ from sqlalchemy import select
 from app.core.config import get_settings
 from app.db.models import Chunk, Document
 from app.db.session import create_engine, create_session_factory
-from app.services.chunking import ChunkConfig, clean_for_chunking, split_text
+from app.services.chunking import (
+    _SENTENCE_FIRST,
+    _SEPARATORS,
+    ChunkConfig,
+    clean_for_chunking,
+    split_text,
+)
 from app.services.embeddings.registry import get_embedder
 from app.services.llm.registry import get_llm
 from app.services.query_rewrite import QueryRewriter
@@ -51,6 +57,15 @@ CORPUS_PATH = Path("data/processed/corpus.jsonl")
 DEFAULT_QA = Path("data/eval_auto_qa.jsonl")
 REWRITE_CACHE = Path("data/eval_results/rewrites.json")
 RESULT_PATH = Path("data/eval_results/chunk-experiment.json")
+
+SEPARATOR_SETS = {"line": _SEPARATORS, "sentence": _SENTENCE_FIRST}
+"""구분자 우선순위 후보. `line`은 줄바꿈을 문장부호보다 먼저 본다(현재 기본값),
+`sentence`는 반대다.
+
+**구조 지표만으로는 못 정한다.** 문장 먼저로 바꾸면 기관 가이드의 '문장 중간에서
+끊긴 청크'가 30.9% → 10.7%로 줄지만, 04장에서 배운 대로 **모양이 좋아진 것과
+검색이 좋아진 것은 다르다.** 그래서 여기서 실제로 잰다.
+"""
 
 OVERLAP_THRESHOLD = 0.5
 """검색된 청크와 정답 구간이 이만큼 겹치면 정답으로 친다.
@@ -144,8 +159,10 @@ def covers(gold: Gold, passage: Passage, threshold: float) -> bool:
     return overlap / shorter >= threshold
 
 
-def build_passages(docs: list[dict], size: int, overlap: int) -> list[Passage]:
-    config = ChunkConfig(size=size, overlap=overlap)
+def build_passages(
+    docs: list[dict], size: int, overlap: int, separators: tuple[str, ...] = _SEPARATORS
+) -> list[Passage]:
+    config = ChunkConfig(size=size, overlap=overlap, separators=separators)
     passages: list[Passage] = []
     for doc in docs:
         cleaned = clean_for_chunking(doc["content"])
@@ -304,13 +321,14 @@ async def run(args: argparse.Namespace) -> int:
     corpus = gold_docs + others[: args.distractors]
 
     sizes = [int(s) for s in args.sizes.split(",")]
+    seps = SEPARATOR_SETS[args.separators]
     print(f"\n문항 {len(golds)} · 문서 {len(corpus)}건")
     print(f"  (정답 문서 {len(gold_docs)} + 방해 문서 {args.distractors})")
     print(f"청크 크기 후보: {sizes} · 겹침 {args.overlap} · 정답 인정 겹침 {args.threshold:.0%}\n")
 
     # 비용을 먼저 보여준다. 임베딩이 이 실험의 전부다.
     for size in sizes:
-        n = len(build_passages(corpus, size, args.overlap))
+        n = len(build_passages(corpus, size, args.overlap, seps))
         print(f"  size={size:>5} → 청크 {n:,}개")
     print()
 
@@ -321,7 +339,7 @@ async def run(args: argparse.Namespace) -> int:
 
     results: dict[int, dict] = {}
     for size in sizes:
-        passages = build_passages(corpus, size, args.overlap)
+        passages = build_passages(corpus, size, args.overlap, seps)
         print(f"  size={size} — 청크 {len(passages):,}개 임베딩 중…", flush=True)
         vectors = await embedder.embed([p.text for p in passages])
         results[size] = score(
@@ -378,6 +396,12 @@ def main() -> int:
     parser.add_argument("--qa", type=Path, default=DEFAULT_QA)
     parser.add_argument("--sizes", default="800,1200", help="쉼표로 구분한 청크 크기")
     parser.add_argument("--overlap", type=int, default=ChunkConfig().overlap)
+    parser.add_argument(
+        "--separators",
+        choices=sorted(SEPARATOR_SETS),
+        default="line",
+        help="구분자 우선순위. line=줄바꿈 먼저(현재), sentence=문장부호 먼저",
+    )
     parser.add_argument("--distractors", type=int, default=30, help="방해 문서 수")
     parser.add_argument("--top-k", type=int, default=10)
     parser.add_argument("--threshold", type=float, default=OVERLAP_THRESHOLD)

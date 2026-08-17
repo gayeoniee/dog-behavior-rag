@@ -2,6 +2,7 @@
 
 from app.services.chunking import (
     ChunkConfig,
+    _split_to_units,
     clean_for_chunking,
     looks_like_reference_list,
     split_text,
@@ -142,3 +143,31 @@ def test_reference_chunks_are_filtered_out():
     chunks = split_text(f"{body}\n\n{refs}", ChunkConfig(size=600, overlap=0, min_size=50))
     assert chunks
     assert not any("doi.org" in c and c.count("doi.org") >= 3 for c in chunks)
+
+
+class TestSeparatorPreservation:
+    """자른 자리의 문장부호를 잃지 않는다.
+
+    `str.split`은 구분자를 먹어치운다. `". "`로 자르면 **마침표까지 사라져서**
+    임베딩 입력이 훼손되고, "문장 끝에서 끝났나"를 재는 지표까지 거짓말을 한다.
+
+    실제로 이것 때문에 구분자 순서 실험이 무효였다 — 멀쩡히 잘린 문장이 소문자로
+    끝나서 '중간에서 끊김'으로 집계됐다. 고치니 42.0% → 21.0%가 됐다.
+    """
+
+    def test_문장부호는_앞_조각에_남는다(self):
+        units = _split_to_units("First one. Second one. Third one.", 20, (". ", " "))
+        assert units[0] == "First one."
+        assert units[0].endswith("."), "마침표가 사라지면 안 된다"
+
+    def test_공백류_구분자는_그대로_사라진다(self):
+        """줄바꿈은 되붙일 필요가 없다 — rstrip이 걷어낸다."""
+        assert _split_to_units("a\nb\nc", 2, ("\n", " ")) == ["a", "b", "c"]
+
+    def test_마지막_조각에는_없던_구분자를_붙이지_않는다(self):
+        units = _split_to_units("First. Second", 10, (". ", " "))
+        assert units[-1] == "Second", "원문에 없던 문장부호를 만들면 안 된다"
+
+    def test_한국어_종결어미도_보존된다(self):
+        units = _split_to_units("앉으라고 합니다. 기다립니다. 끝입니다.", 15, (". ", " "))
+        assert units[0].endswith("다.")

@@ -15,16 +15,33 @@ from dataclasses import dataclass
 __all__ = ["ChunkConfig", "clean_for_chunking", "looks_like_reference_list", "split_text"]
 
 
+_SEPARATORS = ("\n\n", "\n", ". ", " ")
+"""재귀 분할 우선순위. 문자 기준이지 단어 기준이 아니다 — 한국어 문서가 들어올
+예정이고 한국어는 공백 토큰화가 의미 단위와 맞지 않는다.
+
+**줄바꿈이 문장부호보다 먼저다.** PDF·HTML 추출물은 문장 중간에서 줄이 바뀌는
+일이 흔해서, 이 순서면 문장을 자르게 된다. 순서를 바꾼 대안이 아래에 있고,
+어느 쪽이 나은지는 `ChunkConfig.separators`로 갈아끼워 재면 된다.
+"""
+
+_SENTENCE_FIRST = ("\n\n", ". ", ".\n", "다. ", "요. ", "\n", " ")
+"""문장 경계를 줄바꿈보다 먼저 보는 순서.
+
+`". "`만으로는 부족하다 — PDF는 마침표 뒤에 바로 줄을 바꾸고(`.\\n`), 한국어는
+`"다."`·`"요."`로 끝나는데 그 뒤가 줄바꿈인 경우가 많다. 세 형태를 다 넣는다.
+
+⚠️ 이건 **후보**지 기본값이 아니다. 04장에서 배운 대로 청킹 변경은 지표로
+확인하기 전에는 채택하지 않는다.
+"""
+
+
 @dataclass(slots=True, frozen=True)
 class ChunkConfig:
     size: int = 1200
     overlap: int = 150
     min_size: int = 200
-
-
-_SEPARATORS = ("\n\n", "\n", ". ", " ")
-"""재귀 분할 우선순위. 문자 기준이지 단어 기준이 아니다 — 한국어 문서가 들어올
-예정이고 한국어는 공백 토큰화가 의미 단위와 맞지 않는다."""
+    separators: tuple[str, ...] = _SEPARATORS
+    """재귀 분할 구분자 우선순위. 실험에서 갈아끼운다 (`_SENTENCE_FIRST` 참조)."""
 
 _HYPHEN_WRAP = re.compile(r"(\w)-\n(\w)")
 _PAGE_NUM = re.compile(r"\d{1,4}")
@@ -82,7 +99,21 @@ def looks_like_reference_list(chunk: str) -> bool:
 
 
 def _split_to_units(text: str, size: int, separators: tuple[str, ...] = _SEPARATORS) -> list[str]:
-    """모든 조각이 `size` 이하가 될 때까지 구분자를 낮춰가며 재귀 분할한다."""
+    """모든 조각이 `size` 이하가 될 때까지 구분자를 낮춰가며 재귀 분할한다.
+
+    **자른 자리의 구분자를 앞 조각에 되붙인다.** `str.split`은 구분자를 먹어치우는데,
+    `". "`로 자르면 **마침표까지 같이 사라진다:**
+
+        'First one. Second one.'.split('. ')  →  ['First one', 'Second one.']
+                                                             ↑ 마침표 없음
+
+    줄바꿈이 사라지는 건 무해하지만 문장부호가 사라지는 건 손실이다. 임베딩 입력이
+    훼손되고, "이 청크가 문장 끝에서 끝났나"를 재는 지표까지 거짓말을 한다
+    (실제로 구분자 순서 실험이 이것 때문에 무효였다 — 멀쩡히 잘린 문장이
+    소문자로 끝나서 '중간에서 끊김'으로 집계됐다).
+
+    되붙인 뒤 `rstrip`하므로 공백류 구분자는 그대로 사라지고 문장부호만 남는다.
+    """
     if len(text) <= size:
         return [text] if text else []
 
@@ -91,14 +122,17 @@ def _split_to_units(text: str, size: int, separators: tuple[str, ...] = _SEPARAT
         return [text[i : i + size] for i in range(0, len(text), size)]
 
     sep, *rest = separators
+    parts = text.split(sep)
     units: list[str] = []
-    for piece in text.split(sep):
-        if not piece:
+    for index, piece in enumerate(parts):
+        # 마지막 조각 뒤에는 원래 구분자가 없었다.
+        restored = (piece + sep).rstrip() if index < len(parts) - 1 else piece
+        if not restored:
             continue
-        if len(piece) <= size:
-            units.append(piece)
+        if len(restored) <= size:
+            units.append(restored)
         else:
-            units.extend(_split_to_units(piece, size, tuple(rest)))
+            units.extend(_split_to_units(restored, size, tuple(rest)))
     return units
 
 
@@ -118,7 +152,7 @@ def split_text(text: str, config: ChunkConfig | None = None) -> list[str]:
     if not cleaned:
         return []
 
-    units = _split_to_units(cleaned, cfg.size)
+    units = _split_to_units(cleaned, cfg.size, cfg.separators)
     if not units:
         return []
 
