@@ -28,6 +28,7 @@
 
 import argparse
 import asyncio
+import hashlib
 import json
 import logging
 import sys
@@ -72,6 +73,19 @@ Rules:
   excerpt, write the parts that are there and leave the rest out. If nothing
   usable remains, output exactly: SKIP
 - No speaker labels, no timestamps, no markdown."""
+
+def prompt_fingerprint() -> str:
+    """지금 프롬프트의 지문. 정제 결과에 같이 저장한다.
+
+    **이어받기가 낡은 결과를 지키는 사고가 있었다.** 프롬프트를 고쳐 놓고 다시
+    돌렸는데, 이미 정제된 문서는 건너뛰므로 **아무것도 안 바뀌었다.** 로그는
+    "이미 정제된 184건은 건너뛴다"만 찍고 정상 종료했다.
+
+    이어받기는 할당량이 끊겼을 때를 위한 것이지 **프롬프트가 바뀐 뒤에도 옛
+    결과를 지키라는 뜻이 아니다.** 지문이 다르면 건너뛰지 않는다.
+    """
+    return hashlib.sha256(REFINE_SYSTEM.encode("utf-8")).hexdigest()[:12]
+
 
 CHUNK_CHARS = 3000
 """LLM에 한 번에 넘길 자막 길이.
@@ -189,7 +203,17 @@ async def run(args: argparse.Namespace) -> int:
     target = RAW_DIR / f"{args.source}.refined.json"
     done: dict[str, dict] = {}
     if target.is_file() and not args.dry_run:
-        done = {d["source_id"]: d for d in json.loads(target.read_text(encoding="utf-8"))}
+        stored = json.loads(target.read_text(encoding="utf-8"))
+        current = prompt_fingerprint()
+        stale = [d for d in stored if d.get("meta", {}).get("prompt") != current]
+        if stale and not args.keep_stale:
+            print(f"  ⚠️ 프롬프트가 바뀌었다 — 옛 프롬프트로 만든 {len(stale)}건을 다시 정제한다")
+            print("     (그대로 두려면 --keep-stale)")
+            done = {
+                d["source_id"]: d for d in stored if d.get("meta", {}).get("prompt") == current
+            }
+        else:
+            done = {d["source_id"]: d for d in stored}
         if done:
             print(f"  이미 정제된 {len(done)}건은 건너뛴다")
     docs = [d for d in docs if d["source_id"] not in done]
@@ -212,7 +236,10 @@ async def run(args: argparse.Namespace) -> int:
         if len(refined) < args.min_chars:
             print("      ⚠️ 너무 짧아 제외", flush=True)
             continue
-        out.append({**doc, "text": refined})
+        # 어느 프롬프트로 만든 결과인지 같이 남긴다 — 프롬프트를 고친 뒤 다시
+        # 돌릴 때 이어받기가 낡은 결과를 지키지 않도록.
+        meta = {**doc.get("meta", {}), "prompt": prompt_fingerprint()}
+        out.append({**doc, "text": refined, "meta": meta})
         # 한 편이 끝날 때마다 저장한다 — 할당량이 끊겨도 여기까지는 남는다.
         if not args.dry_run:
             target.write_text(
@@ -238,6 +265,11 @@ def main() -> int:
     parser.add_argument("--source", required=True, help="sources.yaml의 소스 id")
     parser.add_argument("--limit", type=int, default=0, help="앞에서 N건만")
     parser.add_argument("--dry-run", action="store_true", help="저장하지 않고 결과만 본다")
+    parser.add_argument(
+        "--keep-stale",
+        action="store_true",
+        help="프롬프트가 바뀌어도 옛 정제 결과를 그대로 둔다 (기본은 다시 정제)",
+    )
     parser.add_argument(
         "--inspect",
         action="store_true",
