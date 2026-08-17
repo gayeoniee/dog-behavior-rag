@@ -39,7 +39,7 @@ uv run python -m scripts.db.load_corpus           # ③④⑤ 청킹+임베딩+D
 ### ① 수집 — 인터넷에서 원본 받기
 
 **무엇이 정하나:** `data/sources.yaml`에 "어디서 무엇을 어떤 방법으로 가져올지"가
-적혀 있다. 코드가 아니라 설정 파일이다.
+적혀 있다. 설정 파일 하나로 끝난다.
 
 ```yaml
 - id: aaha-behavior-2015
