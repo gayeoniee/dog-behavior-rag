@@ -555,9 +555,20 @@
   volatility: stable
   license: mentor-approved-personal-use
   license_checked_at: 2026-08-15
+  # 일단 격리해서 받는다. 정제 결과를 읽고 판단한 뒤 answer로 올린다 —
+  # bodeum-tv에서 네 편을 빼야 했던 것처럼, 읽어보기 전에는 알 수 없다.
   corpus: observation
   meta:
     limit: 160
+    # **길이 편차가 크다** — 34초부터 25분까지 있고 중앙값이 3분 39초다.
+    # Q&A(2~3분 고정)와 달리 짧은 예고편·홍보 영상이 섞여 있어서 임계가 필요하다.
+    # 400자면 대략 1분 30초 미만을 걸러낸다.
+    min_chars: 400
+    # 153편 × 약 50초 = 두 시간쯤 걸린다. 이 값을 줄이지 말 것 —
+    # 빠르게 받으려던 시도가 일곱 번 실패했고, 결국 IP를 바꿔서 풀었다.
+    subtitle_delay: [40, 60]
+    video_delay: [3, 8]
+    request_delay: 4
 
 # ── 수집하지 않기로 한 소스 (기록) ─────────────────────────────
 #
