@@ -140,6 +140,7 @@ STRATA = {
     "all": None,
     "owner-docs": "보호자용 기관 문서 (ASPCA·RSPCA·VCA·AVSAB)",
     "papers": "PMC 논문",
+    "korean": "한국어 상담 자막 (보듬TV)",
 }
 """**층화 표집(stratified sampling).**
 
@@ -147,6 +148,9 @@ STRATA = {
 
     무작위 표본 (논문 96%)                OWNER 통과율  0/10
     보호자용 기관 문서 (ASPCA·RSPCA·VCA)  OWNER 통과율  14/15
+
+`korean` 층은 2026-08-17에 넣었다. 그 전까지 평가셋 293문항이 **전부 영어
+청크에서 나왔고**, 한국어 328편을 넣고도 자동 지표가 그걸 하나도 안 쟀다.
 
 **병목은 모델이 아니라 코퍼스다.** 더 강한 모델(Gemini)로 바꿔도 무작위 표본은
 0%였다. 논문 청크의 대부분이 방법론·통계·결과표라 보호자 질문의 근거가 못 된다.
@@ -266,6 +270,11 @@ async def sample_chunks(
             )
         elif stratum == "papers":
             stmt = stmt.where(Document.source_id.like("pmc-%"))
+        elif stratum == "korean":
+            # **평가셋 293문항이 전부 영어 청크에서 나왔다.** 한국어 문서 328편을
+            # 넣고도 자동 지표가 그걸 하나도 안 재고 있었다. 재는 대상이 코퍼스를
+            # 대표하지 않으면 지표가 코퍼스 변화에 반응하지 못한다.
+            stmt = stmt.where(Document.language == "ko")
         rows = (await session.execute(stmt)).all()
 
     skip = exclude or set()

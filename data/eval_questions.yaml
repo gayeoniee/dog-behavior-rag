@@ -191,3 +191,75 @@
   topic: pricing
   expect: out-of-scope
   keywords: []
+
+# ── 2026-08-17 확장 (21 → 32문항) ────────────────────────
+# 보듬TV 자막 332편이 들어오면서 코퍼스가 2.1배가 됐는데 평가셋은 21문항 그대로였다.
+# **1문항이 4.8%라 지표가 흔들린다.**
+#
+# 라벨은 짐작하지 않고 **전부 코퍼스를 조회해서 정했다.** 상위 3건을 읽고,
+# 애매하면 본문 검색으로 해당 주제 청크가 실제로 있는지 확인했다. 오늘
+# 뛰어오르기에서 "자료가 있는데 uncovered로 라벨돼 있던" 일을 겪었기 때문이다.
+
+- question: "입마개 씌우려니까 너무 싫어하는데 어떻게 익숙해지게 해요"
+  topic: muzzle-training
+  expect: covered   # "강아지 종이컵 입마개 연습" 0.641로 1위
+  keywords: [muzzle, basket muzzle, '입마개', '주둥이']
+
+- question: "실내에서 할 수 있는 후각 놀이 뭐가 있을까요"
+  topic: nosework
+  expect: covered   # 노즈워크 문서 0.600
+  keywords: [nose work, scent work, sniffing, enrichment, '노즈워크', '후각', '숨기기']
+
+- question: "산책 나가면 몇 걸음 못 가고 주저앉아요"
+  topic: walk-refusal
+  expect: covered   # "산책 중 갑자기 주저앉아" 0.627
+  keywords: [refuse to walk, freeze, '주저앉', '산책을 거부', '움직이지 않']
+
+- question: "3개월인데 사회화 어떻게 시켜야 하나요"
+  topic: puppy-socialization
+  expect: covered   # AVSAB Puppy Socialization 0.639
+  keywords: [socialization, socialisation, critical period, '사회화', '사회성']
+
+- question: "강아지가 자기 똥을 먹어요 왜 그러는 거예요"
+  topic: coprophagia
+  expect: covered   # 식분증 5청크 ("마운팅을 하는 반려견 교육 (feat.식분증)")
+  keywords: [coprophagia, eats excrement, eating feces, '식분', '대변을 먹', '배변을 먹']
+
+- question: "새로 온 강아지랑 원래 있던 애가 자꾸 싸워요"
+  topic: multi-dog-introduction
+  expect: covered   # 합사 6청크 ("시바이누 두 마리 교육하기")
+  keywords: [introducing dogs, resident dog, '합사', '두 마리', '다견']
+
+- question: "엘리베이터 타면 벌벌 떨어요"
+  topic: elevator-fear
+  expect: covered   # 엘리베이터 6청크
+  keywords: ['엘리베이터', '승강기']
+
+# ⚠️ **제목에 속을 뻔했다.** "강아지 차멀미 줄이는 팁"이라는 문서가 있어서 처음엔
+#   covered로 적었는데, 정제된 본문을 열어보니 **산책 훈련 얘기였다.** 영상 제목만
+#   차멀미고 내용에 그 부분이 안 남았다. 코퍼스 전체에서 `멀미`가 이 한 건뿐이다.
+#   **제목이 아니라 본문으로 확인해야 한다.**
+- question: "차만 타면 침 흘리고 토해요 어떻게 해야 하나요"
+  topic: car-travel
+  expect: uncovered
+  keywords: [car sickness, motion sickness, '차멀미', '멀미']
+
+# ── 서비스 범위 밖 (거절해야 통과) ──────────────────────
+# **일부러 코퍼스에 비슷한 문서가 있는 걸로 골랐다.** "훈련사 자격증"은
+# RSPCA의 "How To Find the Right Dog Trainer"가 0.511로 올라오는데, 그건
+# 훈련사를 **고르는** 법이지 **되는** 법이 아니다. 표면 유사도로 통과하는
+# 항목을 걸러내려면 이런 게 필요하다.
+- question: "강아지 보험 어디가 제일 괜찮아요?"
+  topic: insurance
+  expect: out-of-scope
+  keywords: []
+
+- question: "훈련사 자격증은 어떻게 따나요?"
+  topic: trainer-certification
+  expect: out-of-scope
+  keywords: []
+
+- question: "슬개골 탈구 수술은 어떤 방식으로 진행되나요?"
+  topic: surgical-procedure
+  expect: out-of-scope
+  keywords: []
