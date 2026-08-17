@@ -459,6 +459,16 @@ def merge_and_dedupe(paths: list[Path]) -> tuple[list[dict], int]:
     return kept, dropped
 
 
+def _loose(text: str, length: int = 120) -> str:
+    """문장부호·공백을 지운 형태. 청킹이 바뀌어도 살아남는 지문이다.
+
+    청크를 자를 때 마침표가 지워지던 버그를 고치자 저장된 발췌와 새 청크가
+    글자 단위로 달라졌다. 내용은 같은데 라벨을 못 찾는 상황이라, 비교를
+    글자에서 **내용**으로 옮긴다.
+    """
+    return re.sub(r"[^0-9A-Za-z가-힣]", "", text)[:length]
+
+
 async def remap(path: Path) -> int:
     """정답 라벨을 **지금 DB의 chunk_id로 다시 맞춘다.**
 
@@ -490,10 +500,26 @@ async def remap(path: Path) -> int:
         await engine.dispose()
 
     by_prefix = {c.content[:120]: c for c in chunks}
+    # **청킹이 바뀌면 글자 단위 일치가 깨진다.** 마침표를 보존하도록 고쳤더니
+    # 저장된 발췌(마침표가 지워진 옛 청크)가 어느 청크와도 정확히 안 맞아
+    # 293문항 중 47개가 엉뚱한 청크를 가리켰다. 그대로 재면 그만큼 실패로
+    # 잡혀서 "성능이 나빠졌다"로 읽힌다 — 라벨이 틀린 건데.
+    # 문장부호·공백을 지운 형태로도 찾는다.
+    by_loose = {_loose(c.content): c for c in chunks}
+    by_doc: dict[str, list] = {}
+    for c in chunks:
+        by_doc.setdefault(c.content_hash, []).append(c)
+
     fixed = unchanged = lost = 0
     for row in rows:
         key = row["chunk_excerpt"][:120]
-        found = by_prefix.get(key)
+        found = by_prefix.get(key) or by_loose.get(_loose(row["chunk_excerpt"]))
+        if found is None:
+            # 마지막 수단: 같은 문서 안에서 발췌를 가장 많이 품은 청크.
+            # 문서 해시는 청킹이 바뀌어도 그대로다.
+            needle = _loose(row["chunk_excerpt"])[:60]
+            pool = by_doc.get(row.get("doc_hash", ""), [])
+            found = next((c for c in pool if needle and needle in _loose(c.content)), None)
         if found is None:
             lost += 1
             continue

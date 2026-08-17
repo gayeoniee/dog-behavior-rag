@@ -26,6 +26,7 @@
 import argparse
 import asyncio
 import json
+import re
 import statistics
 import sys
 from dataclasses import asdict, dataclass
@@ -62,6 +63,11 @@ class Row:
     doc_rank: int
     """같은 문서 청크가 처음 나온 순위. 못 찾았으면 0."""
     top_title: str
+
+
+def _loose(text: str, length: int = 120) -> str:
+    """문장부호·공백을 지운 지문. 청킹이 바뀌어도 같은 내용이면 같은 값이다."""
+    return re.sub(r"[^0-9A-Za-z가-힣]", "", text)[:length]
 
 
 def reciprocal_rank(rank: int) -> float:
@@ -111,6 +117,25 @@ async def run(args: argparse.Namespace) -> int:
                 r.id: r.document_id
                 for r in (await session.execute(select(Chunk.id, Chunk.document_id))).all()
             }
+
+            # **라벨이 실제로 그 청크를 가리키는 문항만 잰다.** 재청킹을 하면
+            # 정답 청크가 통째로 사라지는 문항이 생기는데(경계가 바뀌므로),
+            # 그건 검색이 못 찾은 게 아니라 **정답이 없어진 것**이다. 섞어서
+            # 재면 코퍼스를 고칠 때마다 점수가 내려가고, 원인을 검색에서 찾게 된다.
+            body = {
+                i: c for i, c in (await session.execute(select(Chunk.id, Chunk.content))).all()
+            }
+
+            def aligned(qa: dict) -> bool:
+                needle = _loose(qa.get("chunk_excerpt", ""), 60)
+                return bool(needle) and needle in _loose(body.get(qa["chunk_id"], ""), 10**6)
+
+            usable = [qa for qa in pairs if aligned(qa)]
+            if len(usable) < len(pairs):
+                dropped = len(pairs) - len(usable)
+                print(f"  ⚠️ 라벨이 깨진 {dropped}문항 제외 (재청킹으로 정답 청크가 사라짐)")
+                print(f"     {len(usable)}문항으로 잰다\n")
+                pairs = usable
 
             store = PgVectorStore(
                 session,
