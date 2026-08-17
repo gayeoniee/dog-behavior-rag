@@ -6,7 +6,7 @@ HNSW 인덱스가 `vector_cosine_ops`이므로 둘이 일치해야 ANN 결과가
 """
 
 from pgvector.sqlalchemy import Vector
-from sqlalchemy import func, select
+from sqlalchemy import func, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.models import Chunk, Document
@@ -46,8 +46,10 @@ class PgVectorStore:
         guide_boost: float = 0.03,
         max_per_document: int = 2,
         candidate_multiplier: int = 4,
+        ef_search: int = 400,
     ) -> None:
         self._session = session
+        self._ef_search = ef_search
         self._authority_boost = authority_boost
         self._guide_boost = guide_boost
         self._max_per_document = max_per_document
@@ -84,6 +86,11 @@ class PgVectorStore:
 
         **점수 보정은 `rank`가 한다** — 후보에 `background`를 붙여 넘기면 된다.
         """
+        # **탐색폭을 넓히지 않으면 진짜 상위 후보를 놓친다.** 기본값 40으로는
+        # 한국어 청크(전체의 2.9%)에 그래프가 닿지 못해, 유사도 0.62짜리가
+        # 빠지고 0.52짜리 영어 논문이 1위로 올라왔다. SET LOCAL이라 이 트랜잭션에만
+        # 적용된다 (config.hnsw_ef_search 독스트링에 실측값이 있다).
+        await self._session.execute(text(f"SET LOCAL hnsw.ef_search = {int(self._ef_search)}"))
         background = await self._background(embedding)
         candidates: list[Candidate] = []
         for language in ("en", "ko"):

@@ -28,39 +28,39 @@
 - question: "강아지가 초인종 소리만 들리면 미친듯이 짖어요"
   topic: barking
   expect: covered
-  keywords: [bark, alarm, territorial, doorbell]
+  keywords: [bark, alarm, territorial, doorbell, '짖는', '짖음', '초인종', '경계']
 
 - question: "혼자 두고 나가면 집안 물건을 다 물어뜯어놔요"
   topic: destructive-chewing
   expect: covered
-  keywords: [destructive, chew, separation]
+  keywords: [destructive, chew, separation, '물어뜯', '씹는', '분리불안']
 
 # anxiety(9.4%)는 코퍼스 전반에 깔려 있어 분리불안이 아닌 근거도 통과시킨다.
 # 구절 "separation anxiety"로 바꾼다.
 - question: "출근하려고 하면 따라다니면서 낑낑대고 난리나요"
   topic: separation-anxiety
   expect: covered
-  keywords: [separation anxiety, separation, departure, alone]
+  keywords: [separation anxiety, separation, departure, alone, '분리불안', '혼자 있', '외출']
 
 - question: "손을 자꾸 입으로 깨물어요 아직 아기라서 그런가요"
   topic: mouthing
   expect: covered
-  keywords: [mouthing, nipping, bite inhibition, play biting]
+  keywords: [mouthing, nipping, bite inhibition, play biting, '입질', '깨무', '무는 행동']
 
 - question: "산책하다가 다른 개만 보면 짖고 달려들어서 무서워요"
   topic: reactivity
   expect: covered
-  keywords: [bark, desensitization, counterconditioning, threshold]
+  keywords: [bark, desensitization, counterconditioning, threshold, '둔감화', '역조건', '달려드']
 
 - question: "얌전하던 애가 요즘 갑자기 공격적으로 변했어요 병원 가야 하나요"
   topic: medical-differential
   expect: covered
-  keywords: [medical, pain, veterinarian, rule out, underlying]
+  keywords: [medical, pain, veterinarian, rule out, underlying, '수의사', '질병', '통증', '병원']
 
 - question: "나이 든 강아지가 밤에 안 자고 계속 서성거려요"
   topic: cognitive-dysfunction
   expect: covered
-  keywords: [cognitive, dysfunction, senior, aging, sleep]
+  keywords: [cognitive, dysfunction, senior, aging, sleep, '인지기능', '노령', '치매', '밤에']
 
 # fear(16.7%)·aggression(13.6%)을 뺐다 — 평가셋에서 가장 헐거운 키워드였다.
 # 처벌의 **결과**를 가리키는 말이라 처벌을 다루지 않는 근거도 통과시킨다.
@@ -68,19 +68,19 @@
 - question: "혼내면 그때만 멈추고 또 그래요 벌 주는 게 맞나요?"
   topic: punishment
   expect: covered
-  keywords: [punishment, aversive, positive punishment]
+  keywords: [punishment, aversive, positive punishment, '처벌', '혐오', '체벌', '혼내']
 
 # stress(10.5%)·signal은 뺐다. 이 질문의 핵심은 "하품·입술 핥기가 신호인가"라
 # 그 행동을 실제로 언급해야 근거다. 스트레스를 말하는 문서는 코퍼스에 널려 있다.
 - question: "강아지가 자꾸 하품하고 입술을 핥아요 스트레스인가요"
   topic: stress-signals
   expect: covered
-  keywords: [yawn, lip lick, licking lips, calming signal, appeasement]
+  keywords: [yawn, lip lick, licking lips, calming signal, appeasement, '하품', '입술을 핥', '카밍 시그널', '진정 신호']
 
 - question: "꼬리 흔드는데 왜 으르렁거리죠? 좋다는 거 아닌가요"
   topic: body-language
   expect: covered
-  keywords: [tail, growl, body language, arousal]
+  keywords: [tail, growl, body language, arousal, '꼬리', '으르렁', '몸짓 언어']
 
 # ── 아직 전용 문서가 없는 주제 (보강 목표) ──────────────
 # 자료를 넣으면 expect를 covered로 바꾸고 리포트를 다시 돌린다.
@@ -88,12 +88,12 @@
 - question: "6개월 강아지인데 배변을 자꾸 아무데나 해요 어떻게 가르쳐요"
   topic: house-training
   expect: covered
-  keywords: [house training, toilet, housetraining, elimination, schedule]
+  keywords: [house training, toilet, housetraining, elimination, schedule, '배변 훈련', '배변 패드', '실외 배변', '화장실']
 
 - question: "집에 들어오면 너무 흥분해서 막 뛰어올라요"
   topic: jumping-up
   expect: uncovered
-  keywords: [jumping up, jump, four on the floor, greeting]
+  keywords: [jumping up, jump, four on the floor, greeting, '뛰어오르', '점프', '달려들어']
 
 # 2026-08-12 RSPCA walknicely 추가로 승격
 - question: "산책할 때 줄을 너무 당겨서 팔이 아파요"
@@ -101,7 +101,7 @@
   expect: covered
   # 맨 lead는 leading·misleading에 걸린다(경계 매칭도 앞에서 시작하는 건 못 막는다).
   # RSPCA가 영국식으로 "lead"를 쓰므로 구절 "loose lead"·"on the lead"로 남긴다.
-  keywords: [leash, pulling, loose leash, loose lead, on the lead, harness]
+  keywords: [leash, pulling, loose leash, loose lead, on the lead, harness, '줄을 당기', '줄당김', '리드줄', '목줄']
 
 # RSPCA "Train Your Dog To Come When Called" 문서가 있는데도 논문에 밀려
 # 상위에 못 온다. 자료 문제가 아니라 **랭킹 문제**라서 covered로 둔다 —
@@ -117,7 +117,7 @@
 - question: "이름 불러도 안 와요 오라고 하면 도망가요"
   topic: recall
   expect: covered
-  keywords: [recall, come when called, comes when called, coming back]
+  keywords: [recall, come when called, comes when called, coming back, '이리와', '부르면 오', '리콜', '이름을 부르']
 
 # ASPCA 공격성 문서 + RSPCA leave 문서가 이 주제를 덮는지 평가셋이 판정하게 둔다.
 # 전용 문서는 여전히 없다 — 실패하면 그게 정직한 정보다.
@@ -126,7 +126,7 @@
   expect: covered
   # trade는 trade-off에, leave는 "leaving the dog alone"에 걸린다(분리불안 문서에
   # 흔하다). 실제 표현인 "trade up"·"leave it"으로 바꾸고 주제어 guard를 넣는다.
-  keywords: [resource guarding, food guarding, guard, possessive, trade up, leave it]
+  keywords: [resource guarding, food guarding, guard, possessive, trade up, leave it, '소유 공격', '밥그릇', '뺏기', '지키려']
 
 # 2026-08-13 uncovered → covered. **자료 문제가 아니라 랭킹 문제**라서 리콜과 같이
 # 승격한다. ASPCA 분리불안 문서 안에 "To Crate or Not to Crate?" 단락이 통째로 있고
@@ -146,7 +146,7 @@
 - question: "켄넬에 들어가기 싫어하는데 크레이트 훈련 어떻게 시작해요"
   topic: crate-training
   expect: covered
-  keywords: [crate, kennel]
+  keywords: [crate, kennel, '켄넬', '크레이트', '집']
 
 # 2026-08-13 추가. 사용자가 실제로 물어서 코퍼스를 뒤져보고 넣었다.
 # **반쪽만 있는 주제**다 — "혼자 있을 때 배변한다"는 분리불안 증상으로 잘 다뤄지지만
@@ -156,7 +156,7 @@
 - question: "혼자 있을 때는 하루 종일 대변을 안 봐요 보호자가 있을 때만 봐요"
   topic: inhibited-elimination
   expect: uncovered
-  keywords: [holding, inhibited, refuse to eliminate]
+  keywords: [holding, inhibited, refuse to eliminate, '참는', '배변을 참', '억제']
 
 # ── 서비스 범위 밖 (거절해야 통과) ──────────────────────
 - question: "고양이 화장실 모래는 어떤 게 제일 좋아요?"

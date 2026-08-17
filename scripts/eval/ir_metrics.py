@@ -143,6 +143,7 @@ async def run(args: argparse.Namespace) -> int:
                 guide_boost=settings.guide_boost,
                 max_per_document=args.max_per_doc or settings.max_chunks_per_document,
                 candidate_multiplier=settings.candidate_multiplier,
+                ef_search=settings.hnsw_ef_search,
             )
             for i, qa in enumerate(pairs, 1):
                 question = qa["question"]

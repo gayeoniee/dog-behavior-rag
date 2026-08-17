@@ -55,6 +55,7 @@ def _store(settings: Settings, session: AsyncSession) -> PgVectorStore:
         guide_boost=settings.guide_boost,
         max_per_document=settings.max_chunks_per_document,
         candidate_multiplier=settings.candidate_multiplier,
+        ef_search=settings.hnsw_ef_search,
     )
 
 
