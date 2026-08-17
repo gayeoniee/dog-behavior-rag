@@ -49,14 +49,3 @@ web/out/
 .vscode/
 .idea/
 .DS_Store
-
-#   core.symlinks=false 라 **커밋하면 경로가 적힌 텍스트 파일로 깨진다.**
-#   새 기기에서는 아래 명령으로 링크만 다시 만든다.
-#
-#   ⚠️ `--skill '*'` 를 쓰지 말 것. ai-ready가 딸려 오는데, 그 SKILL.md에
-#      "불필요한 환경변수면 .env를 제거하라"는 지시가 있다. 이 프로젝트의
-#      .env에는 Gemini 키와 DATABASE_URL이 있고 git에 없어서 되돌릴 수 없다.
-#      쓸 스킬을 이름으로 지정한다:
-#
-#   npx -y skills add kargnas/skills --skill git-lore --skill humanizer-kill-gpt --skill skill-manager --skill skill-prompter --skill vscode-ready
-.claude/skills/
