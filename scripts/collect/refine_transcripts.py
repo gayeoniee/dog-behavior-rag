@@ -119,20 +119,28 @@ def split_for_llm(text: str, size: int) -> list[str]:
 
 
 async def refine_one(llm: LLMClient, text: str) -> str:
+    """한 편을 정제한다. **LLM이 죽으면 예외를 그대로 올린다.**
+
+    예전에는 호출 실패를 잡아서 `continue`했는데, 그러면 빈 문자열이 돌아오고
+    호출부가 그걸 "정제 결과가 너무 짧다"로 읽어 **멀쩡한 문서를 버렸다.**
+    할당량이 끊긴 순간부터 남은 수십 편이 전부 "내용 없음"으로 찍힌다:
+
+        [119/202]  621자 → 0자 (0%)   ⚠️ 너무 짧아 제외
+
+    **실패가 성공처럼 보이는 게 가장 나쁘다.** 파일에는 안 써지므로 다시 돌리면
+    복구되지만, 나중에 "왜 202편 중 118편뿐이지?"에서 원인을 못 찾는다.
+    이제는 위로 던져서 호출부가 멈추고 이유를 말한다.
+    """
     parts: list[str] = []
     for piece in split_for_llm(text, CHUNK_CHARS):
-        try:
-            raw = await llm.generate(
-                f"Transcript excerpt:\n{piece}",
-                system=REFINE_SYSTEM,
-                max_tokens=1200,
-                # 정리 작업이지 판단이 아니다. 추론을 켜면 사고과정이 예산을 먹어
-                # 본문이 잘린다 (CLAUDE.md의 로컬 LLM 항목).
-                reasoning=False,
-            )
-        except LLMUnavailableError as exc:
-            logger.warning("정제 호출 실패: %s", exc)
-            continue
+        raw = await llm.generate(
+            f"Transcript excerpt:\n{piece}",
+            system=REFINE_SYSTEM,
+            max_tokens=1200,
+            # 정리 작업이지 판단이 아니다. 추론을 켜면 사고과정이 예산을 먹어
+            # 본문이 잘린다 (CLAUDE.md의 로컬 LLM 항목).
+            reasoning=False,
+        )
         cleaned = raw.strip()
         if cleaned and cleaned != "SKIP":
             parts.append(cleaned)
@@ -226,7 +234,17 @@ async def run(args: argparse.Namespace) -> int:
     out: list[dict] = list(done.values())
     for i, doc in enumerate(docs, 1):
         before = len(doc["text"])
-        refined = await refine_one(llm, doc["text"])
+        try:
+            refined = await refine_one(llm, doc["text"])
+        except LLMUnavailableError as exc:
+            # **할당량이 끊기면 멈춘다.** 계속 돌아봐야 한 건도 못 만들고,
+            # 남은 문서가 전부 "너무 짧아 제외"로 찍혀 진짜 이유를 가린다.
+            print(f"\n✗ LLM을 쓸 수 없어 {i - 1}편에서 멈춘다: {str(exc)[:120]}", file=sys.stderr)
+            print(f"  여기까지 {len(out)}편은 저장돼 있다 — 다시 실행하면 이어서 받는다")
+            print("  Gemini 무료 티어는 하루 단위로 초기화된다. LM Studio로 마저 하려면")
+            print("  .env의 LLM_BASE_URL을 로컬로 바꾸면 되지만, 한 코퍼스에 품질이")
+            print("  다른 문서가 섞이므로 되도록 같은 모델로 끝내는 게 좋다.")
+            return 1
         ratio = len(refined) / before if before else 0
         print(
             f"  [{i:>2}/{len(docs)}] {before:>5}자 → {len(refined):>5}자 "
