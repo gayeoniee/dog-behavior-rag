@@ -43,18 +43,34 @@ logger = logging.getLogger(__name__)
 REFINE_SYSTEM = """You clean up a Korean dog-training consultation transcript so it \
 can be used as reference material.
 
-Rewrite the excerpt keeping ONLY what a dog owner could learn from:
-- the dog's problem or situation
-- what the trainer observed and why the dog behaves that way
-- what the trainer told the owner to do, and how
+This is REFERENCE MATERIAL, not a summary. Another dog owner with the same
+problem must be able to act on it without watching the video.
+
+For each problem discussed, write a paragraph that carries all three of:
+
+1. WHAT the dog does — the observable behavior and when it happens
+2. WHY it happens — the trainer's actual explanation of the cause
+3. WHAT TO DO — the concrete procedure, in order, with the details that make
+   it reproducible (where to stand, what to hold, how long, what to do when
+   the dog reacts, what NOT to do)
 
 Rules:
+- **Never keep proper names.** Write 강아지 / 반려견 for the dog and 보호자 for
+  the owner, even when the transcript uses a name. A document that says
+  "시루가 주저앉습니다" cannot be found by someone asking about their own dog.
+- **Keep the specifics that make advice usable.** "간식을 코앞에 대고 천천히
+  바닥으로 내립니다" is usable; "긍정적으로 유도합니다" is not. Numbers,
+  distances, repetitions, and durations MUST survive.
+- **Do not compress steps into a result.** If the trainer walks through five
+  moves, write five moves. Losing the order makes it unusable.
 - Write in Korean, in plain declarative sentences with proper sentence endings.
 - Fix obvious speech-recognition errors from context (수혜사→수의사, 홀련→훈련).
 - Drop greetings, introductions, sponsor reads, laughter, filler, and chit-chat.
-- Do NOT invent advice that is not in the excerpt. If the excerpt has no usable
-  content, output exactly: SKIP
-- Keep the trainer's actual reasoning. Do not compress it into a slogan.
+- Drop the specific dog's breed, age, and backstory unless the advice depends
+  on it (then write it as a condition: "어린 강아지의 경우", "대형견은").
+- Do NOT invent anything. If one of the three parts is missing from the
+  excerpt, write the parts that are there and leave the rest out. If nothing
+  usable remains, output exactly: SKIP
 - No speaker labels, no timestamps, no markdown."""
 
 CHUNK_CHARS = 3000
@@ -66,8 +82,26 @@ CHUNK_CHARS = 3000
 
 
 def split_for_llm(text: str, size: int) -> list[str]:
-    """길이로만 자른다. 자막에는 문장 경계가 없어서 다른 기준이 없다."""
-    return [text[i : i + size] for i in range(0, len(text), size)] or [""]
+    """공백 경계에서 자른다. 자막에는 문장 경계가 없어 길이가 기준이지만,
+    **단어 중간에서 끊으면 그 단어가 통째로 망가진다.**
+
+    실제로 "긴장성 부동화"가 조각 경계에 걸려 뒷조각이 "성 부동화가 너무 잦게
+    일어나"로 시작했다. 조각마다 따로 정제하므로 LLM은 앞뒤를 볼 수 없고,
+    잘린 단어를 그대로 살려 쓴다. 공백까지만 물러나면 이 손실이 사라진다.
+    """
+    pieces: list[str] = []
+    start = 0
+    while start < len(text):
+        end = start + size
+        if end >= len(text):
+            pieces.append(text[start:])
+            break
+        # 공백을 못 찾으면(공백 없는 긴 덩어리) 그냥 자른다 — 무한 루프를 막는다.
+        space = text.rfind(" ", start + size // 2, end)
+        cut = space if space != -1 else end
+        pieces.append(text[start:cut])
+        start = cut + 1 if space != -1 else cut
+    return pieces or [""]
 
 
 async def refine_one(llm: LLMClient, text: str) -> str:
