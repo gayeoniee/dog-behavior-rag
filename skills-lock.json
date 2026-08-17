@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "skills": {
+    "ai-ready": {
+      "source": "kargnas/skills",
+      "sourceType": "github",
+      "skillPath": "skills/ai-ready/SKILL.md",
+      "computedHash": "200fe135fd1bf5098dc90a226406808590df1355968fb5158b1f42fab0b09734"
+    },
+    "git-lore": {
+      "source": "kargnas/skills",
+      "sourceType": "github",
+      "skillPath": "skills/git-lore/SKILL.md",
+      "computedHash": "40a356bb10c35598b3708c78438938b2b165881a366b48270317faf8703db43e"
+    },
+    "humanizer-kill-gpt": {
+      "source": "kargnas/skills",
+      "sourceType": "github",
+      "skillPath": "skills/humanizer-kill-gpt/SKILL.md",
+      "computedHash": "4f3097266b7cfb3ff62dbc64fb29f79e7aa8b68ae6c8d5ababaaa39b6d82bea6"
+    },
+    "skill-manager": {
+      "source": "kargnas/skills",
+      "sourceType": "github",
+      "skillPath": "skills/skill-manager/SKILL.md",
+      "computedHash": "075ac5e2d54c0cad86834352573665aefd382131f080f17acce399063f301379"
+    },
+    "skill-prompter": {
+      "source": "kargnas/skills",
+      "sourceType": "github",
+      "skillPath": "skills/skill-prompter/SKILL.md",
+      "computedHash": "dfe3a6fb3c86ce51a8a475f3025275ffcd2d2f1e68925be6a2da56ed3ca232cf"
+    },
+    "vscode-ready": {
+      "source": "kargnas/skills",
+      "sourceType": "github",
+      "skillPath": "skills/vscode-ready/SKILL.md",
+      "computedHash": "904283d1a7145c192f01bcd06cb7ee4a793f870d33d24711a593cd6e2b277158"
+    }
+  }
+}
