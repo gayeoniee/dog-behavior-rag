@@ -87,7 +87,7 @@ uv run python -m scripts.eval.embedding_experiment --models bge-m3 --distractors
 
 ## 4. 결과
 
-**293문항 · 방해 문서 150건 · 청크 6,696개**
+**293문항, 방해 문서 150건, 청크 6,696개**
 
 | 후보 | 차원 | hit@1 | hit@5 | hit@10 | MRR |
 |---|---|---|---|---|---|
