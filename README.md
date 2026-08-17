@@ -271,7 +271,7 @@ uv run python -m scripts.collect.check_license
 
 - **`license: pending-check`인 소스는 fetch가 거부한다.** 위 절차로 확인하고
   `sources.yaml`의 `license`를 갱신해야 수집된다. `--skip-pending`으로 건너뛸 수는 있다.
-- HTML 수집은 robots.txt를 준수하고(거부 시 스킵이 아니라 **에러**), 요청 간 1초 지연을 둔다.
+- HTML 수집은 robots.txt를 준수하고(거부 시 **에러**로 멈춘다), 요청 간 1초 지연을 둔다.
   단 **robots.txt 허용이 곧 ToS 허용은 아니다** — ASPCA·MSD는 robots.txt가 전부 허용인데
   ToS가 자동 수집을 금지한 사례다. 둘 다 확인해야 한다.
 - 자동 수집이 막힌 사이트(ToS 금지)나 로그인이 필요한 사이트(동물사랑배움터 등)는 파일을
@@ -314,7 +314,7 @@ demo/streamlit_app.py       테스트용 UI
 
 ## LLM
 
-`openai-compatible` provider는 특정 서비스가 아니라 **프로토콜**에 붙는다.
+`openai-compatible` provider는 **프로토콜**에 붙는다.
 Gemini · LM Studio · Ollama · llama.cpp · vLLM · Groq · OpenRouter가 전부 같은
 `/v1/chat/completions`를 쓰므로 **`LLM_BASE_URL`만 바꾸면 된다** (코드 변경 없음).
 
@@ -381,8 +381,8 @@ gemma-4-e2b는 사고과정을 먼저 뱉는다. 사고과정도 completion 토�
     생성          25 tok/s
     입력 prefill  1,600토큰에 3초
 
-**응답 시간이 전부 "생성한 토큰 수"에 묶여 있다.** 근거 선별이 8~12초인 것은 입력이
-커서가 아니라 사고과정 토큰을 250~300개 만들기 때문이다. 그래서 입력을 줄이는 것
+**응답 시간이 전부 "생성한 토큰 수"에 묶여 있다.** 근거 선별이 8~12초인 것은
+사고과정 토큰을 250~300개 만들기 때문이다. 그래서 입력을 줄이는 것
 (`top_k`, 발췌 길이)은 효과가 거의 없고, 줄일 수 있는 건 토큰 수뿐이다.
 
 **LM Studio 로드 옵션으로는 더 못 얻는다. 다시 시도하지 말 것:**
