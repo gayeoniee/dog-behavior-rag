@@ -77,7 +77,11 @@ def rag_service(settings: SettingsDep, session: SessionDep, embedder: EmbedderDe
         default_top_k=settings.top_k,
         # 재작성에도 같은 LLM을 쓴다. 별도 모델을 둘 이유가 없고, 서버가 꺼져 있으면
         # QueryRewriter가 원문으로 폴백하므로 검색은 계속 동작한다.
-        rewriter=QueryRewriter(llm, enabled=settings.query_rewrite_enabled),
+        rewriter=QueryRewriter(
+            llm,
+            enabled=settings.query_rewrite_enabled,
+            bilingual=settings.bilingual_query_enabled,
+        ),
         selector=EvidenceSelector(llm, enabled=settings.evidence_select_enabled),
     )
 
@@ -109,7 +113,11 @@ def factcheck_service(
         store=_store(settings, session),
         llm=llm,
         # 검증할 주장은 대개 기법에 대한 것이라 재작성이 chat보다 더 중요하다.
-        rewriter=QueryRewriter(llm, enabled=settings.query_rewrite_enabled),
+        rewriter=QueryRewriter(
+            llm,
+            enabled=settings.query_rewrite_enabled,
+            bilingual=settings.bilingual_query_enabled,
+        ),
         default_top_k=settings.top_k,
     )
 

@@ -5,6 +5,8 @@ HNSW 인덱스가 `vector_cosine_ops`이므로 둘이 일치해야 ANN 결과가
 한쪽만 바꾸면 조용히 엉뚱한 순위가 나온다.
 """
 
+from collections.abc import Mapping
+
 from pgvector.sqlalchemy import Vector
 from sqlalchemy import func, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -78,13 +80,20 @@ class PgVectorStore:
         await self._session.flush()
         return len(rows)
 
-    async def search(self, embedding: list[float], top_k: int) -> list[SearchHit]:
+    async def search(
+        self, embedding: list[float] | Mapping[str, list[float]], top_k: int
+    ) -> list[SearchHit]:
         """언어별로 후보를 뽑고, 각 언어의 **배경 유사도를 뺀 뒤** 한 줄로 세운다.
 
         **언어를 나눠 조회하는 이유:** 한 번에 뽑으면 한국어가 상위를 독식해서
         (청크의 1.7%가 상위 5위의 41%) 영어 후보가 애초에 안 딸려온다. 독식을
         고치려는데 독식된 목록으로 고치는 셈이 된다. 검색은 수십 ms라 두 번
         도는 비용은 무시할 만하다.
+
+        **질의도 언어마다 다를 수 있다.** 매핑을 주면 각 언어를 그 언어의 질의로
+        찾는다 — 영어 논문은 영어 기술표현으로, 한국어 자막은 한국어 문서체로.
+        한 벡터로 둘 다 치면 어느 쪽도 제대로 못 친다(`query_rewrite.SearchQuery`).
+        벡터 하나를 주면 예전처럼 모든 언어에 같은 질의를 쓴다.
 
         **점수 보정은 `rank`가 한다** — 후보에 `background`를 붙여 넘기면 된다.
         """
@@ -93,12 +102,13 @@ class PgVectorStore:
         # 빠지고 0.52짜리 영어 논문이 1위로 올라왔다. SET LOCAL이라 이 트랜잭션에만
         # 적용된다 (config.hnsw_ef_search 독스트링에 실측값이 있다).
         await self._session.execute(text(f"SET LOCAL hnsw.ef_search = {int(self._ef_search)}"))
-        background = await self._background(embedding)
         candidates: list[Candidate] = []
         for language in ("en", "ko"):
-            candidates.extend(
-                await self._candidates(embedding, top_k, language, background.get(language, 0.0))
-            )
+            vector = self._vector_for(embedding, language)
+            # **배경도 그 언어의 질의로 잰다.** "자기 언어 배경보다 얼마나 튀는가"가
+            # 보정의 뜻인데, 질의가 다르면 배경도 그 질의 기준이어야 뺄 수 있다.
+            background = (await self._background(vector)).get(language, 0.0)
+            candidates.extend(await self._candidates(vector, top_k, language, background))
         return rank(
             candidates,
             top_k,
@@ -107,6 +117,17 @@ class PgVectorStore:
             max_per_document=self._max_per_document,
             background_weight=self._background_weight,
         )
+
+    @staticmethod
+    def _vector_for(
+        embedding: list[float] | Mapping[str, list[float]], language: str
+    ) -> list[float]:
+        """그 언어로 검색할 벡터. 매핑에 그 언어가 없으면 아무거나(=단일 질의)."""
+        if not isinstance(embedding, Mapping):
+            return embedding
+        if language in embedding:
+            return embedding[language]
+        return next(iter(embedding.values()))
 
     async def _background(self, embedding: list[float]) -> dict[str, float]:
         """언어별 배경 유사도 = 질문 벡터와 그 언어 중심 벡터의 **내적**."""

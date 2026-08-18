@@ -13,7 +13,7 @@ from app.services.embeddings.base import Embedder
 from app.services.evidence_select import EvidenceSelector
 from app.services.llm.base import LLMClient
 from app.services.plain_text import strip_markdown, trim_to_form
-from app.services.query_rewrite import QueryRewriter, format_history
+from app.services.query_rewrite import QueryRewriter, embed_by_language, format_history
 from app.services.vectorstore.base import SearchHit, VectorStore
 
 logger = logging.getLogger(__name__)
@@ -212,16 +212,17 @@ class RagService:
         # 프롬프트만 키우고 최근 흐름을 흐린다.
         recent = list(history)[-MAX_HISTORY_TURNS:]
 
-        # 1) 검색용 질의 재작성 (한국어 → 영어 기술표현).
-        #    bge-m3가 기법 명칭을 교차언어로 못 넘기기 때문 — query_rewrite.py 참조.
+        # 1) 검색용 질의 재작성 — **언어마다 하나씩** 만든다.
+        #    영어 논문은 영어 기술표현으로, 한국어 자막은 한국어 문서체로 찾는다.
+        #    한 벡터에 섞으면 어느 쪽도 제대로 못 친다 — query_rewrite.py 참조.
         #    실패해도 원문이 그대로 돌아오므로 검색은 계속된다.
         search_query = await self._rewriter.rewrite(question, recent)
 
-        # 2) 질의 임베딩
-        query_vector = await self._embedder.embed_query(search_query)
+        # 2) 질의 임베딩 (같은 문자열이면 한 번만 부른다)
+        vectors = await embed_by_language(self._embedder, search_query)
 
         # 3) 유사 청크 검색
-        hits = await self._store.search(query_vector, k)
+        hits = await self._store.search(vectors, k)
 
         # 4) 질문에 실제로 답하는 근거만 남긴다. 검색은 항상 top_k를 돌려주므로
         #    이 단계가 없으면 코퍼스에 없는 주제에도 "가장 덜 무관한" 5건으로

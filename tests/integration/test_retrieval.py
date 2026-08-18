@@ -22,6 +22,7 @@ from app.db.session import create_engine, create_session_factory
 from app.services.embeddings.base import EmbeddingUnavailableError
 from app.services.embeddings.registry import get_embedder
 from app.services.ingest_service import content_hash
+from app.services.query_rewrite import embed_by_language
 from app.services.vectorstore.pgvector import PgVectorStore
 
 yaml = pytest.importorskip("yaml", reason="pyyaml 미설치 — uv sync --extra collect")
@@ -228,13 +229,15 @@ async def test_coverage_question_with_rewriting(
     """
     rewritten = await rewriter.rewrite(question_entry["question"])
     async with session_factory() as session:
-        hits = await PgVectorStore(session).search(await embedder.embed_query(rewritten), TOP_K)
+        hits = await PgVectorStore(session).search(
+            await embed_by_language(embedder, rewritten), TOP_K
+        )
 
     blob = " ".join(h.content.lower() for h in hits)
     found = [k for k in question_entry["keywords"] if k.lower() in blob]
     assert found, (
         f"[{question_entry['axis']}] {question_entry['question']}\n"
-        f"  재작성: {rewritten.splitlines()[0]}\n"
+        f"  재작성: EN={rewritten.en.splitlines()[0]!r} KO={rewritten.ko!r}\n"
         f"  키워드 {question_entry['keywords']} 중 상위 {TOP_K}청크에서 하나도 못 찾음\n"
         f"  상위 문서: {[h.document_title[:40] for h in hits]}"
     )

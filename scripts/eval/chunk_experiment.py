@@ -254,9 +254,11 @@ async def cached_rewrites(questions: list[str], settings) -> dict[str, str]:
     todo = [q for q in questions if q not in cache]
     if todo:
         print(f"  질의 재작성 {len(todo)}건 (캐시 {len(cache)}건 재사용)")
-        rewriter = QueryRewriter(get_llm(settings), enabled=True)
+        # 이 실험의 변수는 **청킹**이다. 질의 전략까지 같이 바뀌면 비교가 깨지고,
+        # 캐시(문자열 하나)도 못 쓴다. 영어 한 줄로 고정한다.
+        rewriter = QueryRewriter(get_llm(settings), enabled=True, bilingual=False)
         for i, q in enumerate(todo, 1):
-            cache[q] = await rewriter.rewrite(q)
+            cache[q] = (await rewriter.rewrite(q)).en
             print(f"    [{i}/{len(todo)}] {cache[q][:56]}", flush=True)
         REWRITE_CACHE.parent.mkdir(parents=True, exist_ok=True)
         REWRITE_CACHE.write_text(

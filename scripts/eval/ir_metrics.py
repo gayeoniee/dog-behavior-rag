@@ -39,7 +39,7 @@ from app.db.models import Chunk
 from app.db.session import create_engine, create_session_factory
 from app.services.embeddings.registry import get_embedder
 from app.services.llm.registry import get_llm
-from app.services.query_rewrite import QueryRewriter
+from app.services.query_rewrite import QueryRewriter, embed_by_language
 from app.services.vectorstore.pgvector import PgVectorStore
 
 QA_PATH = Path("data/eval_auto_qa.jsonl")
@@ -102,7 +102,9 @@ async def run(args: argparse.Namespace) -> int:
     embedder = get_embedder(settings)
     await embedder.warmup()
     rewriter = QueryRewriter(
-        get_llm(settings) if args.rewrite else None, enabled=args.rewrite
+        get_llm(settings) if args.rewrite else None,
+        enabled=args.rewrite,
+        bilingual=args.bilingual,
     )
 
     engine = create_engine(settings.database_url)
@@ -149,7 +151,9 @@ async def run(args: argparse.Namespace) -> int:
             for i, qa in enumerate(pairs, 1):
                 question = qa["question"]
                 query = await rewriter.rewrite(question)
-                hits = await store.search(await embedder.embed_query(query), args.top_k)
+                hits = await store.search(
+                    await embed_by_language(embedder, query), args.top_k
+                )
 
                 chunk_rank = doc_rank = 0
                 for pos, hit in enumerate(hits, 1):
@@ -256,6 +260,12 @@ def main() -> int:
         default=0,
         help="문서당 청크 상한을 덮어쓴다(0이면 설정값). 상한이 정답 청크를 "
         "막고 있는지 보려면 크게 준다",
+    )
+    parser.add_argument(
+        "--no-bilingual",
+        dest="bilingual",
+        action="store_false",
+        help="언어별 질의를 끄고 영어 한 줄로만 잰다 (A/B의 대조군)",
     )
     parser.add_argument(
         "--no-rewrite",

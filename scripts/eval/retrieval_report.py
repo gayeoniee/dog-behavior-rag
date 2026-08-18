@@ -31,7 +31,7 @@ from app.core.config import get_settings
 from app.db.session import create_engine, create_session_factory
 from app.services.embeddings.registry import get_embedder
 from app.services.llm.registry import get_llm
-from app.services.query_rewrite import QueryRewriter
+from app.services.query_rewrite import QueryRewriter, embed_by_language
 from app.services.vectorstore.base import SearchHit
 from app.services.vectorstore.pgvector import PgVectorStore
 
@@ -112,7 +112,11 @@ async def run(save: str | None, compare: str | None) -> int:
     embedder = get_embedder(settings)
     await embedder.warmup()
     llm = get_llm(settings)
-    rewriter = QueryRewriter(llm, enabled=settings.query_rewrite_enabled)
+    rewriter = QueryRewriter(
+        llm,
+        enabled=settings.query_rewrite_enabled,
+        bilingual=settings.bilingual_query_enabled,
+    )
 
     # 근거 선별은 B 단계에서 추가된다. 아직 없으면 선별 없이 측정한다.
     try:
@@ -139,7 +143,8 @@ async def run(save: str | None, compare: str | None) -> int:
             for i, entry in enumerate(entries, 1):
                 q = entry["question"]
                 hits = await store.search(
-                    await embedder.embed_query(await rewriter.rewrite(q)), settings.top_k
+                    await embed_by_language(embedder, await rewriter.rewrite(q)),
+                    settings.top_k,
                 )
                 if selector is not None:
                     sel = await selector.select(q, hits)

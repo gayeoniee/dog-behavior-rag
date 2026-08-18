@@ -22,7 +22,7 @@ from app.schemas.factcheck import ClaimVerdict, FactCheckResponse, Verdict
 from app.services.embeddings.base import Embedder
 from app.services.llm.base import LLMClient
 from app.services.plain_text import strip_markdown
-from app.services.query_rewrite import QueryRewriter
+from app.services.query_rewrite import QueryRewriter, SearchQuery, embed_by_language
 from app.services.vectorstore.base import SearchHit, VectorStore
 
 logger = logging.getLogger(__name__)
@@ -154,14 +154,16 @@ class FactCheckService:
             provider=self._llm.name,
         )
 
-    async def _search(self, search_query: str, top_k: int) -> list[SearchHit]:
+    async def _search(self, search_query: SearchQuery, top_k: int) -> list[SearchHit]:
         """재작성된 질의로 근거를 찾는다.
 
         재작성을 태우는 이유는 chat과 같지만 여기서 더 중요하다 — 검증할 주장이
         대개 기법("복종 자세를 유지한다")에 대한 것이고, 그게 정확히 bge-m3가
         교차언어로 못 넘기는 부분이다.
         """
-        return await self._store.search(await self._embedder.embed_query(search_query), top_k)
+        return await self._store.search(
+            await embed_by_language(self._embedder, search_query), top_k
+        )
 
     async def _judge(self, claim: str, hits: list[SearchHit]) -> ClaimVerdict:
         if not hits:
