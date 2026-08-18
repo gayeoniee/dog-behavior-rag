@@ -169,6 +169,7 @@ async def ingest_all(records: list[dict], corpus_partition: str) -> int:
                 embedder=embedder,
                 store=PgVectorStore(session),
                 chunk_config=chunk_config,
+                paper_boilerplate_filter=settings.paper_boilerplate_filter,
             )
             for i, record in enumerate(records, 1):
                 doc = to_document_in(record, corpus_partition=corpus_partition)

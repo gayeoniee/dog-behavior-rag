@@ -50,11 +50,13 @@ class IngestService:
         embedder: Embedder,
         store: VectorStore,
         chunk_config: ChunkConfig | None = None,
+        paper_boilerplate_filter: bool = True,
     ) -> None:
         self._session = session
         self._embedder = embedder
         self._store = store
         self._chunk_config = chunk_config or ChunkConfig()
+        self._paper_filter = paper_boilerplate_filter
 
     async def ingest(self, doc: DocumentIn) -> IngestResult:
         # 원본 content로 해싱한다. 청킹 전처리를 거친 텍스트로 하면 코퍼스가 가진
@@ -70,7 +72,7 @@ class IngestService:
         # 통계·방법론 조각이 "significant"·"dogs were assigned" 같은 어휘로
         # 개 행동 질문에 붙는다. 논문에만 적용한다 — 규칙이 논문 문체를
         # 겨냥해 만들어졌고, 기관 가이드에서는 오탐이 난 적이 있다.
-        if (doc.source_id or "").startswith("pmc-"):
+        if self._paper_filter and (doc.source_id or "").startswith("pmc-"):
             kept = [c for c in chunks if not looks_like_paper_boilerplate(c)]
             if kept:
                 if len(kept) < len(chunks):

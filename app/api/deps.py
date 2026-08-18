@@ -93,6 +93,7 @@ def ingest_service(
         embedder=embedder,
         store=_store(settings, session),
         chunk_config=_chunk_config(settings),
+        paper_boilerplate_filter=settings.paper_boilerplate_filter,
     )
 
 

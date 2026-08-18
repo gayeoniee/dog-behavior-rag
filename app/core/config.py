@@ -213,6 +213,16 @@ class Settings(BaseSettings):
     모델(bge-m3, 8192토큰)이 아니라 프롬프트 예산이 제약이라 이 값이 나왔다."""
     chunk_overlap: int = 150
     chunk_min_size: int = 200
+    paper_boilerplate_filter: bool = True
+    """논문의 형식 잡음(통계 보고·연구 방법·저자/기금)을 적재에서 뺄지.
+
+    답변 근거가 못 되는데 "significant"·"dogs were assigned" 같은 어휘로 개
+    행동 질문에 걸린다. 실측(2026-08-18): PMC 10,958청크 중 16.8%가 해당되고,
+    끄면 11,715 · 켜면 9,911청크다.
+
+    **설정으로 뺀 이유는 A/B를 위해서다.** 필터와 평가셋 수정을 동시에 해서
+    전후 비교가 한 번 깨졌다. 같은 평가셋으로 이 값만 바꿔 재야 효과를 가른다.
+    """
 
     # ── 검색 ──
     top_k: int = 5
