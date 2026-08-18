@@ -12,7 +12,13 @@ import re
 from collections import Counter
 from dataclasses import dataclass
 
-__all__ = ["ChunkConfig", "clean_for_chunking", "looks_like_reference_list", "split_text"]
+__all__ = [
+    "ChunkConfig",
+    "clean_for_chunking",
+    "looks_like_paper_boilerplate",
+    "looks_like_reference_list",
+    "split_text",
+]
 
 
 _SEPARATORS = ("\n\n", "\n", ". ", " ")
@@ -96,6 +102,52 @@ def looks_like_reference_list(chunk: str) -> bool:
         return False
     numbered = sum(1 for line in lines if _REF_LINE.match(line))
     return numbered >= len(lines) * 0.6 and len(_CITATION.findall(chunk)) >= 3
+
+
+_STATS = re.compile(
+    # 단어 경계(\b)를 빼면 안 된다. `CI`가 "specific"·"social" 안에 걸려
+    # 영어 본문 대부분이 통계로 잡힌다. 실제로 한 번 그렇게 만들어봤다.
+    r"\bp\s*[=<>]\s*0?\.\d|\bCI\b|\bSD\s*=|\bOR\s*=|\bn\s*=\s*\d"
+    r"|\bR2\b|\bp-value|\bsignifican(t|ce)\b|\bmean\s+of\b",
+    re.I,
+)
+_METHODS = re.compile(
+    r"\b(participants were|dogs were (recruited|enrolled|assigned)"
+    r"|data (were|was) (collected|analy[sz]ed)|questionnaire was"
+    r"|ethical approval|informed consent|inclusion criteria"
+    r"|statistical analys|were performed using|IBM SPSS|R version)\b",
+    re.I,
+)
+_FRONTMATTER = re.compile(
+    r"\b(Conflict of Interest|Author Contributions|Funding|Acknowledg(e)?ments?"
+    r"|Data Availability|Supplementary Material|Institutional Review Board"
+    r"|Informed Consent Statement|Publisher's Note|doi\.org/10\.)",
+    re.I,
+)
+
+
+def looks_like_paper_boilerplate(chunk: str) -> bool:
+    """논문의 **형식 잡음**인가 — 통계 보고·연구 방법·저자/기금 문구.
+
+    답변 근거가 될 수 없는데 검색에는 걸린다. "significant", "dogs were
+    recruited" 같은 표현이 개 행동 질문의 어휘와 겹치기 때문이다. 실제로
+    줄당김 질문에서 논문의 방법론 조각이 RSPCA 실무 가이드를 밀어냈다.
+
+    **논문에만 적용한다** (`IngestService`가 source_id로 가른다). 규칙이
+    논문 문체를 겨냥해 만들어졌고, 실측상 기관 가이드 417청크 중 1건만
+    잘못 걸렸지만 그 1건도 안 잃는 편이 낫다.
+
+    통계는 **표현 3개 이상**일 때만 잡는다. 본문에도 p값이 한 번쯤 나오는데
+    그걸로 버리면 결과를 설명하는 멀쩡한 문단이 날아간다.
+
+    실측 (2026-08-18, PMC 10,958청크): 통계 9.0% · 방법 5.3% · 저자·기금 2.4%
+    = 16.8%가 걸러진다. 남는 본문의 73%는 보호자에게 쓸모 있다고 판정됐다.
+    """
+    return bool(
+        _FRONTMATTER.search(chunk)
+        or len(_STATS.findall(chunk)) >= 3
+        or _METHODS.search(chunk)
+    )
 
 
 def _split_to_units(text: str, size: int, separators: tuple[str, ...] = _SEPARATORS) -> list[str]:

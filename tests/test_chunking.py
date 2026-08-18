@@ -4,6 +4,7 @@ from app.services.chunking import (
     ChunkConfig,
     _split_to_units,
     clean_for_chunking,
+    looks_like_paper_boilerplate,
     looks_like_reference_list,
     split_text,
 )
@@ -171,3 +172,47 @@ class TestSeparatorPreservation:
     def test_한국어_종결어미도_보존된다(self):
         units = _split_to_units("앉으라고 합니다. 기다립니다. 끝입니다.", 15, (". ", " "))
         assert units[0].endswith("다.")
+
+
+class TestPaperBoilerplate:
+    """논문 형식 잡음 판별.
+
+    답변 근거가 못 되는데 검색에는 걸린다 — "significant"·"dogs were assigned"
+    같은 표현이 개 행동 질문의 어휘와 겹친다. 실제로 줄당김 질문에서 논문의
+    방법론 조각이 RSPCA 실무 가이드를 밀어냈다.
+    """
+
+    def test_보호자용_본문은_남긴다(self):
+        assert not looks_like_paper_boilerplate(
+            "Dogs who are anxious when left alone may bark, chew, or eliminate indoors. "
+            "Provide a safe space and leave a stuffed Kong."
+        )
+
+    def test_단어_안에_박힌_약어에_걸리지_않는다(self):
+        """**단어 경계가 없으면 `CI`가 specific·social 안에 걸린다.**
+
+        실제로 정규식을 옮기다 `\b`를 잃어버려 영어 본문 대부분이 통계로
+        분류될 뻔했다. 이 테스트가 그걸 잡는다.
+        """
+        assert not looks_like_paper_boilerplate(
+            "A specific social situation can trigger this behaviour in many dogs."
+        )
+
+    def test_통계_보고는_거른다(self):
+        assert looks_like_paper_boilerplate(
+            "The effect was significant (p = 0.03, 95% CI 1.2-3.4, n = 42)."
+        )
+
+    def test_통계_표현_하나로는_안_거른다(self):
+        """본문에도 p값이 한 번쯤 나온다. 그걸로 버리면 결과를 설명하는
+        멀쩡한 문단이 날아간다 — 그래서 3개 이상일 때만 잡는다."""
+        assert not looks_like_paper_boilerplate(
+            "Owners reported fewer problems after training, and the improvement "
+            "was clear across households of different sizes and ages."
+        )
+
+    def test_연구_방법과_기금_문구는_거른다(self):
+        assert looks_like_paper_boilerplate(
+            "Dogs were recruited from three clinics. Data were collected via questionnaire."
+        )
+        assert looks_like_paper_boilerplate("Funding This work was supported by grant 12345.")

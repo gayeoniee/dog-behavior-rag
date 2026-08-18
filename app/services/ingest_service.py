@@ -15,7 +15,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.models import Chunk, Document
 from app.schemas.document import DocumentIn
-from app.services.chunking import ChunkConfig, split_text
+from app.services.chunking import ChunkConfig, looks_like_paper_boilerplate, split_text
 from app.services.embeddings.base import Embedder
 from app.services.vectorstore.base import VectorStore
 
@@ -66,6 +66,19 @@ class IngestService:
             return existing
 
         chunks = split_text(doc.content, self._chunk_config)
+        # **논문의 형식 잡음은 답변 근거가 못 되는데 검색에는 걸린다.**
+        # 통계·방법론 조각이 "significant"·"dogs were assigned" 같은 어휘로
+        # 개 행동 질문에 붙는다. 논문에만 적용한다 — 규칙이 논문 문체를
+        # 겨냥해 만들어졌고, 기관 가이드에서는 오탐이 난 적이 있다.
+        if (doc.source_id or "").startswith("pmc-"):
+            kept = [c for c in chunks if not looks_like_paper_boilerplate(c)]
+            if kept:
+                if len(kept) < len(chunks):
+                    logger.info(
+                        "논문 형식 잡음 %d/%d청크 제외: %s",
+                        len(chunks) - len(kept), len(chunks), doc.title[:40],
+                    )
+                chunks = kept
         if not chunks:
             logger.warning("청크가 0개라 건너뜀: %s", doc.title)
             return IngestResult(

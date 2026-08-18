@@ -528,7 +528,9 @@ async def remap(path: Path) -> int:
             # 문서 해시는 청킹이 바뀌어도 그대로다.
             needle = _loose(row["chunk_excerpt"])[:60]
             pool = by_doc.get(row.get("doc_hash", ""), [])
-            found = next((c for c in pool if needle and needle in _loose(c.content)), None)
+            found = next(
+                (c for c in pool if needle and needle in _loose(c.content, 10**6)), None
+            )
         if found is None:
             lost += 1
             continue
