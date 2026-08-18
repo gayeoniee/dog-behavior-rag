@@ -49,3 +49,6 @@ web/out/
 .vscode/
 .idea/
 .DS_Store
+
+# 프롬프트 A/B 산출물 (실험 중간물)
+data/eval_results/refine_prompts/
