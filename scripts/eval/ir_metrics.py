@@ -42,7 +42,21 @@ from app.services.llm.registry import get_llm
 from app.services.query_rewrite import QueryRewriter, embed_by_language
 from app.services.vectorstore.pgvector import PgVectorStore
 
-QA_PATH = Path("data/eval_auto_qa.jsonl")
+QA_PATH = Path("data/eval_auto_qa_all.jsonl")
+"""기본 평가셋 (영어 293 + 한국어 288 = 581문항).
+
+⚠️ **기본값이 낡으면 조용히 아무것도 안 잰다.** 여기가 오래 `eval_auto_qa.jsonl`
+(13문항)을 가리키고 있었다. 그 사이 만든 한국어 층·병합본은 다른 파일명으로
+쌓였는데 기본값은 안 따라왔다. 2026-08-18에 A/B를 돌렸더니 "라벨이 깨진 12문항
+제외 → **1문항으로 잰다**"가 찍혔고, hit@5 100%가 나왔다. 100%를 보고서야
+이상하다 싶어 파고들었다 — 숫자가 나빴으면 오히려 못 알아챘을 것이다.
+
+**평가셋을 새로 만들면 이 상수를 같이 옮긴다.**
+"""
+
+MIN_QUESTIONS = 50
+"""이보다 적으면 멈춘다. 실수로 몇 문항짜리를 재고 "측정했다"고 말하지 않기 위해."""
+
 RESULT_DIR = Path("data/eval_results")
 
 K_VALUES = (1, 3, 5, 10)
@@ -138,6 +152,17 @@ async def run(args: argparse.Namespace) -> int:
                 print(f"  ⚠️ 라벨이 깨진 {dropped}문항 제외 (재청킹으로 정답 청크가 사라짐)")
                 print(f"     {len(usable)}문항으로 잰다\n")
                 pairs = usable
+
+            # **너무 적으면 재지 않고 멈춘다.** 낡은 기본 경로로 13문항을 읽고
+            # 그중 1문항만 살아남아 hit@5 100%를 뱉은 적이 있다. 경고를 찍긴
+            # 했지만 표는 멀쩡해 보였고, 그 표를 근거로 채택할 뻔했다.
+            if len(pairs) < MIN_QUESTIONS:
+                print(
+                    f"✗ {len(pairs)}문항으로는 재지 않습니다 (최소 {MIN_QUESTIONS}). "
+                    f"평가셋 경로를 확인하세요: {args.qa}",
+                    file=sys.stderr,
+                )
+                return 1
 
             store = PgVectorStore(
                 session,
