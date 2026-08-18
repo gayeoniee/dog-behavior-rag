@@ -71,30 +71,63 @@ behaviour literature. Examples:
 대가였고, `evidence_select`의 범위 판정에서 겪은 것과 같은 고장이다.
 """
 
-REWRITE_SYSTEM_KO = """You rewrite a Korean pet-behaviour question into a Korean \
-search query for a corpus of dog-trainer consultation transcripts.
+REWRITE_SYSTEM_KO = """You restate a Korean pet question in written Korean, so that it \
+matches a corpus of dog-training documents written in formal written Korean.
 
-The transcripts are written in formal written Korean, not speech. The question is \
-speech. If you do not match the register the search misses them entirely — "똥" appears \
-in 0 of 340 Korean chunks while "배변" appears in 37.
+**This is a register change, not a summary and not a reframing.** Keep every content \
+word. Keep what the question is actually asking — a cause, a method, whether something \
+is true, whether something is a good idea. Do not turn it into a different question.
 
-Write ONE noun phrase in this shape and nothing else:
-
-    반려견이 <행동>하는 행동의 원인과 교정 방법
-
-- Use 반려견. Never 강아지, 우리 애, 얘, 우리 개.
-- Replace spoken words with the written ones the documents use:
+Change ONLY these:
+- 강아지 / 우리 애 / 얘 / 우리 개 -> 반려견
+- spoken words -> the written ones the documents use:
     똥 -> 배변,  오줌 -> 소변,  밥 -> 사료,  산책줄 -> 리드줄
-- Drop the question tail ("왜 그럴까요", "어떻게 해요", "괜찮나요") — noise for search.
-- Keep the specific object or place if there is one (엘리베이터, 현관, 입마개, 켄넬).
-- **If earlier conversation is given, resolve the question against it first.** "1번이요" \
-or "네 맞아요" means nothing on its own — work out what they are confirming.
+- the spoken ending -> a written one (a noun phrase or a plain declarative)
+- filler only: 좀, 진짜, 너무너무, ㅠㅠ, 어떡해요
 
-Output the phrase only. No label, no explanation, no quotes."""
+Keep untouched: the specific object, place, time, or situation (엘리베이터, 종이컵, \
+산책 중, 6개월), and every fact the owner reported.
+
+Examples:
+    "강아지가 자기 똥을 먹어요 왜 그러는 거예요"
+      -> 반려견이 자신의 배변을 먹는 이유
+    "강아지가 다른 개들과 어울리는 것이 왜 좋지 않나요?"
+      -> 반려견이 다른 개들과 어울리는 것이 좋지 않은 이유
+    "보상 기반 훈련을 하면 강아지가 제멋대로 행동하게 되나요?"
+      -> 보상 기반 훈련이 반려견을 제멋대로 행동하게 만드는지 여부
+    "6개월 강아지인데 배변을 자꾸 아무데나 해요 어떻게 가르쳐요"
+      -> 생후 6개월 반려견이 아무 곳에나 배변할 때의 교육 방법
+    "반려견의 분리불안 교육 방법"
+      -> 반려견의 분리불안 교육 방법
+
+That last one is already written Korean. **When the question is already in written \
+Korean, return it unchanged.**
+
+Never add words the question did not ask for. Do not append "원인과 교정 방법" or any \
+other stock phrase.
+
+If earlier conversation is given, resolve the question against it first — "1번이요" or \
+"네 맞아요" means nothing on its own.
+
+Output the restated question only. No label, no explanation, no quotes."""
 """한국어 자막을 찾기 위한 질의. **영어 재작성과 따로 부른다.**
 
 한 호출에 묶으면 영어 쪽이 무너진다 (`REWRITE_SYSTEM` 독스트링 참조). 두 호출은
 서로 독립이라 `asyncio.gather`로 동시에 보내므로 **지연은 거의 안 는다.**
+
+**1차는 고정 틀이었다 — `반려견이 <행동>하는 행동의 원인과 교정 방법`.** 32문항은
+좋아졌는데 581문항이 hit@5 48.7% → 42.5%로 무너졌다. 틀이 밋밋해서가 아니라
+**"문제행동 → 교정"이라는 프레임을 강요**해서였다:
+
+    "다른 개들과 어울리는 것이 왜 좋지 않나요?"
+      → "…어울리는 행동의 원인과 교정 방법"     ← 다른 질문이 됐다
+    "보상 기반 훈련을 하면 제멋대로 행동하나요?"
+      → "…제멋대로 행동하는 행동의 원인과 교정 방법"  ← 완전히 다른 질문
+
+그래서 지금은 **문체만 바꾸고 내용어를 전부 보존한다.** 손으로 확인한 결과
+한국어 풀 안 순위는 고정 틀과 같으면서(똥 16위 → 1위) 뜻은 안 비튼다.
+
+**"이미 문어체면 그대로 돌려준다"가 581문항을 지키는 장치다.**
 """
 
 _MAX_REWRITE_TOKENS = 80
