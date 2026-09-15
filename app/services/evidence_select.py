@@ -47,7 +47,7 @@ Coverage = Literal["full", "partial", "none", "needs_detail"]
 """
 
 NO_EVIDENCE_NOTE = (
-    "이 주제는 현재 코퍼스(AVSAB·AAHA·RSPCA·VCA·ASPCA·PMC 오픈액세스)에 "
+    "이 주제는 현재 코퍼스(기관·학술 자료와 훈련사 상담 영상 자막)에 "
     "근거 자료가 없습니다. 아래 답변은 근거 문서 없이 작성된 일반적인 안내이므로 "
     "수의사나 공인 훈련사에게 확인하시기 바랍니다."
 )

@@ -9,24 +9,11 @@
 ![bge-m3](https://img.shields.io/badge/embedding-bge--m3-yellow)
 ![tests](https://img.shields.io/badge/tests-228%20passed-brightgreen)
 
-<!-- TODO: 상담 화면 캡처를 docs/assets/chat.png로 넣고 아래 줄의 주석을 푼다
-![상담 화면](docs/assets/chat.png)
--->
+| 근거가 있으면 — 출처와 함께 답한다 | 근거가 없으면 — 없다고 말한다 |
+|---|---|
+| ![줄당김 질문에 근거 5건으로 답한 화면](docs/assets/chat.png) | ![고양이 모래 질문에 참고 자료 없음을 밝힌 화면](docs/assets/refuse.png) |
 
-```
-보호자  밤에 좀 많이 짖어
-
-진단: 밤에 짖는 행동은 분리불안이나 지루함과 관련 있을 가능성이 높습니다.
-
-이렇게 해보세요
-1. 잠자리에 들기 전에 짧고 집중적인 놀이를 통해 에너지를 소모시키세요.
-2. 잠들기 직전에 조용하고 편안한 환경을 조성하여 안정감을 주세요.
-3. 짖는 행동이 시작될 때 즉시 무시하고 조용히 반응해 주세요.
-
-주의점: 짖을 때 관심을 주거나 혼내면 불안감이 더 커질 수 있습니다.
-
-(근거 4건 · 로컬 gemma-4-e2b · data/replay_results/gemma-4turn-form.json 첫 턴)
-```
+<sub>실제 실행 화면 (로컬 gemma-4-e2b · 코퍼스 613건 / 9,755청크, 2026-09-15)</sub>
 
 ---
 

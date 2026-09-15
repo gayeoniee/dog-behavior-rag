@@ -103,8 +103,8 @@ export default function Home() {
         <>
           <h1>반려동물 훈련·문제행동 상담</h1>
           <p className="subtitle">
-            기관·학술 자료(AVSAB, AAHA, RSPCA, VCA, PMC 오픈액세스)만 근거로
-            씁니다. 자료에 없으면 없다고 말합니다.
+            기관·학술 자료(AVSAB, AAHA, RSPCA, VCA, PMC 오픈액세스)와 훈련사
+            상담 영상 자막만 근거로 씁니다. 자료에 없으면 없다고 말합니다.
           </p>
           <div className="examples">
             {EXAMPLES.map((example) => (
