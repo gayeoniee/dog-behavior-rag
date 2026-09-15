@@ -3,7 +3,7 @@
 반려동물 훈련·문제행동 상담 RAG 시스템. 최종 목표는 안드로이드 앱이고, 지금은 API와
 수집 파이프라인, 웹 채팅 화면까지 동작하는 단계다.
 
-명령어·구조·수집 절차는 `README.md`에 있다. 이 파일은 **README에 없는 판단 규칙과
+명령어·구조·수집 절차는 `docs/guide.md`에 있다 (`README.md`는 포트폴리오용 소개). 이 파일은 **README에 없는 판단 규칙과
 현재 위치**만 담는다.
 
 ## 현재 위치
@@ -694,7 +694,16 @@ ASPCA 분리불안 문서 안에 "To Crate or Not to Crate?" 단락이 통째로
 ## 새 머신에서 시작할 때
 
 수집 데이터(`data/raw/`, `data/processed/`), `.env`, DB는 저장소에 없다.
-재수집·재적재가 정상 경로다. 전체 절차는 README의 "전체 파이프라인"에 있고,
+재수집·재적재가 정상 경로다.
+
+**보듬TV 정제본(`data/raw/bodeum-*.refined.json`)도 저장소에 없다** (2026-09-15).
+기기 이동용으로 커밋했었지만 라이선스가 "개인 이용"이라 공개 레포에 올릴 수 없어
+히스토리에서까지 지웠다. 기기를 옮기면 **파일을 직접 복사**한다 — 재생성은 LLM
+할당량을 쓴다. 없으면 한국어 328편이 빠진 채 적재되니 `normalize` 건수를 확인할 것.
+보듬TV는 `fetcher: youtube`라 `fetch --all`이 영상을 다시 받으므로, 정제본이 있으면
+나머지 소스만 `--source`로 받는다.
+
+전체 절차는 `docs/guide.md`의 "전체 파이프라인"에 있고,
 수집만 확인하려면:
 
 ```bash
@@ -811,7 +820,7 @@ MCP 서버는 `chwijung`으로 등록돼 있다 (`claude mcp list`로 확인).
   콘솔(cp949)에는 이 문자들이 없어 그것 없이는 `UnicodeEncodeError`로 죽는다.
   수집 패키지 밖에 새 CLI를 만든다면 같은 처리가 필요하다
 - LLM·임베딩 구현체는 Protocol 뒤에 있고 **교체 지점은 각 `registry.py` 한 곳뿐이다.**
-  `rag_service.py`와 엔드포인트는 건드리지 않는다 (절차는 README의 "Provider 교체")
+  `rag_service.py`와 엔드포인트는 건드리지 않는다 (절차는 `docs/guide.md`의 "Provider 교체")
 - 모든 환경변수는 `app/core/config.py`에서만 읽는다
 - **임베딩 모델은 lifespan에서 1회 로딩한다** (`app.state.embedder`). 요청마다 만들면
   수 GB 모델을 매번 읽는다. 로딩 실패는 앱을 죽이지 않고 검색 경로만 503으로 만든다 —
