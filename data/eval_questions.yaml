@@ -171,6 +171,22 @@
   expect: uncovered
   keywords: [holding, inhibited, refuse to eliminate, '참는', '배변을 참', '억제']
 
+# 2026-09-15 추가. 같은 주제를 보호자가 실제로 치는 짧은 구어로 — 위의 명시형은
+# 통과하는데 이 문장에는 로컬 gemma가 반대 패턴 근거("wees and poos when left
+# alone")를 9/9 붙였다. 평가셋에 명시형만 있어서 못 잡았다. 같은 프롬프트로
+# Gemini는 3/3 거절했다 (CLAUDE.md "방향을 못 가리는 건 gemma였다").
+- question: "혼자있을 때 배변을 안해"
+  topic: inhibited-elimination-casual
+  expect: uncovered
+  keywords: [holding, inhibited, refuse to eliminate, '참는', '배변을 참', '억제']
+
+# 반대 방향 대조군 — 위 두 문항을 고치다가 이쪽의 맞는 근거까지 버리지 않는지 본다.
+# 근거는 RSPCA 배변 훈련 문서의 "toilet trained but wees and poos when left alone".
+- question: "혼자 두면 집에 오줌을 싸요"
+  topic: separation-elimination
+  expect: covered
+  keywords: [left alone, separation, toileting, '혼자 있', '분리불안']
+
 # ── 서비스 범위 밖 (거절해야 통과) ──────────────────────
 - question: "고양이 화장실 모래는 어떤 게 제일 좋아요?"
   topic: cat-litter
