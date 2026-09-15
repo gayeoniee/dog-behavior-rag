@@ -25,6 +25,7 @@ class HuggingFaceEmbedder:
         self._batch_size = settings.embedding_batch_size
         self._max_seq_length = settings.embedding_max_seq_length
         self._device = settings.embedding_device
+        self._dtype = settings.embedding_dtype
         self._truncate = settings.embedding_truncate
         self._query_prefix = settings.embedding_query_prefix
         self._passage_prefix = settings.embedding_passage_prefix
@@ -63,12 +64,23 @@ class HuggingFaceEmbedder:
             self._model_name,
             self._device,
         )
+        # fp16은 GPU에서만 이득이다. CPU에서는 느려지기만 하므로 무시한다.
+        model_kwargs: dict[str, Any] = {}
+        if self._dtype == "float16":
+            if self._device == "cpu":
+                logger.warning("EMBEDDING_DTYPE=float16은 GPU 전용이라 CPU에서는 float32로 로딩")
+            else:
+                import torch
+
+                model_kwargs["torch_dtype"] = torch.float16
+
         # truncate_dim을 넘기면 sentence-transformers가 자르고 **다시 정규화**까지
         # 해준다. 직접 자르면 길이가 1이 아니게 되어 내적이 코사인 유사도가 아니게 된다.
         model = SentenceTransformer(
             self._model_name,
             device=device,
             truncate_dim=self._dimension if self._truncate else None,
+            model_kwargs=model_kwargs or None,
         )
 
         # sentence-transformers 5.x에서 get_sentence_embedding_dimension이

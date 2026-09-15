@@ -728,6 +728,12 @@ ASPCA 분리불안 문서 안에 "To Crate or Not to Crate?" 단락이 통째로
 - **VRAM 6GB를 임베딩과 LLM이 나눠 쓴다.** 7B Q4(4.7GB) + bge-m3(2.3GB)는 안 들어간다.
   LM Studio를 켠 채 적재하려면 `EMBEDDING_DEVICE=cpu`, 적재만 할 거면 LM Studio를
   내리고 `auto`
+- **서빙은 LM Studio와 같이 GPU로 돌릴 수 있다 (2026-09-15).** `EMBEDDING_DEVICE=cuda` +
+  `EMBEDDING_DTYPE=float16`이면 gemma 옆에 bge-m3가 들어간다(VRAM 5.6/6.1GB). 저장된 fp32
+  벡터와 코사인 0.999997이라 재적재가 필요 없다. **RAM 절약은 기대보다 작다** — CUDA
+  라이브러리 때문에 API가 여전히 2.3GB다. 크롬·디스코드를 켠 채 서버가 메모리 부족으로
+  죽었을 때 실제로 살린 건 웹을 `next dev`(~1GB) 대신 `next build && next start`
+  (0.08GB)로 띄운 쪽이다. 화면을 고칠 게 아니면 dev 서버를 쓰지 말 것
 - **uv도 Docker도 없었고 관리자 권한이 없다.** uv는 공식 스크립트로 설치했고,
   Docker 대신 `--extra pgdev`(pgserver 내장 Postgres)를 쓴다
 - **HF Inference API는 무료로 못 쓴다** — 월 $0.10, `hf-inference`는 CPU 소형 모델만.

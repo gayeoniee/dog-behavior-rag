@@ -173,6 +173,13 @@ class Settings(BaseSettings):
     적재(load_corpus)를 돌릴 때만 LM Studio를 내리고 `cuda`를 쓴다.
     적재는 오프라인 배치라 후자가 낫다.
     """
+    embedding_dtype: Literal["float32", "float16"] = "float32"
+    """임베딩 모델의 가중치 정밀도. float16은 GPU 전용이다 (CPU면 float32로 둔다).
+
+    bge-m3가 fp32 2.3GB → fp16 1.1GB가 되어 LM Studio(gemma)와 VRAM 6GB를 나눠 쓸
+    여지가 생긴다. 저장된 fp32 벡터와 코사인 0.999997~0.999999라 **재적재가 필요 없다**
+    (2026-09-15 실측, 청크 3개). 기본값은 기존 동작 그대로 float32.
+    """
     embedding_batch_size: int = 8
     embedding_max_seq_length: int = 1024
     """bge-m3의 기본값은 8192지만 그만큼 필요하지 않다. 1200자 청크가 ~300토큰,
