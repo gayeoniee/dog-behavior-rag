@@ -1,5 +1,5 @@
 [project]
-name = "gy-rag"
+name = "dog-behavior-rag"
 version = "0.1.0"
 description = "반려동물 훈련/문제행동 상담 RAG 시스템"
 readme = "README.md"
